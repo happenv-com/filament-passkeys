@@ -6,8 +6,8 @@ return [
     | Redirect URL
     |--------------------------------------------------------------------------
     |
-    | URL the user is redirected to after registering a passkey.
-    | When null, the package falls back to Filament::getCurrentPanel()->getUrl().
+    | URL the user is redirected to after registering a passkey. When null,
+    | the set-up modal closes and the user stays on their profile page.
     |
     */
 

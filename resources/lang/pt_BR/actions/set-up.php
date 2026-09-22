@@ -12,15 +12,9 @@ return [
             ],
             'submit' => [
                 'label' => 'Registrar passkey',
-                'loading_label' => 'Aguardando dispositivo...',
             ],
             'errors' => [
                 'failed' => 'Não foi possível registrar sua passkey. Tente novamente.',
-            ],
-        ],
-        'actions' => [
-            'cancel' => [
-                'label' => 'Fechar',
             ],
         ],
     ],

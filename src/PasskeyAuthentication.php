@@ -14,19 +14,26 @@ use Happenv\FilamentMultiFactorPasskeys\Actions\DisablePasskeyAuthenticationActi
 use Happenv\FilamentMultiFactorPasskeys\Actions\SetUpPasskeyAuthenticationAction;
 use Happenv\FilamentMultiFactorPasskeys\Contracts\HasPasskeysAuthentication;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Laravel\Passkeys\Actions\GenerateRegistrationOptions;
 use Laravel\Passkeys\Actions\GenerateVerificationOptions;
+use Laravel\Passkeys\Actions\StorePasskey;
 use Laravel\Passkeys\Actions\VerifyPasskey;
+use Laravel\Passkeys\Passkey;
 use Laravel\Passkeys\Support\WebAuthn;
 use Livewire\Component;
 use LogicException;
+use RuntimeException;
 use SensitiveParameter;
 use Throwable;
 use Webauthn\PublicKeyCredential;
+use Webauthn\PublicKeyCredentialCreationOptions;
 use Webauthn\PublicKeyCredentialRequestOptions;
 
 class PasskeyAuthentication implements MultiFactorAuthenticationProvider
 {
     public const CHALLENGE_OPTIONS_SESSION_KEY = 'filament-multifactor-passkeys.challenge_options';
+
+    public const REGISTRATION_OPTIONS_SESSION_KEY = 'filament-multifactor-passkeys.registration_options';
 
     protected ?Closure $resolveRedirectUrlUsing = null;
 
@@ -47,15 +54,17 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
         return $this;
     }
 
-    public function getRedirectUrl(): string
+    /**
+     * Where to send the user after registering a passkey. Without one, the modal
+     * closes and the user stays on their profile page.
+     */
+    public function getRedirectUrl(): ?string
     {
         if ($this->resolveRedirectUrlUsing) {
             return ($this->resolveRedirectUrlUsing)();
         }
 
-        return config('filament-multifactor-passkeys.redirect')
-            ?? Filament::getCurrentPanel()?->getUrl()
-            ?? url('/');
+        return config('filament-multifactor-passkeys.redirect');
     }
 
     public function getLoginFormLabel(): string
@@ -124,6 +133,41 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
                     };
                 }),
         ];
+    }
+
+    /**
+     * Generate creation options for the user and hand them to the browser. The
+     * serialized options stay in the session until the credential comes back.
+     */
+    public function startRegistration(HasPasskeysAuthentication $user, Component $livewire): void
+    {
+        $options = app(GenerateRegistrationOptions::class)($user);
+
+        session()->put(static::REGISTRATION_OPTIONS_SESSION_KEY, WebAuthn::toJson($options));
+
+        $livewire->dispatch('filament-multifactor-passkeys-registration-options-ready', options: WebAuthn::toBrowserArray($options));
+    }
+
+    /**
+     * Verify the attestation against the pending registration options and store
+     * the passkey. The options are single use, whether this succeeds or not.
+     *
+     * @throws Throwable
+     */
+    public function storeRegistration(HasPasskeysAuthentication $user, string $name, #[SensitiveParameter] string $credential): Passkey
+    {
+        $serializedOptions = session()->pull(static::REGISTRATION_OPTIONS_SESSION_KEY);
+
+        if (blank($serializedOptions)) {
+            throw new RuntimeException('Passkey registration options are missing or expired.');
+        }
+
+        return app(StorePasskey::class)(
+            $user,
+            $name,
+            WebAuthn::fromJson($credential, PublicKeyCredential::class),
+            WebAuthn::fromJson($serializedOptions, PublicKeyCredentialCreationOptions::class),
+        );
     }
 
     /**

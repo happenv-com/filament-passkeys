@@ -6,7 +6,6 @@ use Filament\Support\Assets\Css;
 use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
 use Happenv\FilamentMultiFactorPasskeys\Livewire\AuthenticatePasskey;
-use Happenv\FilamentMultiFactorPasskeys\Livewire\RegisterPasskey;
 use Laravel\Passkeys\Passkeys;
 use Livewire\Livewire;
 use Spatie\LaravelPackageTools\Package;
@@ -34,7 +33,6 @@ class MultiFactorPasskeysServiceProvider extends PackageServiceProvider
 
     public function packageBooted(): void
     {
-        Livewire::component('filament-multifactor-passkeys-register', RegisterPasskey::class);
         Livewire::component('filament-multifactor-passkeys-authenticate', AuthenticatePasskey::class);
 
         FilamentAsset::register([

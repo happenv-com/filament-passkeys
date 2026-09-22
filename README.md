@@ -108,7 +108,7 @@ That's it. The MFA section in the user profile page now shows a "Passkey verific
 
 ### 3. Customising the redirect URL
 
-By default, after registering a passkey the user is redirected to the current panel home (`Filament::getCurrentPanel()->getUrl()`). To override:
+By default, after registering a passkey the set-up modal closes and the user stays on their profile page. To redirect them somewhere instead:
 
 ```php
 PasskeyAuthentication::make()
@@ -150,7 +150,7 @@ Every ceremony runs through Livewire, so this package does not need the HTTP rou
 
 This package is a Filament adapter on top of `laravel/passkeys`. Challenge generation, attestation and assertion verification and persistence are handled by its actions; the browser side uses `@simplewebauthn/browser`.
 
-- **Set up** opens a Filament modal with a Livewire component that runs `GenerateRegistrationOptions` and `StorePasskey`.
+- **Set up** is a regular Filament action with a name field. Submitting it runs `GenerateRegistrationOptions` and hands the options to the browser, which completes the ceremony and submits the form again so the action can store the passkey with `StorePasskey`.
 - **Turn off** deletes each of the user's passkeys through `DeletePasskey`, so a `PasskeyDeleted` event fires for every one.
 - **Login challenge** is a regular field of Filament's MFA challenge form. Its button generates options scoped to the user who passed the password step, and the field's validation rule checks the assertion with `VerifyPasskey` for that same user, so a passkey belonging to anyone else is rejected.
 - **Sign in with a passkey** runs a discoverable-credential ceremony and logs the owner in on the panel's guard.

@@ -12,15 +12,9 @@ return [
             ],
             'submit' => [
                 'label' => 'Zarejestruj klucz dostępu',
-                'loading_label' => 'Oczekiwanie na urządzenie...',
             ],
             'errors' => [
                 'failed' => 'Nie udało się zarejestrować klucza dostępu. Spróbuj ponownie.',
-            ],
-        ],
-        'actions' => [
-            'cancel' => [
-                'label' => 'Zamknij',
             ],
         ],
     ],

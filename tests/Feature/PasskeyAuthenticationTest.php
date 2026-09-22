@@ -37,10 +37,14 @@ it('returns challenge form components as array', function () {
         ->not->toBeEmpty();
 });
 
-it('falls back to root url when panel is not available', function () {
-    $auth = PasskeyAuthentication::make();
+it('does not redirect after set-up by default', function () {
+    expect(PasskeyAuthentication::make()->getRedirectUrl())->toBeNull();
+});
 
-    expect($auth->getRedirectUrl())->toBeString();
+it('uses the configured redirect url', function () {
+    config()->set('filament-multifactor-passkeys.redirect', '/dashboard');
+
+    expect(PasskeyAuthentication::make()->getRedirectUrl())->toBe('/dashboard');
 });
 
 it('uses custom redirect closure when provided', function () {

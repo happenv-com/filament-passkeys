@@ -19,6 +19,9 @@ All notable changes to `filament-multifactor-passkeys` will be documented in thi
 
 ### Changed
 
+- **Set up** is now a native Filament action form instead of a nested Livewire component with hand-rolled inputs. The name field uses Filament's styling, Enter submits it, and errors show under the field. The `RegisterPasskey` Livewire component and its view are removed.
+- After registering a passkey the modal closes and the user stays on their profile page. Set `redirect` in the config or `redirectUrlUsing()` to redirect instead.
+- Fixed the passkey login error colours on Filament 4+, whose palette variables are full colours rather than RGB triplets.
 - Removing passkeys dispatches `PasskeyDeleted` for each one.
 - The `redirect` config value is now used when no `redirectUrlUsing()` callback is set.
 

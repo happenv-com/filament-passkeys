@@ -12,15 +12,9 @@ return [
             ],
             'submit' => [
                 'label' => 'Register passkey',
-                'loading_label' => 'Waiting for device...',
             ],
             'errors' => [
                 'failed' => 'We could not register your passkey. Please try again.',
-            ],
-        ],
-        'actions' => [
-            'cancel' => [
-                'label' => 'Close',
             ],
         ],
     ],
