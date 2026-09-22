@@ -1,12 +1,12 @@
 <?php
 
-namespace JeffersonGoncalves\Filament\MultiFactorPasskeys\Actions;
+namespace Happenv\FilamentMultiFactorPasskeys\Actions;
 
 use Filament\Actions\Action;
 use Filament\Schemas\Components\View;
 use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
-use JeffersonGoncalves\Filament\MultiFactorPasskeys\PasskeyAuthentication;
+use Happenv\FilamentMultiFactorPasskeys\PasskeyAuthentication;
 
 class SetUpPasskeyAuthenticationAction
 {

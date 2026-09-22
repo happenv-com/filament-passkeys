@@ -1,6 +1,6 @@
 <?php
 
-namespace JeffersonGoncalves\Filament\MultiFactorPasskeys\Livewire;
+namespace Happenv\FilamentMultiFactorPasskeys\Livewire;
 
 use Filament\Facades\Filament;
 use Filament\Notifications\Notification;

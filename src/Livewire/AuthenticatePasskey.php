@@ -1,6 +1,6 @@
 <?php
 
-namespace JeffersonGoncalves\Filament\MultiFactorPasskeys\Livewire;
+namespace Happenv\FilamentMultiFactorPasskeys\Livewire;
 
 use Filament\Notifications\Notification;
 use Illuminate\Contracts\Auth\Authenticatable;

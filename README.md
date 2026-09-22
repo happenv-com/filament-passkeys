@@ -58,7 +58,7 @@ Add the Spatie `InteractsWithPasskeys` trait and implement the package's `HasPas
 ```php
 use Filament\Models\Contracts\FilamentUser;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use JeffersonGoncalves\Filament\MultiFactorPasskeys\Contracts\HasPasskeyAuthentication;
+use Happenv\FilamentMultiFactorPasskeys\Contracts\HasPasskeyAuthentication;
 use Spatie\LaravelPasskeys\Models\Concerns\InteractsWithPasskeys;
 
 class User extends Authenticatable implements FilamentUser, HasPasskeyAuthentication
@@ -80,8 +80,8 @@ In your `PanelProvider`, register `PasskeyAuthentication` in the `multiFactorAut
 
 ```php
 use Filament\Panel;
-use JeffersonGoncalves\Filament\MultiFactorPasskeys\MultiFactorPasskeysPlugin;
-use JeffersonGoncalves\Filament\MultiFactorPasskeys\PasskeyAuthentication;
+use Happenv\FilamentMultiFactorPasskeys\MultiFactorPasskeysPlugin;
+use Happenv\FilamentMultiFactorPasskeys\PasskeyAuthentication;
 
 public function panel(Panel $panel): Panel
 {

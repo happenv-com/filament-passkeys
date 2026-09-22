@@ -1,10 +1,10 @@
 <?php
 
-namespace JeffersonGoncalves\Filament\MultiFactorPasskeys\Tests\Fixtures;
+namespace Happenv\FilamentMultiFactorPasskeys\Tests\Fixtures;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use JeffersonGoncalves\Filament\MultiFactorPasskeys\Contracts\HasPasskeyAuthentication;
+use Happenv\FilamentMultiFactorPasskeys\Contracts\HasPasskeyAuthentication;
 use Spatie\LaravelPasskeys\Models\Concerns\InteractsWithPasskeys;
 
 class User extends Authenticatable implements HasPasskeyAuthentication

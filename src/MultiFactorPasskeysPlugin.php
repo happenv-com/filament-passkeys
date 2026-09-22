@@ -1,6 +1,6 @@
 <?php
 
-namespace JeffersonGoncalves\Filament\MultiFactorPasskeys;
+namespace Happenv\FilamentMultiFactorPasskeys;
 
 use Filament\Contracts\Plugin;
 use Filament\Panel;

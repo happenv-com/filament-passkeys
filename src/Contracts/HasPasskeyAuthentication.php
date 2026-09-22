@@ -1,6 +1,6 @@
 <?php
 
-namespace JeffersonGoncalves\Filament\MultiFactorPasskeys\Contracts;
+namespace Happenv\FilamentMultiFactorPasskeys\Contracts;
 
 use Spatie\LaravelPasskeys\Models\Concerns\HasPasskeys;
 

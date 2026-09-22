@@ -1,5 +1,5 @@
 <?php
 
-use JeffersonGoncalves\Filament\MultiFactorPasskeys\Tests\TestCase;
+use Happenv\FilamentMultiFactorPasskeys\Tests\TestCase;
 
 uses(TestCase::class)->in('Feature');

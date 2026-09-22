@@ -1,5 +1,5 @@
 {
-  "name": "jeffersongoncalves/filament-multifactor-passkeys",
+  "name": "happenv-com/filament-multifactor-passkeys",
   "description": "Filament 5 multi-factor authentication via WebAuthn passkeys, powered by spatie/laravel-passkeys.",
   "keywords": [
     "jeffersongoncalves",
@@ -17,7 +17,7 @@
     "authentication",
     "filament-multifactor-passkeys"
   ],
-  "homepage": "https://github.com/jeffersongoncalves/filament-multifactor-passkeys",
+  "homepage": "https://github.com/happenv-com/filament-multifactor-passkeys",
   "license": "MIT",
   "authors": [
     {
@@ -41,12 +41,12 @@
   },
   "autoload": {
     "psr-4": {
-      "JeffersonGoncalves\\Filament\\MultiFactorPasskeys\\": "src"
+      "Happenv\\FilamentMultiFactorPasskeys\\": "src"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "JeffersonGoncalves\\Filament\\MultiFactorPasskeys\\Tests\\": "tests"
+      "Happenv\\FilamentMultiFactorPasskeys\\Tests\\": "tests"
     }
   },
   "scripts": {
@@ -65,7 +65,7 @@
   "extra": {
     "laravel": {
       "providers": [
-        "JeffersonGoncalves\\Filament\\MultiFactorPasskeys\\MultiFactorPasskeysServiceProvider"
+        "Happenv\\FilamentMultiFactorPasskeys\\MultiFactorPasskeysServiceProvider"
       ]
     }
   },

@@ -1,6 +1,6 @@
 <?php
 
-namespace JeffersonGoncalves\Filament\MultiFactorPasskeys\Tests\Fixtures;
+namespace Happenv\FilamentMultiFactorPasskeys\Tests\Fixtures;
 
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;

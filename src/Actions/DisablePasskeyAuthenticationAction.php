@@ -1,6 +1,6 @@
 <?php
 
-namespace JeffersonGoncalves\Filament\MultiFactorPasskeys\Actions;
+namespace Happenv\FilamentMultiFactorPasskeys\Actions;
 
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
@@ -8,8 +8,8 @@ use Filament\Notifications\Notification;
 use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\DB;
-use JeffersonGoncalves\Filament\MultiFactorPasskeys\Contracts\HasPasskeyAuthentication;
-use JeffersonGoncalves\Filament\MultiFactorPasskeys\PasskeyAuthentication;
+use Happenv\FilamentMultiFactorPasskeys\Contracts\HasPasskeyAuthentication;
+use Happenv\FilamentMultiFactorPasskeys\PasskeyAuthentication;
 
 class DisablePasskeyAuthenticationAction
 {

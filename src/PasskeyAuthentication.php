@@ -1,6 +1,6 @@
 <?php
 
-namespace JeffersonGoncalves\Filament\MultiFactorPasskeys;
+namespace Happenv\FilamentMultiFactorPasskeys;
 
 use Closure;
 use Filament\Auth\MultiFactor\Contracts\MultiFactorAuthenticationProvider;
@@ -9,9 +9,9 @@ use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\View;
 use Illuminate\Contracts\Auth\Authenticatable;
-use JeffersonGoncalves\Filament\MultiFactorPasskeys\Actions\DisablePasskeyAuthenticationAction;
-use JeffersonGoncalves\Filament\MultiFactorPasskeys\Actions\SetUpPasskeyAuthenticationAction;
-use JeffersonGoncalves\Filament\MultiFactorPasskeys\Contracts\HasPasskeyAuthentication;
+use Happenv\FilamentMultiFactorPasskeys\Actions\DisablePasskeyAuthenticationAction;
+use Happenv\FilamentMultiFactorPasskeys\Actions\SetUpPasskeyAuthenticationAction;
+use Happenv\FilamentMultiFactorPasskeys\Contracts\HasPasskeyAuthentication;
 use LogicException;
 
 class PasskeyAuthentication implements MultiFactorAuthenticationProvider

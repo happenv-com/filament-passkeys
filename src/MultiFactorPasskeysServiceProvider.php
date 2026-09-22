@@ -1,12 +1,12 @@
 <?php
 
-namespace JeffersonGoncalves\Filament\MultiFactorPasskeys;
+namespace Happenv\FilamentMultiFactorPasskeys;
 
 use Filament\Support\Assets\Css;
 use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
-use JeffersonGoncalves\Filament\MultiFactorPasskeys\Livewire\AuthenticatePasskey;
-use JeffersonGoncalves\Filament\MultiFactorPasskeys\Livewire\RegisterPasskey;
+use Happenv\FilamentMultiFactorPasskeys\Livewire\AuthenticatePasskey;
+use Happenv\FilamentMultiFactorPasskeys\Livewire\RegisterPasskey;
 use Livewire\Livewire;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;

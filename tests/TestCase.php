@@ -1,12 +1,12 @@
 <?php
 
-namespace JeffersonGoncalves\Filament\MultiFactorPasskeys\Tests;
+namespace Happenv\FilamentMultiFactorPasskeys\Tests;
 
 use Filament\FilamentServiceProvider;
 use Filament\Support\SupportServiceProvider;
-use JeffersonGoncalves\Filament\MultiFactorPasskeys\MultiFactorPasskeysServiceProvider;
-use JeffersonGoncalves\Filament\MultiFactorPasskeys\Tests\Fixtures\TestPanelProvider;
-use JeffersonGoncalves\Filament\MultiFactorPasskeys\Tests\Fixtures\User;
+use Happenv\FilamentMultiFactorPasskeys\MultiFactorPasskeysServiceProvider;
+use Happenv\FilamentMultiFactorPasskeys\Tests\Fixtures\TestPanelProvider;
+use Happenv\FilamentMultiFactorPasskeys\Tests\Fixtures\User;
 use Livewire\LivewireServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 use Spatie\LaravelPasskeys\LaravelPasskeysServiceProvider;

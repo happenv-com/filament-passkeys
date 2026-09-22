@@ -1,7 +1,7 @@
 <?php
 
-use JeffersonGoncalves\Filament\MultiFactorPasskeys\PasskeyAuthentication;
-use JeffersonGoncalves\Filament\MultiFactorPasskeys\Tests\Fixtures\User;
+use Happenv\FilamentMultiFactorPasskeys\PasskeyAuthentication;
+use Happenv\FilamentMultiFactorPasskeys\Tests\Fixtures\User;
 
 it('can create passkey authentication instance', function () {
     $auth = PasskeyAuthentication::make();
