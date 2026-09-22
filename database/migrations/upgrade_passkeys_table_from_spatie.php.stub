@@ -1,0 +1,68 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Laravel\Passkeys\Passkeys;
+
+/**
+ * Converts a `passkeys` table created by spatie/laravel-passkeys into the schema
+ * laravel/passkeys expects. Run it instead of the laravel/passkeys migration.
+ *
+ *   authenticatable_id -> user_id
+ *   data               -> credential
+ *   credential_id      -> base64url id taken from the stored credential record
+ *
+ * Spatie wrote the raw credential id through mb_convert_encoding() on every
+ * driver but pgsql, which is lossy, so the id is rebuilt from `data` instead.
+ */
+return new class extends Migration
+{
+    public function up(): void
+    {
+        if (! Schema::hasTable('passkeys') || ! Schema::hasColumn('passkeys', 'authenticatable_id')) {
+            return;
+        }
+
+        // Left behind by an earlier run that failed half way.
+        Schema::dropIfExists('passkeys_upgraded');
+
+        Schema::create('passkeys_upgraded', function (Blueprint $table) {
+            $table->id();
+            $table->foreignIdFor(Passkeys::userModel(), 'user_id')
+                ->constrained(indexName: 'passkeys_user_id_foreign')
+                ->cascadeOnDelete();
+            $table->string('name');
+            $table->string('credential_id')->unique('passkeys_credential_id_unique');
+            $table->json('credential');
+            $table->timestamp('last_used_at')->nullable();
+            $table->timestamps();
+
+            $table->index('user_id', 'passkeys_user_id_index');
+        });
+
+        DB::table('passkeys')->orderBy('id')->chunk(100, function ($passkeys): void {
+            DB::table('passkeys_upgraded')->insert($passkeys->map(function (object $passkey): array {
+                $credential = json_decode($passkey->data, true, flags: JSON_THROW_ON_ERROR);
+
+                if (! is_string($credential['publicKeyCredentialId'] ?? null)) {
+                    throw new RuntimeException("Passkey [{$passkey->id}] has no publicKeyCredentialId in its data column.");
+                }
+
+                return [
+                    'user_id' => $passkey->authenticatable_id,
+                    'name' => mb_substr((string) $passkey->name, 0, 255),
+                    'credential_id' => $credential['publicKeyCredentialId'],
+                    'credential' => json_encode($credential, JSON_THROW_ON_ERROR),
+                    'last_used_at' => $passkey->last_used_at,
+                    'created_at' => $passkey->created_at,
+                    'updated_at' => $passkey->updated_at,
+                ];
+            })->all());
+        });
+
+        Schema::drop('passkeys');
+        Schema::rename('passkeys_upgraded', 'passkeys');
+    }
+};

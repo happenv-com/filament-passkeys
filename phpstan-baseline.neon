@@ -7,7 +7,7 @@ parameters:
 			path: src/Actions/SetUpPasskeyAuthenticationAction.php
 
 		-
-			message: '#^Parameter \#1 \$view of static method Filament\\Schemas\\Components\\View\:\:make\(\) expects view\-string, string given\.$#'
+			message: '#^Parameter \#1 \$view of method Filament\\Support\\Components\\ViewComponent\:\:view\(\) expects view\-string\|null, string given\.$#'
 			identifier: argument.type
 			count: 1
 			path: src/PasskeyAuthentication.php

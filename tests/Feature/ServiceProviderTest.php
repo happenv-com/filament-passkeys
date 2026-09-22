@@ -19,3 +19,9 @@ it('loads translations', function () {
         ->toBeString()
         ->not->toBe('filament-multifactor-passkeys::provider.login_form.label');
 });
+
+it('keeps the laravel/passkeys routes off by default', function () {
+    expect(config('filament-multifactor-passkeys.register_passkeys_routes'))->toBeFalse()
+        ->and(Route::has('passkey.login'))->toBeFalse()
+        ->and(Route::has('passkey.store'))->toBeFalse();
+});

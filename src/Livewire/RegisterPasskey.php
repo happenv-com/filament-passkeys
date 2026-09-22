@@ -6,16 +6,21 @@ use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\ValidationException;
+use Laravel\Passkeys\Actions\GenerateRegistrationOptions;
+use Laravel\Passkeys\Actions\StorePasskey;
+use Laravel\Passkeys\Contracts\PasskeyUser;
+use Laravel\Passkeys\Support\WebAuthn;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
-use Spatie\LaravelPasskeys\Actions\GeneratePasskeyRegisterOptionsAction;
-use Spatie\LaravelPasskeys\Actions\StorePasskeyAction;
-use Spatie\LaravelPasskeys\Models\Concerns\HasPasskeys;
-use Spatie\LaravelPasskeys\Support\Config;
+use RuntimeException;
 use Throwable;
+use Webauthn\PublicKeyCredential;
+use Webauthn\PublicKeyCredentialCreationOptions;
 
 class RegisterPasskey extends Component
 {
+    public const OPTIONS_SESSION_KEY = 'filament-multifactor-passkeys.registration_options';
+
     public ?string $redirectUrl = null;
 
     #[Validate('required|string|max:255')]
@@ -33,27 +38,30 @@ class RegisterPasskey extends Component
     {
         $this->validate();
 
-        /** @var GeneratePasskeyRegisterOptionsAction $action */
-        $action = Config::getAction('generate_passkey_register_options', GeneratePasskeyRegisterOptionsAction::class);
-        $options = $action->execute($this->currentUser());
+        $options = app(GenerateRegistrationOptions::class)($this->currentUser());
 
-        session()->put('passkey-registration-options', $options);
+        session()->put(self::OPTIONS_SESSION_KEY, WebAuthn::toJson($options));
 
-        $this->dispatch('passkey-registration-options-ready', options: json_decode($options));
+        $this->dispatch('passkey-registration-options-ready', options: WebAuthn::toBrowserArray($options));
     }
 
     public function storePasskey(string $passkey): void
     {
-        /** @var StorePasskeyAction $action */
-        $action = Config::getAction('store_passkey', StorePasskeyAction::class);
+        $this->validate();
+
+        $user = $this->currentUser();
+        $serializedOptions = session()->pull(self::OPTIONS_SESSION_KEY);
 
         try {
-            $action->execute(
-                $this->currentUser(),
-                $passkey,
-                session()->pull('passkey-registration-options') ?? '',
-                request()->getHost(),
-                ['name' => $this->name]
+            if (blank($serializedOptions)) {
+                throw new RuntimeException('Passkey registration options are missing or expired.');
+            }
+
+            app(StorePasskey::class)(
+                $user,
+                $this->name,
+                WebAuthn::fromJson($passkey, PublicKeyCredential::class),
+                WebAuthn::fromJson($serializedOptions, PublicKeyCredentialCreationOptions::class),
             );
         } catch (Throwable) {
             throw ValidationException::withMessages([
@@ -69,10 +77,11 @@ class RegisterPasskey extends Component
         $this->redirect($this->redirectUrl ?: url('/'), navigate: true);
     }
 
-    protected function currentUser(): HasPasskeys
+    protected function currentUser(): PasskeyUser
     {
-        /** @var HasPasskeys $user */
-        $user = Filament::auth()->user() ?? auth()->user();
+        $user = Filament::auth()->user();
+
+        abort_unless($user instanceof PasskeyUser, 403);
 
         return $user;
     }

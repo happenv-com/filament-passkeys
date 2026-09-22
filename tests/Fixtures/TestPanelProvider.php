@@ -7,6 +7,8 @@ use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
 use Filament\PanelProvider;
+use Happenv\FilamentMultiFactorPasskeys\MultiFactorPasskeysPlugin;
+use Happenv\FilamentMultiFactorPasskeys\PasskeyAuthentication;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -25,6 +27,11 @@ class TestPanelProvider extends PanelProvider
             ->path('admin')
             ->authGuard('web')
             ->login()
+            ->profile()
+            ->multiFactorAuthentication([
+                PasskeyAuthentication::make(),
+            ])
+            ->plugin(MultiFactorPasskeysPlugin::make())
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

@@ -7,6 +7,7 @@ use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
 use Happenv\FilamentMultiFactorPasskeys\Livewire\AuthenticatePasskey;
 use Happenv\FilamentMultiFactorPasskeys\Livewire\RegisterPasskey;
+use Laravel\Passkeys\Passkeys;
 use Livewire\Livewire;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
@@ -19,7 +20,16 @@ class MultiFactorPasskeysServiceProvider extends PackageServiceProvider
             ->name('filament-multifactor-passkeys')
             ->hasTranslations()
             ->hasViews()
-            ->hasConfigFile();
+            ->hasConfigFile()
+            ->hasMigration('upgrade_passkeys_table_from_spatie');
+    }
+
+    public function packageRegistered(): void
+    {
+        // Must run before laravel/passkeys boots, which is when it loads its routes.
+        if (! config('filament-multifactor-passkeys.register_passkeys_routes', false)) {
+            Passkeys::ignoreRoutes();
+        }
     }
 
     public function packageBooted(): void
@@ -30,6 +40,6 @@ class MultiFactorPasskeysServiceProvider extends PackageServiceProvider
         FilamentAsset::register([
             Js::make('filament-multifactor-passkeys', __DIR__.'/../resources/dist/passkey.js'),
             Css::make('filament-multifactor-passkeys', __DIR__.'/../resources/dist/passkey.css'),
-        ], package: 'jeffersongoncalves/filament-multifactor-passkeys');
+        ], package: 'happenv-com/filament-multifactor-passkeys');
     }
 }

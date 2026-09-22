@@ -1,8 +1,8 @@
 {
   "name": "happenv-com/filament-multifactor-passkeys",
-  "description": "Filament 5 multi-factor authentication via WebAuthn passkeys, powered by spatie/laravel-passkeys.",
+  "description": "Filament 5 multi-factor authentication via WebAuthn passkeys, powered by laravel/passkeys.",
   "keywords": [
-    "jeffersongoncalves",
+    "happenv",
     "laravel",
     "filament",
     "filament-plugin",
@@ -21,16 +21,21 @@
   "license": "MIT",
   "authors": [
     {
+      "name": "Happenv",
+      "homepage": "https://github.com/happenv-com",
+      "role": "Maintainer"
+    },
+    {
       "name": "Jefferson Gonçalves",
       "email": "gerson.simao.92@gmail.com",
-      "role": "Developer"
+      "role": "Original author"
     }
   ],
   "require": {
     "php": "^8.2",
     "filament/filament": "^5.3",
-    "spatie/laravel-package-tools": "^1.14.0",
-    "spatie/laravel-passkeys": "^1.0"
+    "laravel/passkeys": "^0.2",
+    "spatie/laravel-package-tools": "^1.14.0"
   },
   "require-dev": {
     "larastan/larastan": "^3.0",

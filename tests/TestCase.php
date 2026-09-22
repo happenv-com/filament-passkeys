@@ -2,29 +2,52 @@
 
 namespace Happenv\FilamentMultiFactorPasskeys\Tests;
 
+use BladeUI\Heroicons\BladeHeroiconsServiceProvider;
+use BladeUI\Icons\BladeIconsServiceProvider;
+use Filament\Actions\ActionsServiceProvider;
 use Filament\FilamentServiceProvider;
+use Filament\Forms\FormsServiceProvider;
+use Filament\Infolists\InfolistsServiceProvider;
+use Filament\Notifications\NotificationsServiceProvider;
+use Filament\Schemas\SchemasServiceProvider;
 use Filament\Support\SupportServiceProvider;
+use Filament\Tables\TablesServiceProvider;
+use Filament\Widgets\WidgetsServiceProvider;
 use Happenv\FilamentMultiFactorPasskeys\MultiFactorPasskeysServiceProvider;
 use Happenv\FilamentMultiFactorPasskeys\Tests\Fixtures\TestPanelProvider;
 use Happenv\FilamentMultiFactorPasskeys\Tests\Fixtures\User;
+use Laravel\Passkeys\Passkeys;
+use Laravel\Passkeys\PasskeysServiceProvider;
 use Livewire\LivewireServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
-use Spatie\LaravelPasskeys\LaravelPasskeysServiceProvider;
+use RyanChandler\BladeCaptureDirective\BladeCaptureDirectiveServiceProvider;
 
 abstract class TestCase extends Orchestra
 {
     protected function setUp(): void
     {
         parent::setUp();
+
+        User::$canAccessPanel = true;
     }
 
     protected function getPackageProviders($app): array
     {
         return [
-            LivewireServiceProvider::class,
-            SupportServiceProvider::class,
+            ActionsServiceProvider::class,
+            BladeCaptureDirectiveServiceProvider::class,
+            BladeHeroiconsServiceProvider::class,
+            BladeIconsServiceProvider::class,
             FilamentServiceProvider::class,
-            LaravelPasskeysServiceProvider::class,
+            FormsServiceProvider::class,
+            InfolistsServiceProvider::class,
+            LivewireServiceProvider::class,
+            NotificationsServiceProvider::class,
+            SchemasServiceProvider::class,
+            SupportServiceProvider::class,
+            TablesServiceProvider::class,
+            WidgetsServiceProvider::class,
+            PasskeysServiceProvider::class,
             TestPanelProvider::class,
             MultiFactorPasskeysServiceProvider::class,
         ];
@@ -40,12 +63,16 @@ abstract class TestCase extends Orchestra
         ]);
 
         config()->set('app.key', 'base64:'.base64_encode(random_bytes(32)));
+        config()->set('passkeys.user_handle_secret', 'test-user-handle-secret');
 
         config()->set('auth.providers.users.model', User::class);
+
+        Passkeys::useUserModel(User::class);
     }
 
     protected function defineDatabaseMigrations(): void
     {
         $this->loadMigrationsFrom(__DIR__.'/database/migrations');
+        $this->loadMigrationsFrom(Passkeys::migrationPath());
     }
 }

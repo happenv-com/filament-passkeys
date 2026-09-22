@@ -3,19 +3,31 @@
 namespace Happenv\FilamentMultiFactorPasskeys;
 
 use Closure;
+use Filament\Actions\Action;
 use Filament\Auth\MultiFactor\Contracts\MultiFactorAuthenticationProvider;
 use Filament\Facades\Filament;
+use Filament\Forms\Components\ViewField;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Text;
-use Filament\Schemas\Components\View;
-use Illuminate\Contracts\Auth\Authenticatable;
+use Filament\Support\Icons\Heroicon;
 use Happenv\FilamentMultiFactorPasskeys\Actions\DisablePasskeyAuthenticationAction;
 use Happenv\FilamentMultiFactorPasskeys\Actions\SetUpPasskeyAuthenticationAction;
-use Happenv\FilamentMultiFactorPasskeys\Contracts\HasPasskeyAuthentication;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Laravel\Passkeys\Actions\GenerateVerificationOptions;
+use Laravel\Passkeys\Actions\VerifyPasskey;
+use Laravel\Passkeys\Contracts\PasskeyUser;
+use Laravel\Passkeys\Support\WebAuthn;
+use Livewire\Component;
 use LogicException;
+use SensitiveParameter;
+use Throwable;
+use Webauthn\PublicKeyCredential;
+use Webauthn\PublicKeyCredentialRequestOptions;
 
 class PasskeyAuthentication implements MultiFactorAuthenticationProvider
 {
+    public const CHALLENGE_OPTIONS_SESSION_KEY = 'filament-multifactor-passkeys.challenge_options';
+
     protected ?Closure $resolveRedirectUrlUsing = null;
 
     public function getId(): string
@@ -41,7 +53,9 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
             return ($this->resolveRedirectUrlUsing)();
         }
 
-        return Filament::getCurrentPanel()?->getUrl() ?? url('/');
+        return config('filament-multifactor-passkeys.redirect')
+            ?? Filament::getCurrentPanel()?->getUrl()
+            ?? url('/');
     }
 
     public function getLoginFormLabel(): string
@@ -51,11 +65,7 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
 
     public function isEnabled(Authenticatable $user): bool
     {
-        if (! ($user instanceof HasPasskeyAuthentication)) {
-            throw new LogicException('The user model must implement the ['.HasPasskeyAuthentication::class.'] interface to use passkey authentication.');
-        }
-
-        return $user->hasPasskeyAuthentication();
+        return $this->ensurePasskeyUser($user)->hasPasskeysEnabled();
     }
 
     public function getManagementSchemaComponents(): array
@@ -89,11 +99,78 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
 
     public function getChallengeFormComponents(Authenticatable $user): array
     {
+        $user = $this->ensurePasskeyUser($user);
+
         return [
-            View::make('filament-multifactor-passkeys::components.authenticate')
-                ->viewData([
-                    'redirect' => $this->getRedirectUrl(),
-                ]),
+            ViewField::make('credential')
+                ->view('filament-multifactor-passkeys::components.challenge')
+                ->hiddenLabel()
+                ->validationAttribute(__('filament-multifactor-passkeys::provider.login_form.credential.label'))
+                ->registerActions([
+                    Action::make('verifyWithPasskey')
+                        ->label(__('filament-multifactor-passkeys::provider.login_form.actions.verify.label'))
+                        ->icon(Heroicon::OutlinedFingerPrint)
+                        ->color('gray')
+                        ->action(fn (Component $livewire) => $this->startChallenge($user, $livewire)),
+                ])
+                ->required()
+                ->rule(function () use ($user): Closure {
+                    return function (string $attribute, #[SensitiveParameter] $value, Closure $fail) use ($user): void {
+                        if (is_string($value) && $this->verifyChallenge($value, $user)) {
+                            return;
+                        }
+
+                        $fail(__('filament-multifactor-passkeys::provider.login_form.credential.messages.invalid'));
+                    };
+                }),
         ];
+    }
+
+    /**
+     * Generate assertion options scoped to the user undertaking the challenge and
+     * hand them to the browser. The serialized options stay in the session so the
+     * validation rule can check the assertion against the same challenge.
+     */
+    public function startChallenge(PasskeyUser $user, Component $livewire): void
+    {
+        $options = app(GenerateVerificationOptions::class)($user);
+
+        session()->put(static::CHALLENGE_OPTIONS_SESSION_KEY, WebAuthn::toJson($options));
+
+        $livewire->dispatch('filament-multifactor-passkeys-challenge-options-ready', options: WebAuthn::toBrowserArray($options));
+    }
+
+    /**
+     * Verify an assertion produced for the pending challenge. Passing the user to
+     * VerifyPasskey rejects a passkey that belongs to anyone else.
+     */
+    public function verifyChallenge(#[SensitiveParameter] string $assertion, PasskeyUser $user): bool
+    {
+        $serializedOptions = session()->pull(static::CHALLENGE_OPTIONS_SESSION_KEY);
+
+        if (blank($serializedOptions)) {
+            return false;
+        }
+
+        try {
+            app(VerifyPasskey::class)(
+                WebAuthn::fromJson($assertion, PublicKeyCredential::class),
+                WebAuthn::fromJson($serializedOptions, PublicKeyCredentialRequestOptions::class),
+                $user,
+            );
+        } catch (Throwable) {
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function ensurePasskeyUser(?Authenticatable $user): PasskeyUser
+    {
+        if (! ($user instanceof PasskeyUser)) {
+            throw new LogicException('The user model must implement the ['.PasskeyUser::class.'] interface to use passkey authentication.');
+        }
+
+        return $user;
     }
 }

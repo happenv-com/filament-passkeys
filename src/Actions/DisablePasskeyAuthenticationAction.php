@@ -7,9 +7,10 @@ use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
 use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
-use Illuminate\Support\Facades\DB;
-use Happenv\FilamentMultiFactorPasskeys\Contracts\HasPasskeyAuthentication;
 use Happenv\FilamentMultiFactorPasskeys\PasskeyAuthentication;
+use Illuminate\Support\Facades\DB;
+use Laravel\Passkeys\Actions\DeletePasskey;
+use Laravel\Passkeys\Contracts\PasskeyUser;
 
 class DisablePasskeyAuthenticationAction
 {
@@ -28,11 +29,16 @@ class DisablePasskeyAuthenticationAction
             ->modalSubmitAction(fn (Action $action) => $action
                 ->label(__('filament-multifactor-passkeys::actions/disable.modal.actions.submit.label')))
             ->action(function (): void {
-                /** @var HasPasskeyAuthentication $user */
+                /** @var PasskeyUser $user */
                 $user = Filament::auth()->user();
 
-                DB::transaction(function () use ($user): void {
-                    $user->passkeys()->delete();
+                $deletePasskey = app(DeletePasskey::class);
+
+                DB::transaction(function () use ($user, $deletePasskey): void {
+                    // Delete one by one so every removal dispatches PasskeyDeleted.
+                    foreach ($user->passkeys()->get() as $passkey) {
+                        $deletePasskey($user, $passkey);
+                    }
                 });
 
                 Notification::make()

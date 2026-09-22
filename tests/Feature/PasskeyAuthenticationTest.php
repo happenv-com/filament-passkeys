@@ -51,8 +51,6 @@ it('uses custom redirect closure when provided', function () {
 });
 
 it('returns management schema components as array', function () {
-    $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
-
     $user = User::create([
         'name' => 'Test User',
         'email' => 'test@example.com',
@@ -70,8 +68,6 @@ it('returns management schema components as array', function () {
 });
 
 it('returns actions as array', function () {
-    $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
-
     $user = User::create([
         'name' => 'Test User',
         'email' => 'test@example.com',
@@ -89,8 +85,6 @@ it('returns actions as array', function () {
 });
 
 it('reports user as disabled when user has no passkeys', function () {
-    $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
-
     $user = User::create([
         'name' => 'Test User',
         'email' => 'test@example.com',

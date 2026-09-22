@@ -2,15 +2,19 @@
 
 namespace Happenv\FilamentMultiFactorPasskeys\Tests\Fixtures;
 
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Happenv\FilamentMultiFactorPasskeys\Contracts\HasPasskeyAuthentication;
-use Spatie\LaravelPasskeys\Models\Concerns\InteractsWithPasskeys;
+use Laravel\Passkeys\Contracts\PasskeyUser;
+use Laravel\Passkeys\PasskeyAuthenticatable;
 
-class User extends Authenticatable implements HasPasskeyAuthentication
+class User extends Authenticatable implements FilamentUser, PasskeyUser
 {
-    use InteractsWithPasskeys;
     use Notifiable;
+    use PasskeyAuthenticatable;
+
+    public static bool $canAccessPanel = true;
 
     protected $fillable = [
         'name',
@@ -31,8 +35,8 @@ class User extends Authenticatable implements HasPasskeyAuthentication
         ];
     }
 
-    public function hasPasskeyAuthentication(): bool
+    public function canAccessPanel(Panel $panel): bool
     {
-        return $this->passkeys()->exists();
+        return static::$canAccessPanel;
     }
 }

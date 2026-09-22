@@ -1,43 +1,36 @@
-<div class="filament-hidden">
-
-![Filament Multifactor Passkeys](https://raw.githubusercontent.com/jeffersongoncalves/filament-multifactor-passkeys/2.x/art/jeffersongoncalves-filament-multifactor-passkeys.png)
-
-</div>
-
 # Filament Multifactor Passkeys
 
-[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-FFDD00?style=flat-square&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/jeffersongoncalves)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/happenv-com/filament-multifactor-passkeys.svg?style=flat-square)](https://packagist.org/packages/happenv-com/filament-multifactor-passkeys)
+[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/happenv-com/filament-multifactor-passkeys/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/happenv-com/filament-multifactor-passkeys/actions?query=workflow%3A"Fix+PHP+code+styling"+branch%3Amain)
+[![Total Downloads](https://img.shields.io/packagist/dt/happenv-com/filament-multifactor-passkeys.svg?style=flat-square)](https://packagist.org/packages/happenv-com/filament-multifactor-passkeys)
+[![License](https://img.shields.io/github/license/happenv-com/filament-multifactor-passkeys.svg?style=flat-square)](LICENSE.md)
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/jeffersongoncalves/filament-multifactor-passkeys.svg?style=flat-square)](https://packagist.org/packages/jeffersongoncalves/filament-multifactor-passkeys)
-[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/jeffersongoncalves/filament-multifactor-passkeys/fix-php-code-style-issues.yml?branch=2.x&label=code%20style&style=flat-square)](https://github.com/jeffersongoncalves/filament-multifactor-passkeys/actions?query=workflow%3A"Fix+PHP+code+styling"+branch%3A2.x)
-[![Total Downloads](https://img.shields.io/packagist/dt/jeffersongoncalves/filament-multifactor-passkeys.svg?style=flat-square)](https://packagist.org/packages/jeffersongoncalves/filament-multifactor-passkeys)
-[![License](https://img.shields.io/github/license/jeffersongoncalves/filament-multifactor-passkeys.svg?style=flat-square)](LICENSE.md)
+Multi-factor authentication for Filament panels using WebAuthn passkeys, powered by [`laravel/passkeys`](https://github.com/laravel/passkeys-server).
 
-Multi-factor authentication for Filament panels using WebAuthn passkeys, powered by [`spatie/laravel-passkeys`](https://spatie.be/docs/laravel-passkeys).
+This package is a fork of [`jeffersongoncalves/filament-multifactor-passkeys`](https://github.com/jeffersongoncalves/filament-multifactor-passkeys), moved from `spatie/laravel-passkeys` to `laravel/passkeys`.
 
 ## Compatibility
 
-| Branch | Filament | Laravel        | PHP    | Tag format |
-|--------|----------|----------------|--------|------------|
-| `1.x`  | v4       | 11 / 12        | ^8.2   | `1.x.y`    |
-| `2.x`  | v5       | 12 / 13        | ^8.2   | `2.x.y`    |
+| Filament | Laravel | PHP  |
+|----------|---------|------|
+| v5       | 12 / 13 | ^8.2 |
 
 ## Installation
 
 Install the package via composer:
 
 ```bash
-composer require jeffersongoncalves/filament-multifactor-passkeys
+composer require happenv-com/filament-multifactor-passkeys
 ```
 
-Publish and run the migrations from `spatie/laravel-passkeys`:
+Publish and run the migrations from `laravel/passkeys`:
 
 ```bash
 php artisan vendor:publish --tag="passkeys-migrations"
 php artisan migrate
 ```
 
-Publish the `spatie/laravel-passkeys` config (optional, to tweak relying party, allowed origins, etc.):
+Publish the `laravel/passkeys` config (optional, to tweak the relying party ID, allowed origins, timeout, etc.):
 
 ```bash
 php artisan vendor:publish --tag="passkeys-config"
@@ -49,29 +42,46 @@ Publish this package's config (optional):
 php artisan vendor:publish --tag="filament-multifactor-passkeys-config"
 ```
 
+> `laravel/passkeys` derives the relying party ID and the allowed origins from `APP_URL`. Make sure it matches the URL your panel is served from, or passkey ceremonies will be rejected.
+
+### Upgrading from `spatie/laravel-passkeys`
+
+Both packages use a `passkeys` table and a `config/passkeys.php` file, so they cannot be installed side by side. Existing passkeys keep working after the switch; publish and run this package's upgrade migration **instead of** the `laravel/passkeys` one:
+
+```bash
+composer remove spatie/laravel-passkeys
+php artisan vendor:publish --tag="filament-multifactor-passkeys-migrations"
+php artisan migrate
+```
+
+The migration renames `authenticatable_id` to `user_id` and `data` to `credential`, and rebuilds `credential_id` from the stored credential record. It does nothing when the table already has the `laravel/passkeys` schema. Remove the old `config/passkeys.php` published by Spatie and publish the new one if you need to customise it.
+
 ## Usage
 
 ### 1. Prepare your User model
 
-Add the Spatie `InteractsWithPasskeys` trait and implement the package's `HasPasskeyAuthentication` contract (which extends Spatie's `HasPasskeys` interface):
+Implement the `laravel/passkeys` `PasskeyUser` contract and use its `PasskeyAuthenticatable` trait:
 
 ```php
 use Filament\Models\Contracts\FilamentUser;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Happenv\FilamentMultiFactorPasskeys\Contracts\HasPasskeyAuthentication;
-use Spatie\LaravelPasskeys\Models\Concerns\InteractsWithPasskeys;
+use Laravel\Passkeys\Contracts\PasskeyUser;
+use Laravel\Passkeys\PasskeyAuthenticatable;
 
-class User extends Authenticatable implements FilamentUser, HasPasskeyAuthentication
+class User extends Authenticatable implements FilamentUser, PasskeyUser
 {
-    use InteractsWithPasskeys;
-
-    public function hasPasskeyAuthentication(): bool
-    {
-        return $this->passkeys()->exists();
-    }
+    use PasskeyAuthenticatable;
 
     // ...
 }
+```
+
+Passkey verification counts as enabled when `hasPasskeysEnabled()` returns `true`, which by default means the user has at least one passkey. If your user model is not `App\Models\User`, tell `laravel/passkeys` about it in a service provider:
+
+```php
+use Laravel\Passkeys\Passkeys;
+
+Passkeys::useUserModel(\App\Models\Admin::class);
 ```
 
 ### 2. Register the MFA provider in your panel
@@ -94,13 +104,11 @@ public function panel(Panel $panel): Panel
 }
 ```
 
-That's it. The MFA section in the user profile page now shows a "Passkey verification" entry with **Set up** / **Turn off** buttons. The plugin also injects a passkey login button after the standard login form, allowing users to authenticate without typing email/password. After registering a passkey, the next login can use it directly.
-
-> The package auto-registers Spatie's `Route::passkeys()` macro (under the `web` middleware group) so the login button works out of the box. If you've already registered them yourself, the auto-registration is skipped.
+That's it. The MFA section in the user profile page now shows a "Passkey verification" entry with **Set up** / **Turn off** buttons. After a user signs in with their password, Filament asks them to confirm with one of their passkeys. The plugin also injects a passkey login button after the standard login form, allowing users to authenticate without typing email/password.
 
 ### 3. Customising the redirect URL
 
-By default, after a successful registration or assertion the user is redirected to the current panel home (`Filament::getCurrentPanel()->getUrl()`). To override:
+By default, after registering a passkey the user is redirected to the current panel home (`Filament::getCurrentPanel()->getUrl()`). To override:
 
 ```php
 PasskeyAuthentication::make()
@@ -115,13 +123,37 @@ return [
 ];
 ```
 
+### 4. Blocking passkey sign-in
+
+The passwordless login button honours the `laravel/passkeys` authorization callback, e.g. to keep suspended accounts out:
+
+```php
+use Illuminate\Validation\ValidationException;
+use Laravel\Passkeys\Passkeys;
+
+Passkeys::authorizeLoginUsing(function ($request, $user, $passkey): bool {
+    if ($user->is_suspended) {
+        throw ValidationException::withMessages(['credential' => ['This account is suspended.']]);
+    }
+
+    return true;
+});
+```
+
+Users who fail `FilamentUser::canAccessPanel()` are never signed in.
+
+### 5. `laravel/passkeys` routes
+
+Every ceremony runs through Livewire, so this package does not need the HTTP routes `laravel/passkeys` registers and turns them off. To keep them, e.g. for the `@laravel/passkeys` JavaScript client elsewhere in your app, set `register_passkeys_routes` to `true` in `config/filament-multifactor-passkeys.php`.
+
 ## How it works
 
-This package is a thin Filament adapter on top of `spatie/laravel-passkeys`. The WebAuthn ceremony (challenge generation, browser API, attestation/assertion verification, persistence) is fully handled by Spatie's package and its Blade components (`<x-create-passkey>` and `<x-authenticate-passkey>`), which are embedded inside Filament modals and the MFA challenge schema.
+This package is a Filament adapter on top of `laravel/passkeys`. Challenge generation, attestation and assertion verification and persistence are handled by its actions; the browser side uses `@simplewebauthn/browser`.
 
-- **Set up** opens a Filament modal that renders `<x-create-passkey :redirect="..." />`
-- **Disable** removes all of the user's passkeys via `$user->passkeys()->delete()`
-- **Login challenge** renders `<x-authenticate-passkey :redirect="..." />`
+- **Set up** opens a Filament modal with a Livewire component that runs `GenerateRegistrationOptions` and `StorePasskey`.
+- **Turn off** deletes each of the user's passkeys through `DeletePasskey`, so a `PasskeyDeleted` event fires for every one.
+- **Login challenge** is a regular field of Filament's MFA challenge form. Its button generates options scoped to the user who passed the password step, and the field's validation rule checks the assertion with `VerifyPasskey` for that same user, so a passkey belonging to anyone else is rejected.
+- **Sign in with a passkey** runs a discoverable-credential ceremony and logs the owner in on the panel's guard.
 
 ## Development
 
@@ -150,8 +182,9 @@ Please review [our security policy](../../security/policy) on how to report secu
 
 ## Credits
 
-- [Jefferson Gonçalves](https://github.com/jeffersongoncalves)
-- [Spatie](https://github.com/spatie/laravel-passkeys) — for the underlying WebAuthn implementation
+- [Happenv](https://github.com/happenv-com)
+- [Jefferson Gonçalves](https://github.com/jeffersongoncalves) — original author
+- [Laravel](https://github.com/laravel/passkeys-server) — for the underlying WebAuthn implementation
 - [All Contributors](../../contributors)
 
 ## License

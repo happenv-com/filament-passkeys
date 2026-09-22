@@ -22,7 +22,7 @@ class MultiFactorPasskeysPlugin implements Plugin
             PanelsRenderHook::AUTH_LOGIN_FORM_AFTER,
             fn (): HtmlString => new HtmlString(
                 Livewire::mount('filament-multifactor-passkeys-authenticate', [
-                    'guard' => $panel->getAuthGuard(),
+                    'panel' => $panel->getId(),
                     'redirectUrl' => $panel->getUrl() ?? url('/'),
                 ])
             ),

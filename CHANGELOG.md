@@ -2,6 +2,26 @@
 
 All notable changes to `filament-multifactor-passkeys` will be documented in this file.
 
+## Unreleased
+
+### Breaking
+
+- Forked as `happenv-com/filament-multifactor-passkeys` under the `Happenv\FilamentMultiFactorPasskeys` namespace. Filament assets are now published under `happenv-com/filament-multifactor-passkeys`; run `php artisan filament:assets` after upgrading.
+- Replaced `spatie/laravel-passkeys` with [`laravel/passkeys`](https://github.com/laravel/passkeys-server) (`^0.2`).
+- The user model now implements `Laravel\Passkeys\Contracts\PasskeyUser` and uses `Laravel\Passkeys\PasskeyAuthenticatable`. The `HasPasskeyAuthentication` contract and its `hasPasskeyAuthentication()` method are gone; the provider uses `hasPasskeysEnabled()`.
+- The `passkeys` table uses the `laravel/passkeys` schema. Existing installs publish and run the `filament-multifactor-passkeys-migrations` upgrade migration.
+- The `laravel/passkeys` HTTP routes are off by default (`register_passkeys_routes` config option).
+
+### Security
+
+- The MFA challenge now verifies the assertion inside Filament's challenge form, bound to the user who passed the password step. Previously it embedded Spatie's `<x-authenticate-passkey>`, which signed in the owner of any valid passkey through a separate route.
+- The passwordless login button checks `FilamentUser::canAccessPanel()`, honours `Passkeys::authorizeLoginUsing()`, is rate limited, and no longer accepts a guard name from the client.
+
+### Changed
+
+- Removing passkeys dispatches `PasskeyDeleted` for each one.
+- The `redirect` config value is now used when no `redirectUrlUsing()` callback is set.
+
 ## 2.0.1 - 2026-08-17
 
 Fix duplicate WebAuthn listener registration when `@script` is evaluated more than once for the same component, which caused the in-flight authentication/registration ceremony to be aborted (#4).

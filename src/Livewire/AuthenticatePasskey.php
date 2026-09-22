@@ -2,29 +2,39 @@
 
 namespace Happenv\FilamentMultiFactorPasskeys\Livewire;
 
+use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
+use DanHarrin\LivewireRateLimiting\WithRateLimiting;
+use Filament\Facades\Filament;
+use Filament\Models\Contracts\FilamentUser;
 use Filament\Notifications\Notification;
-use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Session;
+use Illuminate\Validation\ValidationException;
+use Laravel\Passkeys\Actions\GenerateVerificationOptions;
+use Laravel\Passkeys\Actions\VerifyPasskey;
+use Laravel\Passkeys\Passkeys;
+use Laravel\Passkeys\Support\WebAuthn;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
-use Spatie\LaravelPasskeys\Actions\FindPasskeyToAuthenticateAction;
-use Spatie\LaravelPasskeys\Actions\GeneratePasskeyAuthenticationOptionsAction;
-use Spatie\LaravelPasskeys\Support\Config;
+use Throwable;
+use Webauthn\PublicKeyCredential;
+use Webauthn\PublicKeyCredentialRequestOptions;
 
 class AuthenticatePasskey extends Component
 {
-    public string $guard = 'web';
+    use WithRateLimiting;
 
-    public ?string $redirectUrl = null;
+    public const OPTIONS_SESSION_KEY = 'filament-multifactor-passkeys.login_options';
 
     #[Locked]
-    public ?string $options = null;
+    public ?string $panel = null;
 
-    public function mount(string $guard = 'web', ?string $redirectUrl = null): void
+    #[Locked]
+    public ?string $redirectUrl = null;
+
+    public function mount(?string $panel = null, ?string $redirectUrl = null): void
     {
-        $this->guard = $guard;
+        $this->panel = $panel;
         $this->redirectUrl = $redirectUrl;
     }
 
@@ -38,39 +48,66 @@ class AuthenticatePasskey extends Component
 
     public function getOptions(): void
     {
-        /** @var GeneratePasskeyAuthenticationOptionsAction $action */
-        $action = Config::getAction('generate_passkey_authentication_options', GeneratePasskeyAuthenticationOptionsAction::class);
-        $this->options = $action->execute();
+        $options = app(GenerateVerificationOptions::class)();
 
-        $this->dispatch('passkey-authentication-options-ready', options: json_decode($this->options));
+        session()->put(self::OPTIONS_SESSION_KEY, WebAuthn::toJson($options));
+
+        $this->dispatch('passkey-authentication-options-ready', options: WebAuthn::toBrowserArray($options));
     }
 
     public function authenticate(string $assertion): void
     {
-        if (blank($this->options)) {
-            session()->flash('authenticatePasskey::message', __('filament-multifactor-passkeys::login_button.errors.invalid'));
+        try {
+            $this->rateLimit(5);
+        } catch (TooManyRequestsException) {
+            $this->fail();
 
             return;
         }
 
-        /** @var FindPasskeyToAuthenticateAction $findAction */
-        $findAction = Config::getAction('find_passkey', FindPasskeyToAuthenticateAction::class);
+        $serializedOptions = session()->pull(self::OPTIONS_SESSION_KEY);
 
-        $passkey = $findAction->execute($assertion, $this->options);
-        $this->options = null;
-
-        $authenticatable = $passkey?->authenticatable;
-
-        if (! $passkey || ! $authenticatable instanceof Authenticatable) {
-            session()->flash('authenticatePasskey::message', __('filament-multifactor-passkeys::login_button.errors.invalid'));
+        if (blank($serializedOptions)) {
+            $this->fail();
 
             return;
         }
 
-        Auth::guard($this->guard)->login($authenticatable);
-        Session::regenerate();
+        try {
+            $passkey = app(VerifyPasskey::class)(
+                WebAuthn::fromJson($assertion, PublicKeyCredential::class),
+                WebAuthn::fromJson($serializedOptions, PublicKeyCredentialRequestOptions::class),
+            );
+        } catch (Throwable) {
+            $this->fail();
 
-        $passkey->update(['last_used_at' => now()]);
+            return;
+        }
+
+        try {
+            if (! Passkeys::allowsLogin(request(), $passkey)) {
+                $this->fail();
+
+                return;
+            }
+        } catch (ValidationException $exception) {
+            // The app's own authorizeLoginUsing() callback may explain the refusal.
+            $this->fail(collect($exception->errors())->flatten()->first());
+
+            return;
+        }
+
+        $user = $passkey->user;
+        $panel = Filament::getPanel($this->panel);
+
+        if (($user instanceof FilamentUser) && (! $user->canAccessPanel($panel))) {
+            $this->fail();
+
+            return;
+        }
+
+        Auth::guard($panel->getAuthGuard())->login($user);
+        session()->regenerate();
 
         Notification::make()
             ->title(__('filament-multifactor-passkeys::login_button.notifications.success.title'))
@@ -79,5 +116,10 @@ class AuthenticatePasskey extends Component
             ->send();
 
         $this->redirect($this->redirectUrl ?: url('/'), navigate: false);
+    }
+
+    protected function fail(?string $message = null): void
+    {
+        session()->flash('authenticatePasskey::message', $message ?? __('filament-multifactor-passkeys::login_button.errors.invalid'));
     }
 }
