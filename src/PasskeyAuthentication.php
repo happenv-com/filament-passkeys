@@ -5,6 +5,8 @@ namespace Happenv\FilamentMultiFactorPasskeys;
 use Closure;
 use Filament\Actions\Action;
 use Filament\Auth\MultiFactor\Contracts\MultiFactorAuthenticationProvider;
+use Filament\Auth\MultiFactor\MultiFactorChallenge;
+use Filament\Auth\Pages\Login;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\ViewField;
 use Filament\Schemas\Components\Actions;
@@ -13,6 +15,7 @@ use Filament\Support\Icons\Heroicon;
 use Happenv\FilamentMultiFactorPasskeys\Actions\DisablePasskeyAuthenticationAction;
 use Happenv\FilamentMultiFactorPasskeys\Actions\SetUpPasskeyAuthenticationAction;
 use Happenv\FilamentMultiFactorPasskeys\Contracts\HasPasskeysAuthentication;
+use Illuminate\Auth\SessionGuard;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Laravel\Passkeys\Actions\GenerateRegistrationOptions;
 use Laravel\Passkeys\Actions\GenerateVerificationOptions;
@@ -113,6 +116,10 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
         return [
             ViewField::make('credential')
                 ->view('filament-multifactor-passkeys::components.challenge')
+                ->viewData([
+                    'autoStart' => config('filament-multifactor-passkeys.auto_start_challenge', false)
+                        && $this->isOnlyEnabledProvider($user),
+                ])
                 ->hiddenLabel()
                 ->validationAttribute(__('filament-multifactor-passkeys::provider.login_form.credential.label'))
                 ->registerActions([
@@ -207,6 +214,45 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
         }
 
         return true;
+    }
+
+    /**
+     * Whether passkeys are the only multi-factor method the user has turned on,
+     * so the challenge has nothing to offer besides the passkey button.
+     */
+    public function isOnlyEnabledProvider(Authenticatable $user): bool
+    {
+        $providers = MultiFactorChallenge::make()->getEnabledProviders($user);
+
+        return (count($providers) === 1) && (reset($providers) instanceof static);
+    }
+
+    /**
+     * Whether the given login page is showing a challenge that consists of the
+     * passkey button alone.
+     */
+    public static function isChallengingWithPasskeyOnly(mixed $livewire): bool
+    {
+        if ((! $livewire instanceof Login) || blank($livewire->userUndertakingMultiFactorAuthentication)) {
+            return false;
+        }
+
+        /** @var SessionGuard $guard */
+        $guard = Filament::auth();
+
+        $user = $guard->getProvider()->retrieveById(decrypt($livewire->userUndertakingMultiFactorAuthentication));
+
+        if (! $user) {
+            return false;
+        }
+
+        foreach (Filament::getMultiFactorAuthenticationProviders() as $provider) {
+            if ($provider instanceof self) {
+                return $provider->isOnlyEnabledProvider($user);
+            }
+        }
+
+        return false;
     }
 
     protected function ensurePasskeyUser(?Authenticatable $user): HasPasskeysAuthentication

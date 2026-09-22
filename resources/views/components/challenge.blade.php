@@ -31,6 +31,15 @@
             },
         }"
         x-on:filament-multifactor-passkeys-challenge-options-ready.window="verify($event.detail.options)"
+        @if ($autoStart ?? false)
+            {{-- Once per page load, so a failed attempt does not start another prompt. --}}
+            x-init="
+                if (! window.__fmfpChallengeAutoStarted) {
+                    window.__fmfpChallengeAutoStarted = true
+                    $nextTick(() => $el.querySelector('.fi-btn')?.click())
+                }
+            "
+        @endif
         {{ $getExtraAttributeBag()->class(['fmfp-challenge']) }}
     >
         {{ $getAction('verifyWithPasskey') }}

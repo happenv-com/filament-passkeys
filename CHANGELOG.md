@@ -17,6 +17,11 @@ All notable changes to `filament-multifactor-passkeys` will be documented in thi
 - The MFA challenge now verifies the assertion inside Filament's challenge form, bound to the user who passed the password step. Previously it embedded Spatie's `<x-authenticate-passkey>`, which signed in the owner of any valid passkey through a separate route.
 - The passwordless login button checks `FilamentUser::canAccessPanel()`, honours `Passkeys::authorizeLoginUsing()`, is rate limited, and no longer accepts a guard name from the client.
 
+### Added
+
+- When a passkey is the user's only multi-factor method, Filament's "Confirm sign in" button is hidden on the challenge (`hide_challenge_confirm_button`, on by default).
+- `auto_start_challenge` config option opens the passkey prompt as soon as the challenge appears, for users whose only method is a passkey (off by default).
+
 ### Changed
 
 - **Set up** is now a native Filament action form instead of a nested Livewire component with hand-rolled inputs. The name field uses Filament's styling, Enter submits it, and errors show under the field. The `RegisterPasskey` Livewire component and its view are removed.

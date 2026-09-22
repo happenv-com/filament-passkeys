@@ -30,6 +30,7 @@ class TestPanelProvider extends PanelProvider
             ->profile()
             ->multiFactorAuthentication([
                 PasskeyAuthentication::make(),
+                FakeCodeAuthentication::make(),
             ])
             ->plugin(MultiFactorPasskeysPlugin::make())
             ->middleware([

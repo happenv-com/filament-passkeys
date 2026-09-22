@@ -2,6 +2,7 @@
 
 namespace Happenv\FilamentMultiFactorPasskeys;
 
+use Filament\Actions\Action;
 use Filament\Support\Assets\Css;
 use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
@@ -34,6 +35,18 @@ class MultiFactorPasskeysServiceProvider extends PackageServiceProvider
     public function packageBooted(): void
     {
         Livewire::component('filament-multifactor-passkeys-authenticate', AuthenticatePasskey::class);
+
+        // Filament's login page gives its challenge a "Confirm sign in" button that
+        // passkeys never need: the ceremony submits the form itself. Both of the
+        // page's submit actions are called `authenticate`.
+        Action::configureUsing(function (Action $action): void {
+            if ($action->getName() !== 'authenticate') {
+                return;
+            }
+
+            $action->hidden(fn ($livewire): bool => config('filament-multifactor-passkeys.hide_challenge_confirm_button', true)
+                && PasskeyAuthentication::isChallengingWithPasskeyOnly($livewire));
+        });
 
         FilamentAsset::register([
             Js::make('filament-multifactor-passkeys', __DIR__.'/../resources/dist/passkey.js'),

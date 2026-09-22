@@ -142,7 +142,23 @@ Passkeys::authorizeLoginUsing(function ($request, $user, $passkey): bool {
 
 Users who fail `FilamentUser::canAccessPanel()` are never signed in.
 
-### 5. `laravel/passkeys` routes
+### 5. Passkey-only challenge
+
+When a passkey is the only multi-factor method a user has turned on, the challenge needs nothing but the "Verify with passkey" button, since the ceremony submits the form itself. Two options in `config/filament-multifactor-passkeys.php` tune that screen:
+
+```php
+return [
+    // Hide Filament's "Confirm sign in" button (default: true).
+    'hide_challenge_confirm_button' => true,
+
+    // Open the passkey prompt as soon as the challenge appears (default: false).
+    'auto_start_challenge' => true,
+];
+```
+
+Users with more than one method enabled always get Filament's usual challenge. Some browsers, notably Safari, only allow WebAuthn right after a user gesture and may refuse the automatic prompt; the button stays available as a fallback.
+
+### 6. `laravel/passkeys` routes
 
 Every ceremony runs through Livewire, so this package does not need the HTTP routes `laravel/passkeys` registers and turns them off. To keep them, e.g. for the `@laravel/passkeys` JavaScript client elsewhere in your app, set `register_passkeys_routes` to `true` in `config/filament-multifactor-passkeys.php`.
 

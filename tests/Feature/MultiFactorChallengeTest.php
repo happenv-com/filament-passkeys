@@ -4,6 +4,7 @@ use Filament\Actions\Testing\TestAction;
 use Filament\Auth\Pages\Login;
 use Filament\Facades\Filament;
 use Happenv\FilamentMultiFactorPasskeys\PasskeyAuthentication;
+use Happenv\FilamentMultiFactorPasskeys\Tests\Fixtures\FakeCodeAuthentication;
 use Happenv\FilamentMultiFactorPasskeys\Tests\Fixtures\User;
 use Happenv\FilamentMultiFactorPasskeys\Tests\Support\VirtualAuthenticator;
 use Livewire\Features\SupportTesting\Testable;
@@ -152,4 +153,73 @@ it('hides the passwordless passkey button during the challenge', function () {
     startLoginChallenge($user)
         ->assertSee(__('filament-multifactor-passkeys::provider.login_form.actions.verify.label'))
         ->assertDontSee(__('filament-multifactor-passkeys::login_button.label'));
+});
+
+function confirmSignInLabel(): string
+{
+    return __('filament-panels::auth/pages/login.multi_factor.form.actions.authenticate.label');
+}
+
+it('hides the confirm button when a passkey is the only method', function () {
+    $user = createUser();
+    registerPasskey($user, new VirtualAuthenticator);
+
+    startLoginChallenge($user)
+        ->assertDontSee(confirmSignInLabel());
+});
+
+it('keeps the confirm button when the option is off', function () {
+    config()->set('filament-multifactor-passkeys.hide_challenge_confirm_button', false);
+
+    $user = createUser();
+    registerPasskey($user, new VirtualAuthenticator);
+
+    startLoginChallenge($user)
+        ->assertSee(confirmSignInLabel());
+});
+
+it('keeps the confirm button when the user has another method', function () {
+    FakeCodeAuthentication::$enabled = true;
+
+    $user = createUser();
+    registerPasskey($user, new VirtualAuthenticator);
+
+    startLoginChallenge($user)
+        ->assertSee(confirmSignInLabel());
+});
+
+it('keeps the confirm button for a user without passkeys', function () {
+    FakeCodeAuthentication::$enabled = true;
+
+    startLoginChallenge(createUser())
+        ->assertSee(confirmSignInLabel());
+});
+
+it('does not start the passkey prompt on its own by default', function () {
+    $user = createUser();
+    registerPasskey($user, new VirtualAuthenticator);
+
+    startLoginChallenge($user)
+        ->assertDontSee('__fmfpChallengeAutoStarted');
+});
+
+it('starts the passkey prompt on its own when enabled', function () {
+    config()->set('filament-multifactor-passkeys.auto_start_challenge', true);
+
+    $user = createUser();
+    registerPasskey($user, new VirtualAuthenticator);
+
+    startLoginChallenge($user)
+        ->assertSee('__fmfpChallengeAutoStarted', escape: false);
+});
+
+it('does not start the passkey prompt on its own when the user has another method', function () {
+    config()->set('filament-multifactor-passkeys.auto_start_challenge', true);
+    FakeCodeAuthentication::$enabled = true;
+
+    $user = createUser();
+    registerPasskey($user, new VirtualAuthenticator);
+
+    startLoginChallenge($user)
+        ->assertDontSee('__fmfpChallengeAutoStarted');
 });

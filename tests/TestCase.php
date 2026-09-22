@@ -14,6 +14,7 @@ use Filament\Support\SupportServiceProvider;
 use Filament\Tables\TablesServiceProvider;
 use Filament\Widgets\WidgetsServiceProvider;
 use Happenv\FilamentMultiFactorPasskeys\MultiFactorPasskeysServiceProvider;
+use Happenv\FilamentMultiFactorPasskeys\Tests\Fixtures\FakeCodeAuthentication;
 use Happenv\FilamentMultiFactorPasskeys\Tests\Fixtures\TestPanelProvider;
 use Happenv\FilamentMultiFactorPasskeys\Tests\Fixtures\User;
 use Laravel\Passkeys\Passkeys;
@@ -29,6 +30,7 @@ abstract class TestCase extends Orchestra
         parent::setUp();
 
         User::$canAccessPanel = true;
+        FakeCodeAuthentication::$enabled = false;
     }
 
     protected function getPackageProviders($app): array
