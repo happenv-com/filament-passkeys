@@ -139,3 +139,17 @@ it('requires an assertion to complete the challenge', function () {
 
     assertGuest();
 });
+
+it('offers the passwordless passkey button on the login form', function () {
+    Livewire::test(Login::class)
+        ->assertSee(__('filament-multifactor-passkeys::login_button.label'));
+});
+
+it('hides the passwordless passkey button during the challenge', function () {
+    $user = createUser();
+    registerPasskey($user, new VirtualAuthenticator);
+
+    startLoginChallenge($user)
+        ->assertSee(__('filament-multifactor-passkeys::provider.login_form.actions.verify.label'))
+        ->assertDontSee(__('filament-multifactor-passkeys::login_button.label'));
+});

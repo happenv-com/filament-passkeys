@@ -57,3 +57,7 @@
     border: 1px solid color-mix(in oklab, var(--danger-600, rgb(220 38 38)) 30%, transparent);
     border-radius: 0.5rem;
 }
+
+.fmfp-challenge .fi-btn {
+    width: 100%;
+}
