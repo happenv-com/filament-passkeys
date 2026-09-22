@@ -44,8 +44,7 @@ class MultiFactorPasskeysServiceProvider extends PackageServiceProvider
                 return;
             }
 
-            $action->hidden(fn ($livewire): bool => config('filament-multifactor-passkeys.hide_challenge_confirm_button', true)
-                && PasskeyAuthentication::isChallengingWithPasskeyOnly($livewire));
+            $action->hidden(fn ($livewire): bool => PasskeyAuthentication::shouldHideConfirmButtonOn($livewire));
         });
 
         FilamentAsset::register([

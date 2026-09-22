@@ -19,7 +19,7 @@ All notable changes to `filament-multifactor-passkeys` will be documented in thi
 
 ### Added
 
-- When a passkey is the user's only multi-factor method, Filament's "Confirm sign in" button is hidden on the challenge (`hide_challenge_confirm_button`, on by default).
+- When a passkey is the user's only multi-factor method, Filament's "Confirm sign in" button is hidden on the challenge and "Verify with passkey" becomes the primary button (`hide_challenge_confirm_button`, on by default).
 - `auto_start_challenge` config option opens the passkey prompt as soon as the challenge appears, for users whose only method is a passkey (off by default).
 
 ### Changed

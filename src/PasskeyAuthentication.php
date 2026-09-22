@@ -126,7 +126,8 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
                     Action::make('verifyWithPasskey')
                         ->label(__('filament-multifactor-passkeys::provider.login_form.actions.verify.label'))
                         ->icon(Heroicon::OutlinedFingerPrint)
-                        ->color('gray')
+                        // With Filament's confirm button hidden, this is the challenge's only action.
+                        ->color(fn (): string => $this->shouldHideChallengeConfirmButton($user) ? 'primary' : 'gray')
                         ->action(fn (Component $livewire) => $this->startChallenge($user, $livewire)),
                 ])
                 ->required()
@@ -228,10 +229,20 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
     }
 
     /**
-     * Whether the given login page is showing a challenge that consists of the
-     * passkey button alone.
+     * Whether Filament's "Confirm sign in" button is dropped from this user's
+     * challenge, leaving the passkey button as its only action.
      */
-    public static function isChallengingWithPasskeyOnly(mixed $livewire): bool
+    public function shouldHideChallengeConfirmButton(Authenticatable $user): bool
+    {
+        return config('filament-multifactor-passkeys.hide_challenge_confirm_button', true)
+            && $this->isOnlyEnabledProvider($user);
+    }
+
+    /**
+     * Whether the given login page is showing a challenge whose "Confirm sign in"
+     * button should be hidden.
+     */
+    public static function shouldHideConfirmButtonOn(mixed $livewire): bool
     {
         if ((! $livewire instanceof Login) || blank($livewire->userUndertakingMultiFactorAuthentication)) {
             return false;
@@ -248,7 +259,7 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
 
         foreach (Filament::getMultiFactorAuthenticationProviders() as $provider) {
             if ($provider instanceof self) {
-                return $provider->isOnlyEnabledProvider($user);
+                return $provider->shouldHideChallengeConfirmButton($user);
             }
         }
 

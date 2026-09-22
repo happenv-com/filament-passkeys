@@ -223,3 +223,36 @@ it('does not start the passkey prompt on its own when the user has another metho
     startLoginChallenge($user)
         ->assertDontSee('__fmfpChallengeAutoStarted');
 });
+
+function verifyWithPasskeyAction(): TestAction
+{
+    return TestAction::make('verifyWithPasskey')->schemaComponent('passkey.credential', schema: 'multiFactorChallengeForm');
+}
+
+it('makes the passkey button primary when it is the only action', function () {
+    $user = createUser();
+    registerPasskey($user, new VirtualAuthenticator);
+
+    startLoginChallenge($user)
+        ->assertActionHasColor(verifyWithPasskeyAction(), 'primary');
+});
+
+it('keeps the passkey button gray next to the confirm button', function () {
+    config()->set('filament-multifactor-passkeys.hide_challenge_confirm_button', false);
+
+    $user = createUser();
+    registerPasskey($user, new VirtualAuthenticator);
+
+    startLoginChallenge($user)
+        ->assertActionHasColor(verifyWithPasskeyAction(), 'gray');
+});
+
+it('keeps the passkey button gray when the user has another method', function () {
+    FakeCodeAuthentication::$enabled = true;
+
+    $user = createUser();
+    registerPasskey($user, new VirtualAuthenticator);
+
+    startLoginChallenge($user)
+        ->assertActionHasColor(verifyWithPasskeyAction(), 'gray');
+});
