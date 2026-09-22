@@ -12,10 +12,10 @@ use Filament\Schemas\Components\Text;
 use Filament\Support\Icons\Heroicon;
 use Happenv\FilamentMultiFactorPasskeys\Actions\DisablePasskeyAuthenticationAction;
 use Happenv\FilamentMultiFactorPasskeys\Actions\SetUpPasskeyAuthenticationAction;
+use Happenv\FilamentMultiFactorPasskeys\Contracts\HasPasskeysAuthentication;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Laravel\Passkeys\Actions\GenerateVerificationOptions;
 use Laravel\Passkeys\Actions\VerifyPasskey;
-use Laravel\Passkeys\Contracts\PasskeyUser;
 use Laravel\Passkeys\Support\WebAuthn;
 use Livewire\Component;
 use LogicException;
@@ -131,7 +131,7 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
      * hand them to the browser. The serialized options stay in the session so the
      * validation rule can check the assertion against the same challenge.
      */
-    public function startChallenge(PasskeyUser $user, Component $livewire): void
+    public function startChallenge(HasPasskeysAuthentication $user, Component $livewire): void
     {
         $options = app(GenerateVerificationOptions::class)($user);
 
@@ -144,7 +144,7 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
      * Verify an assertion produced for the pending challenge. Passing the user to
      * VerifyPasskey rejects a passkey that belongs to anyone else.
      */
-    public function verifyChallenge(#[SensitiveParameter] string $assertion, PasskeyUser $user): bool
+    public function verifyChallenge(#[SensitiveParameter] string $assertion, HasPasskeysAuthentication $user): bool
     {
         $serializedOptions = session()->pull(static::CHALLENGE_OPTIONS_SESSION_KEY);
 
@@ -165,10 +165,10 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
         return true;
     }
 
-    protected function ensurePasskeyUser(?Authenticatable $user): PasskeyUser
+    protected function ensurePasskeyUser(?Authenticatable $user): HasPasskeysAuthentication
     {
-        if (! ($user instanceof PasskeyUser)) {
-            throw new LogicException('The user model must implement the ['.PasskeyUser::class.'] interface to use passkey authentication.');
+        if (! ($user instanceof HasPasskeysAuthentication)) {
+            throw new LogicException('The user model must implement the ['.HasPasskeysAuthentication::class.'] interface to use passkey authentication.');
         }
 
         return $user;

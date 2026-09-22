@@ -60,17 +60,17 @@ The migration renames `authenticatable_id` to `user_id` and `data` to `credentia
 
 ### 1. Prepare your User model
 
-Implement the `laravel/passkeys` `PasskeyUser` contract and use its `PasskeyAuthenticatable` trait:
+Implement the `HasPasskeysAuthentication` contract and use the `InteractsWithPasskeysAuthentication` trait. They build on the `laravel/passkeys` `PasskeyUser` contract and `PasskeyAuthenticatable` trait:
 
 ```php
 use Filament\Models\Contracts\FilamentUser;
+use Happenv\FilamentMultiFactorPasskeys\Concerns\InteractsWithPasskeysAuthentication;
+use Happenv\FilamentMultiFactorPasskeys\Contracts\HasPasskeysAuthentication;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Laravel\Passkeys\Contracts\PasskeyUser;
-use Laravel\Passkeys\PasskeyAuthenticatable;
 
-class User extends Authenticatable implements FilamentUser, PasskeyUser
+class User extends Authenticatable implements FilamentUser, HasPasskeysAuthentication
 {
-    use PasskeyAuthenticatable;
+    use InteractsWithPasskeysAuthentication;
 
     // ...
 }

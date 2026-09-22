@@ -8,7 +8,7 @@ All notable changes to `filament-multifactor-passkeys` will be documented in thi
 
 - Forked as `happenv-com/filament-multifactor-passkeys` under the `Happenv\FilamentMultiFactorPasskeys` namespace. Filament assets are now published under `happenv-com/filament-multifactor-passkeys`; run `php artisan filament:assets` after upgrading.
 - Replaced `spatie/laravel-passkeys` with [`laravel/passkeys`](https://github.com/laravel/passkeys-server) (`^0.2`).
-- The user model now implements `Laravel\Passkeys\Contracts\PasskeyUser` and uses `Laravel\Passkeys\PasskeyAuthenticatable`. The `HasPasskeyAuthentication` contract and its `hasPasskeyAuthentication()` method are gone; the provider uses `hasPasskeysEnabled()`.
+- The user model now implements `Happenv\FilamentMultiFactorPasskeys\Contracts\HasPasskeysAuthentication` (extends `Laravel\Passkeys\Contracts\PasskeyUser`) and uses the `Happenv\FilamentMultiFactorPasskeys\Concerns\InteractsWithPasskeysAuthentication` trait. The `HasPasskeyAuthentication` contract and its `hasPasskeyAuthentication()` method are gone; the provider uses `hasPasskeysEnabled()`.
 - The `passkeys` table uses the `laravel/passkeys` schema. Existing installs publish and run the `filament-multifactor-passkeys-migrations` upgrade migration.
 - The `laravel/passkeys` HTTP routes are off by default (`register_passkeys_routes` config option).
 

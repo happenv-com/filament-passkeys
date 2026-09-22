@@ -4,11 +4,11 @@ namespace Happenv\FilamentMultiFactorPasskeys\Livewire;
 
 use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
+use Happenv\FilamentMultiFactorPasskeys\Contracts\HasPasskeysAuthentication;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\ValidationException;
 use Laravel\Passkeys\Actions\GenerateRegistrationOptions;
 use Laravel\Passkeys\Actions\StorePasskey;
-use Laravel\Passkeys\Contracts\PasskeyUser;
 use Laravel\Passkeys\Support\WebAuthn;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
@@ -77,11 +77,11 @@ class RegisterPasskey extends Component
         $this->redirect($this->redirectUrl ?: url('/'), navigate: true);
     }
 
-    protected function currentUser(): PasskeyUser
+    protected function currentUser(): HasPasskeysAuthentication
     {
         $user = Filament::auth()->user();
 
-        abort_unless($user instanceof PasskeyUser, 403);
+        abort_unless($user instanceof HasPasskeysAuthentication, 403);
 
         return $user;
     }

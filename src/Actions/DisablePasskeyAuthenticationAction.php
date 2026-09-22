@@ -7,10 +7,10 @@ use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
 use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
+use Happenv\FilamentMultiFactorPasskeys\Contracts\HasPasskeysAuthentication;
 use Happenv\FilamentMultiFactorPasskeys\PasskeyAuthentication;
 use Illuminate\Support\Facades\DB;
 use Laravel\Passkeys\Actions\DeletePasskey;
-use Laravel\Passkeys\Contracts\PasskeyUser;
 
 class DisablePasskeyAuthenticationAction
 {
@@ -29,7 +29,7 @@ class DisablePasskeyAuthenticationAction
             ->modalSubmitAction(fn (Action $action) => $action
                 ->label(__('filament-multifactor-passkeys::actions/disable.modal.actions.submit.label')))
             ->action(function (): void {
-                /** @var PasskeyUser $user */
+                /** @var HasPasskeysAuthentication $user */
                 $user = Filament::auth()->user();
 
                 $deletePasskey = app(DeletePasskey::class);
