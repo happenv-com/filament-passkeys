@@ -1,6 +1,6 @@
 <?php
 
-namespace Happenv\FilamentMultiFactorPasskeys\Tests;
+namespace Happenv\FilamentPasskeys\Tests;
 
 use BladeUI\Heroicons\BladeHeroiconsServiceProvider;
 use BladeUI\Icons\BladeIconsServiceProvider;
@@ -13,10 +13,10 @@ use Filament\Schemas\SchemasServiceProvider;
 use Filament\Support\SupportServiceProvider;
 use Filament\Tables\TablesServiceProvider;
 use Filament\Widgets\WidgetsServiceProvider;
-use Happenv\FilamentMultiFactorPasskeys\MultiFactorPasskeysServiceProvider;
-use Happenv\FilamentMultiFactorPasskeys\Tests\Fixtures\FakeCodeAuthentication;
-use Happenv\FilamentMultiFactorPasskeys\Tests\Fixtures\TestPanelProvider;
-use Happenv\FilamentMultiFactorPasskeys\Tests\Fixtures\User;
+use Happenv\FilamentPasskeys\FilamentPasskeysServiceProvider;
+use Happenv\FilamentPasskeys\Tests\Fixtures\FakeCodeAuthentication;
+use Happenv\FilamentPasskeys\Tests\Fixtures\TestPanelProvider;
+use Happenv\FilamentPasskeys\Tests\Fixtures\User;
 use Laravel\Passkeys\Passkeys;
 use Laravel\Passkeys\PasskeysServiceProvider;
 use Livewire\LivewireServiceProvider;
@@ -51,7 +51,7 @@ abstract class TestCase extends Orchestra
             WidgetsServiceProvider::class,
             PasskeysServiceProvider::class,
             TestPanelProvider::class,
-            MultiFactorPasskeysServiceProvider::class,
+            FilamentPasskeysServiceProvider::class,
         ];
     }
 

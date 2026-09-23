@@ -1,6 +1,6 @@
 <?php
 
-namespace Happenv\FilamentMultiFactorPasskeys\Actions;
+namespace Happenv\FilamentPasskeys\Actions;
 
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
@@ -10,8 +10,8 @@ use Filament\Notifications\Notification;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
-use Happenv\FilamentMultiFactorPasskeys\Contracts\HasPasskeysAuthentication;
-use Happenv\FilamentMultiFactorPasskeys\PasskeyAuthentication;
+use Happenv\FilamentPasskeys\Contracts\HasPasskeysAuthentication;
+use Happenv\FilamentPasskeys\PasskeyAuthentication;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 use Throwable;
@@ -21,19 +21,19 @@ class SetUpPasskeyAuthenticationAction
     public static function make(PasskeyAuthentication $passkeyAuthentication): Action
     {
         return Action::make('setUpPasskeyAuthentication')
-            ->label(__('filament-multifactor-passkeys::actions/set-up.label'))
+            ->label(__('filament-passkeys::actions/set-up.label'))
             ->color('primary')
             ->icon(Heroicon::FingerPrint)
             ->link()
             ->modalWidth(Width::Large)
             ->modalIcon(Heroicon::OutlinedFingerPrint)
             ->modalIconColor('primary')
-            ->modalHeading(__('filament-multifactor-passkeys::actions/set-up.modal.heading'))
-            ->modalDescription(__('filament-multifactor-passkeys::actions/set-up.modal.description'))
+            ->modalHeading(__('filament-passkeys::actions/set-up.modal.heading'))
+            ->modalDescription(__('filament-passkeys::actions/set-up.modal.description'))
             ->schema([
                 TextInput::make('name')
-                    ->label(__('filament-multifactor-passkeys::actions/set-up.modal.form.name.label'))
-                    ->placeholder(__('filament-multifactor-passkeys::actions/set-up.modal.form.name.placeholder'))
+                    ->label(__('filament-passkeys::actions/set-up.modal.form.name.label'))
+                    ->placeholder(__('filament-passkeys::actions/set-up.modal.form.name.placeholder'))
                     ->required()
                     ->maxLength(255)
                     ->autocomplete(false)
@@ -41,11 +41,11 @@ class SetUpPasskeyAuthenticationAction
                 // Holds the browser's answer and the script that fetches it. Kept out of
                 // the grid like a Hidden field, so it adds no gap under the name input.
                 ViewField::make('credential')
-                    ->view('filament-multifactor-passkeys::components.register')
+                    ->view('filament-passkeys::components.register')
                     ->hiddenLabel()
                     ->columnSpan(['default' => 'hidden']),
             ])
-            ->modalSubmitActionLabel(__('filament-multifactor-passkeys::actions/set-up.modal.form.submit.label'))
+            ->modalSubmitActionLabel(__('filament-passkeys::actions/set-up.modal.form.submit.label'))
             ->action(function (Action $action, array $data, Schema $schema, Component $livewire) use ($passkeyAuthentication): void {
                 /** @var HasPasskeysAuthentication $user */
                 $user = Filament::auth()->user();
@@ -67,12 +67,12 @@ class SetUpPasskeyAuthenticationAction
                     $fields['credential']->state(null);
 
                     throw ValidationException::withMessages([
-                        $fields['name']->getStatePath() => __('filament-multifactor-passkeys::actions/set-up.modal.form.errors.failed'),
+                        $fields['name']->getStatePath() => __('filament-passkeys::actions/set-up.modal.form.errors.failed'),
                     ]);
                 }
 
                 Notification::make()
-                    ->title(__('filament-multifactor-passkeys::actions/set-up.notifications.enabled.title'))
+                    ->title(__('filament-passkeys::actions/set-up.notifications.enabled.title'))
                     ->success()
                     ->icon(Heroicon::OutlinedFingerPrint)
                     ->send();

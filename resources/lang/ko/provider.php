@@ -3,15 +3,26 @@
 return [
     'management_schema' => [
         'actions' => [
-            'label' => 'Passkey verification',
-            'below_content' => 'Use a passkey on this device (Face ID, Touch ID, Windows Hello, security key) to verify your identity during login.',
+            'label' => '패스키 인증',
+            'below_content' => '로그인 시 신원 확인을 위해 이 기기의 패스키(Face ID, Touch ID, Windows Hello, 보안 키)를 사용합니다.',
             'messages' => [
-                'enabled' => 'Enabled',
-                'disabled' => 'Disabled',
+                'enabled' => '활성화됨',
+                'disabled' => '비활성화됨',
             ],
         ],
     ],
     'login_form' => [
-        'label' => 'Use a passkey',
+        'label' => '패스키 사용',
+        'credential' => [
+            'label' => '패스키',
+            'messages' => [
+                'invalid' => '패스키를 확인할 수 없습니다. 다시 시도하세요.',
+            ],
+        ],
+        'actions' => [
+            'verify' => [
+                'label' => '패스키로 인증',
+            ],
+        ],
     ],
 ];

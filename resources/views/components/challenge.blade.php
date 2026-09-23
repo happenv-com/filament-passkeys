@@ -5,14 +5,14 @@
     <div
         x-data="{
             async verify(options) {
-                if (! window.FilamentMultiFactorPasskeys) {
-                    console.error('filament-multifactor-passkeys assets not loaded')
+                if (! window.FilamentPasskeys) {
+                    console.error('filament-passkeys assets not loaded')
 
                     return
                 }
 
                 try {
-                    const assertion = await window.FilamentMultiFactorPasskeys.startAuthentication({ optionsJSON: options })
+                    const assertion = await window.FilamentPasskeys.startAuthentication({ optionsJSON: options })
 
                     // Queue the assertion without a round trip, then submit the challenge
                     // form so Filament validates it together with the rest of the login.
@@ -30,17 +30,17 @@
                 }
             },
         }"
-        x-on:filament-multifactor-passkeys-challenge-options-ready.window="verify($event.detail.options)"
+        x-on:filament-passkeys-challenge-options-ready.window="verify($event.detail.options)"
         @if ($autoStart ?? false)
             {{-- Once per page load, so a failed attempt does not start another prompt. --}}
             x-init="
-                if (! window.__fmfpChallengeAutoStarted) {
-                    window.__fmfpChallengeAutoStarted = true
+                if (! window.__filamentPasskeysChallengeAutoStarted) {
+                    window.__filamentPasskeysChallengeAutoStarted = true
                     $nextTick(() => $el.querySelector('.fi-btn')?.click())
                 }
             "
         @endif
-        {{ $getExtraAttributeBag()->class(['fmfp-challenge']) }}
+        {{ $getExtraAttributeBag()->class(['filament-passkeys-challenge']) }}
     >
         {{ $getAction('verifyWithPasskey') }}
     </div>

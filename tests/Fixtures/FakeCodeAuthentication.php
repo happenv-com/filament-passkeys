@@ -1,6 +1,6 @@
 <?php
 
-namespace Happenv\FilamentMultiFactorPasskeys\Tests\Fixtures;
+namespace Happenv\FilamentPasskeys\Tests\Fixtures;
 
 use Filament\Auth\MultiFactor\Contracts\MultiFactorAuthenticationProvider;
 use Filament\Forms\Components\TextInput;

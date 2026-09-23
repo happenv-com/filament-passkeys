@@ -1,6 +1,6 @@
 <?php
 
-namespace Happenv\FilamentMultiFactorPasskeys;
+namespace Happenv\FilamentPasskeys;
 
 use Closure;
 use Filament\Actions\Action;
@@ -12,9 +12,9 @@ use Filament\Forms\Components\ViewField;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Text;
 use Filament\Support\Icons\Heroicon;
-use Happenv\FilamentMultiFactorPasskeys\Actions\DisablePasskeyAuthenticationAction;
-use Happenv\FilamentMultiFactorPasskeys\Actions\SetUpPasskeyAuthenticationAction;
-use Happenv\FilamentMultiFactorPasskeys\Contracts\HasPasskeysAuthentication;
+use Happenv\FilamentPasskeys\Actions\DisablePasskeyAuthenticationAction;
+use Happenv\FilamentPasskeys\Actions\SetUpPasskeyAuthenticationAction;
+use Happenv\FilamentPasskeys\Contracts\HasPasskeysAuthentication;
 use Illuminate\Auth\SessionGuard;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Laravel\Passkeys\Actions\GenerateRegistrationOptions;
@@ -34,9 +34,9 @@ use Webauthn\PublicKeyCredentialRequestOptions;
 
 class PasskeyAuthentication implements MultiFactorAuthenticationProvider
 {
-    public const CHALLENGE_OPTIONS_SESSION_KEY = 'filament-multifactor-passkeys.challenge_options';
+    public const CHALLENGE_OPTIONS_SESSION_KEY = 'filament-passkeys.challenge_options';
 
-    public const REGISTRATION_OPTIONS_SESSION_KEY = 'filament-multifactor-passkeys.registration_options';
+    public const REGISTRATION_OPTIONS_SESSION_KEY = 'filament-passkeys.registration_options';
 
     protected ?Closure $resolveRedirectUrlUsing = null;
 
@@ -67,12 +67,12 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
             return ($this->resolveRedirectUrlUsing)();
         }
 
-        return config('filament-multifactor-passkeys.redirect');
+        return config('filament-passkeys.redirect');
     }
 
     public function getLoginFormLabel(): string
     {
-        return __('filament-multifactor-passkeys::provider.login_form.label');
+        return __('filament-passkeys::provider.login_form.label');
     }
 
     public function isEnabled(Authenticatable $user): bool
@@ -86,13 +86,13 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
 
         return [
             Actions::make($this->getActions())
-                ->label(__('filament-multifactor-passkeys::provider.management_schema.actions.label'))
-                ->belowContent(__('filament-multifactor-passkeys::provider.management_schema.actions.below_content'))
+                ->label(__('filament-passkeys::provider.management_schema.actions.label'))
+                ->belowContent(__('filament-passkeys::provider.management_schema.actions.below_content'))
                 ->afterLabel(fn (): Text => $this->isEnabled($user)
-                    ? Text::make(__('filament-multifactor-passkeys::provider.management_schema.actions.messages.enabled'))
+                    ? Text::make(__('filament-passkeys::provider.management_schema.actions.messages.enabled'))
                         ->badge()
                         ->color('success')
-                    : Text::make(__('filament-multifactor-passkeys::provider.management_schema.actions.messages.disabled'))
+                    : Text::make(__('filament-passkeys::provider.management_schema.actions.messages.disabled'))
                         ->badge()),
         ];
     }
@@ -115,16 +115,16 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
 
         return [
             ViewField::make('credential')
-                ->view('filament-multifactor-passkeys::components.challenge')
+                ->view('filament-passkeys::components.challenge')
                 ->viewData([
-                    'autoStart' => config('filament-multifactor-passkeys.auto_start_challenge', false)
+                    'autoStart' => config('filament-passkeys.auto_start_challenge', true)
                         && $this->isOnlyEnabledProvider($user),
                 ])
                 ->hiddenLabel()
-                ->validationAttribute(__('filament-multifactor-passkeys::provider.login_form.credential.label'))
+                ->validationAttribute(__('filament-passkeys::provider.login_form.credential.label'))
                 ->registerActions([
                     Action::make('verifyWithPasskey')
-                        ->label(__('filament-multifactor-passkeys::provider.login_form.actions.verify.label'))
+                        ->label(__('filament-passkeys::provider.login_form.actions.verify.label'))
                         ->icon(Heroicon::OutlinedFingerPrint)
                         // With Filament's confirm button hidden, this is the challenge's only action.
                         ->color(fn (): string => $this->shouldHideChallengeConfirmButton($user) ? 'primary' : 'gray')
@@ -137,7 +137,7 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
                             return;
                         }
 
-                        $fail(__('filament-multifactor-passkeys::provider.login_form.credential.messages.invalid'));
+                        $fail(__('filament-passkeys::provider.login_form.credential.messages.invalid'));
                     };
                 }),
         ];
@@ -153,7 +153,7 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
 
         session()->put(static::REGISTRATION_OPTIONS_SESSION_KEY, WebAuthn::toJson($options));
 
-        $livewire->dispatch('filament-multifactor-passkeys-registration-options-ready', options: WebAuthn::toBrowserArray($options));
+        $livewire->dispatch('filament-passkeys-registration-options-ready', options: WebAuthn::toBrowserArray($options));
     }
 
     /**
@@ -189,7 +189,7 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
 
         session()->put(static::CHALLENGE_OPTIONS_SESSION_KEY, WebAuthn::toJson($options));
 
-        $livewire->dispatch('filament-multifactor-passkeys-challenge-options-ready', options: WebAuthn::toBrowserArray($options));
+        $livewire->dispatch('filament-passkeys-challenge-options-ready', options: WebAuthn::toBrowserArray($options));
     }
 
     /**
@@ -234,7 +234,7 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
      */
     public function shouldHideChallengeConfirmButton(Authenticatable $user): bool
     {
-        return config('filament-multifactor-passkeys.hide_challenge_confirm_button', true)
+        return config('filament-passkeys.hide_challenge_confirm_button', true)
             && $this->isOnlyEnabledProvider($user);
     }
 

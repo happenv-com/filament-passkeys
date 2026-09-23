@@ -1,5 +1,5 @@
 {
-  "name": "happenv-com/filament-multifactor-passkeys",
+  "name": "happenv-com/filament-passkeys",
   "description": "Filament 5 multi-factor authentication via WebAuthn passkeys, powered by laravel/passkeys.",
   "keywords": [
     "happenv",
@@ -15,9 +15,9 @@
     "webauthn",
     "fido2",
     "authentication",
-    "filament-multifactor-passkeys"
+    "filament-passkeys"
   ],
-  "homepage": "https://github.com/happenv-com/filament-multifactor-passkeys",
+  "homepage": "https://github.com/happenv-com/filament-passkeys",
   "license": "MIT",
   "authors": [
     {
@@ -46,12 +46,12 @@
   },
   "autoload": {
     "psr-4": {
-      "Happenv\\FilamentMultiFactorPasskeys\\": "src"
+      "Happenv\\FilamentPasskeys\\": "src"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "Happenv\\FilamentMultiFactorPasskeys\\Tests\\": "tests"
+      "Happenv\\FilamentPasskeys\\Tests\\": "tests"
     }
   },
   "scripts": {
@@ -70,7 +70,7 @@
   "extra": {
     "laravel": {
       "providers": [
-        "Happenv\\FilamentMultiFactorPasskeys\\MultiFactorPasskeysServiceProvider"
+        "Happenv\\FilamentPasskeys\\FilamentPasskeysServiceProvider"
       ]
     }
   },

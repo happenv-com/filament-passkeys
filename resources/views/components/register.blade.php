@@ -5,14 +5,14 @@
     <div
         x-data="{
             async register(options) {
-                if (! window.FilamentMultiFactorPasskeys) {
-                    console.error('filament-multifactor-passkeys assets not loaded')
+                if (! window.FilamentPasskeys) {
+                    console.error('filament-passkeys assets not loaded')
 
                     return
                 }
 
                 try {
-                    const credential = await window.FilamentMultiFactorPasskeys.startRegistration({ optionsJSON: options })
+                    const credential = await window.FilamentPasskeys.startRegistration({ optionsJSON: options })
 
                     // Queue the credential without a round trip, then submit the modal
                     // form again so the action stores the passkey.
@@ -30,7 +30,7 @@
                 }
             },
         }"
-        x-on:filament-multifactor-passkeys-registration-options-ready.window="register($event.detail.options)"
+        x-on:filament-passkeys-registration-options-ready.window="register($event.detail.options)"
         {{ $getExtraAttributeBag() }}
     ></div>
 </x-dynamic-component>

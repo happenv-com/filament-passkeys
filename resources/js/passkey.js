@@ -3,7 +3,7 @@ import {
     startRegistration,
 } from '@simplewebauthn/browser'
 
-window.FilamentMultiFactorPasskeys = {
+window.FilamentPasskeys = {
     startRegistration,
     startAuthentication,
 }

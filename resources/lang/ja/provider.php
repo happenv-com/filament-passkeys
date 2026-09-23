@@ -3,15 +3,26 @@
 return [
     'management_schema' => [
         'actions' => [
-            'label' => 'Passkey verification',
-            'below_content' => 'Use a passkey on this device (Face ID, Touch ID, Windows Hello, security key) to verify your identity during login.',
+            'label' => 'パスキー認証',
+            'below_content' => 'ログイン時の本人確認に、このデバイスのパスキー（Face ID、Touch ID、Windows Hello、セキュリティキー）を使用します。',
             'messages' => [
-                'enabled' => 'Enabled',
-                'disabled' => 'Disabled',
+                'enabled' => '有効',
+                'disabled' => '無効',
             ],
         ],
     ],
     'login_form' => [
-        'label' => 'Use a passkey',
+        'label' => 'パスキーを使用',
+        'credential' => [
+            'label' => 'パスキー',
+            'messages' => [
+                'invalid' => 'パスキーを確認できませんでした。もう一度お試しください。',
+            ],
+        ],
+        'actions' => [
+            'verify' => [
+                'label' => 'パスキーで認証',
+            ],
+        ],
     ],
 ];

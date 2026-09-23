@@ -1,26 +1,26 @@
 <?php
 
 return [
-    'label' => 'Set up',
+    'label' => 'Configurer',
     'modal' => [
-        'heading' => 'Set up passkey verification',
-        'description' => 'Register a passkey on this device. You will be asked to use your fingerprint, face, screen lock, or a security key. After registration, you will be able to sign in using this passkey.',
+        'heading' => 'Configurer la vérification par clé d\'accès',
+        'description' => 'Enregistrez une clé d\'accès sur cet appareil. Il vous sera demandé d\'utiliser votre empreinte digitale, votre visage, le verrouillage de l\'écran ou une clé de sécurité. Après l\'enregistrement, vous pourrez vous connecter avec cette clé d\'accès.',
         'form' => [
             'name' => [
-                'label' => 'Passkey name',
-                'placeholder' => 'e.g. MacBook Touch ID, YubiKey 5C',
+                'label' => 'Nom de la clé d\'accès',
+                'placeholder' => 'p. ex. MacBook Touch ID, YubiKey 5C',
             ],
             'submit' => [
-                'label' => 'Register passkey',
+                'label' => 'Enregistrer la clé d\'accès',
             ],
             'errors' => [
-                'failed' => 'We could not register your passkey. Please try again.',
+                'failed' => 'Nous n\'avons pas pu enregistrer votre clé d\'accès. Veuillez réessayer.',
             ],
         ],
     ],
     'notifications' => [
         'enabled' => [
-            'title' => 'Passkey registered successfully',
+            'title' => 'Clé d\'accès enregistrée avec succès',
         ],
     ],
 ];

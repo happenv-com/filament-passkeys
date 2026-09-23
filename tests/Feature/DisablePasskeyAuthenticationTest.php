@@ -3,7 +3,7 @@
 use Filament\Actions\Testing\TestAction;
 use Filament\Auth\Pages\EditProfile;
 use Filament\Facades\Filament;
-use Happenv\FilamentMultiFactorPasskeys\Tests\Support\VirtualAuthenticator;
+use Happenv\FilamentPasskeys\Tests\Support\VirtualAuthenticator;
 use Laravel\Passkeys\Events\PasskeyDeleted;
 use Livewire\Livewire;
 

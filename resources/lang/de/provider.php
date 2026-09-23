@@ -3,15 +3,26 @@
 return [
     'management_schema' => [
         'actions' => [
-            'label' => 'Passkey verification',
-            'below_content' => 'Use a passkey on this device (Face ID, Touch ID, Windows Hello, security key) to verify your identity during login.',
+            'label' => 'Passkey-Verifizierung',
+            'below_content' => 'Verwenden Sie einen Passkey auf diesem Gerät (Face ID, Touch ID, Windows Hello, Sicherheitsschlüssel), um Ihre Identität bei der Anmeldung zu verifizieren.',
             'messages' => [
-                'enabled' => 'Enabled',
-                'disabled' => 'Disabled',
+                'enabled' => 'Aktiviert',
+                'disabled' => 'Deaktiviert',
             ],
         ],
     ],
     'login_form' => [
-        'label' => 'Use a passkey',
+        'label' => 'Verwenden Sie einen Passkey',
+        'credential' => [
+            'label' => 'Passkey',
+            'messages' => [
+                'invalid' => 'Der Passkey konnte nicht verifiziert werden. Bitte versuchen Sie es erneut.',
+            ],
+        ],
+        'actions' => [
+            'verify' => [
+                'label' => 'Mit Passkey verifizieren',
+            ],
+        ],
     ],
 ];

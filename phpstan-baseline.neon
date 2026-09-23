@@ -1,7 +1,7 @@
 parameters:
 	ignoreErrors:
 		-
-			message: '#^Trait Happenv\\FilamentMultiFactorPasskeys\\Concerns\\InteractsWithPasskeysAuthentication is used zero times and is not analysed\.$#'
+			message: '#^Trait Happenv\\FilamentPasskeys\\Concerns\\InteractsWithPasskeysAuthentication is used zero times and is not analysed\.$#'
 			identifier: trait.unused
 			count: 1
 			path: src/Concerns/InteractsWithPasskeysAuthentication.php

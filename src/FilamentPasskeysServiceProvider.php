@@ -1,23 +1,25 @@
 <?php
 
-namespace Happenv\FilamentMultiFactorPasskeys;
+namespace Happenv\FilamentPasskeys;
 
 use Filament\Actions\Action;
 use Filament\Support\Assets\Css;
 use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
-use Happenv\FilamentMultiFactorPasskeys\Livewire\AuthenticatePasskey;
+use Happenv\FilamentPasskeys\Livewire\AuthenticatePasskey;
+use Happenv\FilamentPasskeys\Testing\TestsPasskeyAuthentication;
 use Laravel\Passkeys\Passkeys;
+use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
-class MultiFactorPasskeysServiceProvider extends PackageServiceProvider
+class FilamentPasskeysServiceProvider extends PackageServiceProvider
 {
     public function configurePackage(Package $package): void
     {
         $package
-            ->name('filament-multifactor-passkeys')
+            ->name('filament-passkeys')
             ->hasTranslations()
             ->hasViews()
             ->hasConfigFile()
@@ -27,14 +29,14 @@ class MultiFactorPasskeysServiceProvider extends PackageServiceProvider
     public function packageRegistered(): void
     {
         // Must run before laravel/passkeys boots, which is when it loads its routes.
-        if (! config('filament-multifactor-passkeys.register_passkeys_routes', false)) {
+        if (! config('filament-passkeys.register_passkeys_routes', false)) {
             Passkeys::ignoreRoutes();
         }
     }
 
     public function packageBooted(): void
     {
-        Livewire::component('filament-multifactor-passkeys-authenticate', AuthenticatePasskey::class);
+        Livewire::component('filament-passkeys-authenticate', AuthenticatePasskey::class);
 
         // Filament's login page gives its challenge a "Confirm sign in" button that
         // passkeys never need: the ceremony submits the form itself. Both of the
@@ -48,8 +50,10 @@ class MultiFactorPasskeysServiceProvider extends PackageServiceProvider
         });
 
         FilamentAsset::register([
-            Js::make('filament-multifactor-passkeys', __DIR__.'/../resources/dist/passkey.js'),
-            Css::make('filament-multifactor-passkeys', __DIR__.'/../resources/dist/passkey.css'),
-        ], package: 'happenv-com/filament-multifactor-passkeys');
+            Js::make('filament-passkeys', __DIR__.'/../resources/dist/passkey.js'),
+            Css::make('filament-passkeys', __DIR__.'/../resources/dist/passkey.css'),
+        ], package: 'happenv-com/filament-passkeys');
+
+        Testable::mixin(new TestsPasskeyAuthentication);
     }
 }

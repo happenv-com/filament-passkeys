@@ -1,19 +1,19 @@
 <?php
 
 return [
-    'label' => 'Turn off',
+    'label' => 'Disabilita',
     'modal' => [
-        'heading' => 'Disable passkey verification',
-        'description' => 'Are you sure you want to remove all of your registered passkeys? Disabling this will remove an extra layer of security from your account.',
+        'heading' => 'Disabilita la verifica tramite passkey',
+        'description' => 'Sei sicuro di voler rimuovere tutte le passkey registrate? Disabilitare questa opzione rimuoverà un ulteriore livello di sicurezza dal tuo account.',
         'actions' => [
             'submit' => [
-                'label' => 'Disable passkey verification',
+                'label' => 'Disabilita la verifica tramite passkey',
             ],
         ],
     ],
     'notifications' => [
         'disabled' => [
-            'title' => 'Passkey verification has been disabled',
+            'title' => 'La verifica tramite passkey è stata disabilitata',
         ],
     ],
 ];

@@ -1,19 +1,19 @@
 <?php
 
 return [
-    'label' => 'Turn off',
+    'label' => 'Kapat',
     'modal' => [
-        'heading' => 'Disable passkey verification',
-        'description' => 'Are you sure you want to remove all of your registered passkeys? Disabling this will remove an extra layer of security from your account.',
+        'heading' => 'Geçiş anahtarı doğrulamasını devre dışı bırak',
+        'description' => 'Kayıtlı tüm geçiş anahtarlarınızı kaldırmak istediğinizden emin misiniz? Bu özelliği devre dışı bırakmak hesabınızdan ek bir güvenlik katmanını kaldıracaktır.',
         'actions' => [
             'submit' => [
-                'label' => 'Disable passkey verification',
+                'label' => 'Geçiş anahtarı doğrulamasını devre dışı bırak',
             ],
         ],
     ],
     'notifications' => [
         'disabled' => [
-            'title' => 'Passkey verification has been disabled',
+            'title' => 'Geçiş anahtarı doğrulaması devre dışı bırakıldı',
         ],
     ],
 ];

@@ -1,16 +1,16 @@
 <?php
 
 return [
-    'or' => 'or',
-    'label' => 'Sign in with a passkey',
-    'loading_label' => 'Waiting for device...',
+    'or' => 'veya',
+    'label' => 'Geçiş anahtarıyla giriş yap',
+    'loading_label' => 'Cihaz bekleniyor...',
     'errors' => [
-        'invalid' => 'Invalid or unknown passkey.',
+        'invalid' => 'Geçersiz veya bilinmeyen geçiş anahtarı.',
     ],
     'notifications' => [
         'success' => [
-            'title' => 'Signed in with passkey',
-            'body' => 'You are now logged in.',
+            'title' => 'Geçiş anahtarıyla giriş yapıldı',
+            'body' => 'Oturumunuz açıldı.',
         ],
     ],
 ];

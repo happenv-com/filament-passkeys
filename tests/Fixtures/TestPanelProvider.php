@@ -1,14 +1,14 @@
 <?php
 
-namespace Happenv\FilamentMultiFactorPasskeys\Tests\Fixtures;
+namespace Happenv\FilamentPasskeys\Tests\Fixtures;
 
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
 use Filament\PanelProvider;
-use Happenv\FilamentMultiFactorPasskeys\MultiFactorPasskeysPlugin;
-use Happenv\FilamentMultiFactorPasskeys\PasskeyAuthentication;
+use Happenv\FilamentPasskeys\FilamentPasskeysPlugin;
+use Happenv\FilamentPasskeys\PasskeyAuthentication;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -32,7 +32,7 @@ class TestPanelProvider extends PanelProvider
                 PasskeyAuthentication::make(),
                 FakeCodeAuthentication::make(),
             ])
-            ->plugin(MultiFactorPasskeysPlugin::make())
+            ->plugin(FilamentPasskeysPlugin::make())
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

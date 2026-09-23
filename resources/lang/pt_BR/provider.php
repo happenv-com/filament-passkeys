@@ -13,5 +13,16 @@ return [
     ],
     'login_form' => [
         'label' => 'Usar uma passkey',
+        'credential' => [
+            'label' => 'passkey',
+            'messages' => [
+                'invalid' => 'Não foi possível verificar a passkey. Tente novamente.',
+            ],
+        ],
+        'actions' => [
+            'verify' => [
+                'label' => 'Verificar com passkey',
+            ],
+        ],
     ],
 ];

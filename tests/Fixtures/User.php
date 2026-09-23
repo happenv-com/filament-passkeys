@@ -1,11 +1,11 @@
 <?php
 
-namespace Happenv\FilamentMultiFactorPasskeys\Tests\Fixtures;
+namespace Happenv\FilamentPasskeys\Tests\Fixtures;
 
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
-use Happenv\FilamentMultiFactorPasskeys\Concerns\InteractsWithPasskeysAuthentication;
-use Happenv\FilamentMultiFactorPasskeys\Contracts\HasPasskeysAuthentication;
+use Happenv\FilamentPasskeys\Concerns\InteractsWithPasskeysAuthentication;
+use Happenv\FilamentPasskeys\Contracts\HasPasskeysAuthentication;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 

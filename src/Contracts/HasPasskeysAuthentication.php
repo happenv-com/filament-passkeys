@@ -1,6 +1,6 @@
 <?php
 
-namespace Happenv\FilamentMultiFactorPasskeys\Contracts;
+namespace Happenv\FilamentPasskeys\Contracts;
 
 use Laravel\Passkeys\Contracts\PasskeyUser;
 

@@ -4,8 +4,8 @@ use Filament\Actions\Testing\TestAction;
 use Filament\Auth\Pages\EditProfile;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\TextInput;
-use Happenv\FilamentMultiFactorPasskeys\PasskeyAuthentication;
-use Happenv\FilamentMultiFactorPasskeys\Tests\Support\VirtualAuthenticator;
+use Happenv\FilamentPasskeys\PasskeyAuthentication;
+use Happenv\FilamentPasskeys\Tests\Support\VirtualAuthenticator;
 use Laravel\Passkeys\Events\PasskeyRegistered;
 use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
@@ -35,7 +35,7 @@ function startPasskeySetUp(string $name = 'MacBook Touch ID'): array
         ->callMountedAction()
         ->assertHasNoActionErrors()
         ->assertActionMounted(setUpAction())
-        ->assertDispatched('filament-multifactor-passkeys-registration-options-ready', function (string $event, array $params): bool {
+        ->assertDispatched('filament-passkeys-registration-options-ready', function (string $event, array $params): bool {
             return is_string($params['options']['challenge'] ?? null)
                 && ($params['options']['authenticatorSelection']['residentKey'] ?? null) === 'required';
         });
@@ -59,7 +59,7 @@ it('registers a passkey through a real WebAuthn ceremony', function () {
         ->assertHasNoActionErrors()
         ->assertActionNotMounted(setUpAction())
         ->assertNoRedirect()
-        ->assertNotified(__('filament-multifactor-passkeys::actions/set-up.notifications.enabled.title'));
+        ->assertNotified(__('filament-passkeys::actions/set-up.notifications.enabled.title'));
 
     expect($user->passkeys()->sole())
         ->name->toBe('MacBook Touch ID')
@@ -70,7 +70,7 @@ it('registers a passkey through a real WebAuthn ceremony', function () {
 });
 
 it('redirects after set-up when a redirect url is configured', function () {
-    config()->set('filament-multifactor-passkeys.redirect', '/dashboard');
+    config()->set('filament-passkeys.redirect', '/dashboard');
     actingAs(createUser());
 
     [$page, $options] = startPasskeySetUp();
@@ -100,7 +100,7 @@ it('rejects a registration response for a different challenge and allows a retry
     $page
         ->callMountedAction()
         ->assertHasNoActionErrors()
-        ->assertDispatched('filament-multifactor-passkeys-registration-options-ready');
+        ->assertDispatched('filament-passkeys-registration-options-ready');
 });
 
 it('rejects a credential without pending options', function () {
@@ -123,7 +123,7 @@ it('requires a name before starting the ceremony', function () {
         ->mountAction(setUpAction())
         ->callMountedAction()
         ->assertHasActionErrors(['name' => 'required'])
-        ->assertNotDispatched('filament-multifactor-passkeys-registration-options-ready');
+        ->assertNotDispatched('filament-passkeys-registration-options-ready');
 });
 
 it('builds the set-up form from Filament fields', function () {

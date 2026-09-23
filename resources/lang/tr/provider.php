@@ -3,15 +3,26 @@
 return [
     'management_schema' => [
         'actions' => [
-            'label' => 'Passkey verification',
-            'below_content' => 'Use a passkey on this device (Face ID, Touch ID, Windows Hello, security key) to verify your identity during login.',
+            'label' => 'Geçiş anahtarı doğrulaması',
+            'below_content' => 'Giriş sırasında kimliğinizi doğrulamak için bu cihazdaki bir geçiş anahtarını (Face ID, Touch ID, Windows Hello, güvenlik anahtarı) kullanın.',
             'messages' => [
-                'enabled' => 'Enabled',
-                'disabled' => 'Disabled',
+                'enabled' => 'Etkin',
+                'disabled' => 'Devre dışı',
             ],
         ],
     ],
     'login_form' => [
-        'label' => 'Use a passkey',
+        'label' => 'Geçiş anahtarı kullan',
+        'credential' => [
+            'label' => 'geçiş anahtarı',
+            'messages' => [
+                'invalid' => 'Geçiş anahtarı doğrulanamadı. Lütfen tekrar deneyin.',
+            ],
+        ],
+        'actions' => [
+            'verify' => [
+                'label' => 'Geçiş anahtarıyla doğrula',
+            ],
+        ],
     ],
 ];

@@ -1,15 +1,15 @@
 # Changelog
 
-All notable changes to `filament-multifactor-passkeys` will be documented in this file.
+All notable changes to `filament-passkeys` will be documented in this file.
 
 ## Unreleased
 
 ### Breaking
 
-- Forked as `happenv-com/filament-multifactor-passkeys` under the `Happenv\FilamentMultiFactorPasskeys` namespace. Filament assets are now published under `happenv-com/filament-multifactor-passkeys`; run `php artisan filament:assets` after upgrading.
+- Forked and renamed to `happenv-com/filament-passkeys` under the `Happenv\FilamentPasskeys` namespace. The plugin is now `FilamentPasskeysPlugin`, the service provider `FilamentPasskeysServiceProvider`, and the config file, translation and view namespace, publish tags, Livewire component, browser events and CSS classes use `filament-passkeys`. Filament assets are now published under `happenv-com/filament-passkeys`; run `php artisan filament:assets` after upgrading.
 - Replaced `spatie/laravel-passkeys` with [`laravel/passkeys`](https://github.com/laravel/passkeys-server) (`^0.2`).
-- The user model now implements `Happenv\FilamentMultiFactorPasskeys\Contracts\HasPasskeysAuthentication` (extends `Laravel\Passkeys\Contracts\PasskeyUser`) and uses the `Happenv\FilamentMultiFactorPasskeys\Concerns\InteractsWithPasskeysAuthentication` trait. The `HasPasskeyAuthentication` contract and its `hasPasskeyAuthentication()` method are gone; the provider uses `hasPasskeysEnabled()`.
-- The `passkeys` table uses the `laravel/passkeys` schema. Existing installs publish and run the `filament-multifactor-passkeys-migrations` upgrade migration.
+- The user model now implements `Happenv\FilamentPasskeys\Contracts\HasPasskeysAuthentication` (extends `Laravel\Passkeys\Contracts\PasskeyUser`) and uses the `Happenv\FilamentPasskeys\Concerns\InteractsWithPasskeysAuthentication` trait. The `HasPasskeyAuthentication` contract and its `hasPasskeyAuthentication()` method are gone; the provider uses `hasPasskeysEnabled()`.
+- The `passkeys` table uses the `laravel/passkeys` schema. Existing installs publish and run the `filament-passkeys-migrations` upgrade migration.
 - The `laravel/passkeys` HTTP routes are off by default (`register_passkeys_routes` config option).
 
 ### Security
@@ -20,7 +20,9 @@ All notable changes to `filament-multifactor-passkeys` will be documented in thi
 ### Added
 
 - When a passkey is the user's only multi-factor method, Filament's "Confirm sign in" button is hidden on the challenge and "Verify with passkey" becomes the primary button (`hide_challenge_confirm_button`, on by default).
-- `auto_start_challenge` config option opens the passkey prompt as soon as the challenge appears, for users whose only method is a passkey (off by default).
+- `auto_start_challenge` config option opens the passkey prompt as soon as the challenge appears, for users whose only method is a passkey (on by default).
+- Livewire testing assertions for the login page: `assertMultiFactorChallengeRequired()`, `assertMultiFactorChallengeNotRequired()`, `assertPasskeyChallengeOffered()` and `assertPasskeyChallengeNotOffered()`.
+- Translations for every locale Filament supports.
 
 ### Changed
 

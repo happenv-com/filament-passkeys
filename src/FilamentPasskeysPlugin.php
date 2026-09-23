@@ -1,6 +1,6 @@
 <?php
 
-namespace Happenv\FilamentMultiFactorPasskeys;
+namespace Happenv\FilamentPasskeys;
 
 use Filament\Auth\Pages\Login;
 use Filament\Contracts\Plugin;
@@ -10,11 +10,11 @@ use Filament\View\PanelsRenderHook;
 use Illuminate\Support\HtmlString;
 use Livewire\Livewire;
 
-class MultiFactorPasskeysPlugin implements Plugin
+class FilamentPasskeysPlugin implements Plugin
 {
     public function getId(): string
     {
-        return 'filament-multifactor-passkeys';
+        return 'filament-passkeys';
     }
 
     public function register(Panel $panel): void
@@ -31,7 +31,7 @@ class MultiFactorPasskeysPlugin implements Plugin
                 }
 
                 return new HtmlString(
-                    Livewire::mount('filament-multifactor-passkeys-authenticate', [
+                    Livewire::mount('filament-passkeys-authenticate', [
                         'panel' => $panel->getId(),
                         'redirectUrl' => $panel->getUrl() ?? url('/'),
                     ])

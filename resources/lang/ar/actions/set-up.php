@@ -1,26 +1,26 @@
 <?php
 
 return [
-    'label' => 'Set up',
+    'label' => 'إعداد',
     'modal' => [
-        'heading' => 'Set up passkey verification',
-        'description' => 'Register a passkey on this device. You will be asked to use your fingerprint, face, screen lock, or a security key. After registration, you will be able to sign in using this passkey.',
+        'heading' => 'إعداد التحقق عبر مفتاح المرور',
+        'description' => 'سجّل مفتاح مرور على هذا الجهاز. سيُطلب منك استخدام بصمة إصبعك أو وجهك أو قفل الشاشة أو مفتاح أمان. بعد التسجيل، ستتمكن من تسجيل الدخول باستخدام مفتاح المرور هذا.',
         'form' => [
             'name' => [
-                'label' => 'Passkey name',
-                'placeholder' => 'e.g. MacBook Touch ID, YubiKey 5C',
+                'label' => 'اسم مفتاح المرور',
+                'placeholder' => 'مثلاً: MacBook Touch ID، YubiKey 5C',
             ],
             'submit' => [
-                'label' => 'Register passkey',
+                'label' => 'تسجيل مفتاح المرور',
             ],
             'errors' => [
-                'failed' => 'We could not register your passkey. Please try again.',
+                'failed' => 'تعذّر تسجيل مفتاح المرور. يرجى المحاولة مرة أخرى.',
             ],
         ],
     ],
     'notifications' => [
         'enabled' => [
-            'title' => 'Passkey registered successfully',
+            'title' => 'تم تسجيل مفتاح المرور بنجاح',
         ],
     ],
 ];

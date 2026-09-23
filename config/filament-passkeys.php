@@ -47,5 +47,5 @@ return [
 
     'hide_challenge_confirm_button' => true,
 
-    'auto_start_challenge' => false,
+    'auto_start_challenge' => true,
 ];

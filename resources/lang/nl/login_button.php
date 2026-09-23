@@ -1,16 +1,16 @@
 <?php
 
 return [
-    'or' => 'or',
-    'label' => 'Sign in with a passkey',
-    'loading_label' => 'Waiting for device...',
+    'or' => 'of',
+    'label' => 'Inloggen met een toegangssleutel',
+    'loading_label' => 'Wachten op apparaat...',
     'errors' => [
-        'invalid' => 'Invalid or unknown passkey.',
+        'invalid' => 'Ongeldige of onbekende toegangssleutel.',
     ],
     'notifications' => [
         'success' => [
-            'title' => 'Signed in with passkey',
-            'body' => 'You are now logged in.',
+            'title' => 'Ingelogd met toegangssleutel',
+            'body' => 'Je bent nu ingelogd.',
         ],
     ],
 ];

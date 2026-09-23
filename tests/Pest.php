@@ -1,8 +1,8 @@
 <?php
 
-use Happenv\FilamentMultiFactorPasskeys\Tests\Fixtures\User;
-use Happenv\FilamentMultiFactorPasskeys\Tests\Support\VirtualAuthenticator;
-use Happenv\FilamentMultiFactorPasskeys\Tests\TestCase;
+use Happenv\FilamentPasskeys\Tests\Fixtures\User;
+use Happenv\FilamentPasskeys\Tests\Support\VirtualAuthenticator;
+use Happenv\FilamentPasskeys\Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Passkeys\Actions\GenerateRegistrationOptions;
 use Laravel\Passkeys\Actions\StorePasskey;

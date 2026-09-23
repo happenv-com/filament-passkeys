@@ -1,7 +1,7 @@
 <?php
 
-use Happenv\FilamentMultiFactorPasskeys\PasskeyAuthentication;
-use Happenv\FilamentMultiFactorPasskeys\Tests\Fixtures\User;
+use Happenv\FilamentPasskeys\PasskeyAuthentication;
+use Happenv\FilamentPasskeys\Tests\Fixtures\User;
 
 it('can create passkey authentication instance', function () {
     $auth = PasskeyAuthentication::make();
@@ -42,7 +42,7 @@ it('does not redirect after set-up by default', function () {
 });
 
 it('uses the configured redirect url', function () {
-    config()->set('filament-multifactor-passkeys.redirect', '/dashboard');
+    config()->set('filament-passkeys.redirect', '/dashboard');
 
     expect(PasskeyAuthentication::make()->getRedirectUrl())->toBe('/dashboard');
 });

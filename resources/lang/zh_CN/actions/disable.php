@@ -1,19 +1,19 @@
 <?php
 
 return [
-    'label' => 'Turn off',
+    'label' => '关闭',
     'modal' => [
-        'heading' => 'Disable passkey verification',
-        'description' => 'Are you sure you want to remove all of your registered passkeys? Disabling this will remove an extra layer of security from your account.',
+        'heading' => '禁用通行密钥验证',
+        'description' => '确定要移除您所有已注册的通行密钥吗？禁用此功能将移除您账户的一层额外安全保护。',
         'actions' => [
             'submit' => [
-                'label' => 'Disable passkey verification',
+                'label' => '禁用通行密钥验证',
             ],
         ],
     ],
     'notifications' => [
         'disabled' => [
-            'title' => 'Passkey verification has been disabled',
+            'title' => '通行密钥验证已禁用',
         ],
     ],
 ];

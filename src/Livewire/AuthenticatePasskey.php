@@ -1,6 +1,6 @@
 <?php
 
-namespace Happenv\FilamentMultiFactorPasskeys\Livewire;
+namespace Happenv\FilamentPasskeys\Livewire;
 
 use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
 use DanHarrin\LivewireRateLimiting\WithRateLimiting;
@@ -24,7 +24,7 @@ class AuthenticatePasskey extends Component
 {
     use WithRateLimiting;
 
-    public const OPTIONS_SESSION_KEY = 'filament-multifactor-passkeys.login_options';
+    public const OPTIONS_SESSION_KEY = 'filament-passkeys.login_options';
 
     #[Locked]
     public ?string $panel = null;
@@ -41,7 +41,7 @@ class AuthenticatePasskey extends Component
     public function render(): View
     {
         /** @var view-string $view */
-        $view = 'filament-multifactor-passkeys::livewire.authenticate-passkey';
+        $view = 'filament-passkeys::livewire.authenticate-passkey';
 
         return view($view);
     }
@@ -110,8 +110,8 @@ class AuthenticatePasskey extends Component
         session()->regenerate();
 
         Notification::make()
-            ->title(__('filament-multifactor-passkeys::login_button.notifications.success.title'))
-            ->body(__('filament-multifactor-passkeys::login_button.notifications.success.body'))
+            ->title(__('filament-passkeys::login_button.notifications.success.title'))
+            ->body(__('filament-passkeys::login_button.notifications.success.body'))
             ->success()
             ->send();
 
@@ -120,6 +120,6 @@ class AuthenticatePasskey extends Component
 
     protected function fail(?string $message = null): void
     {
-        session()->flash('authenticatePasskey::message', $message ?? __('filament-multifactor-passkeys::login_button.errors.invalid'));
+        session()->flash('authenticatePasskey::message', $message ?? __('filament-passkeys::login_button.errors.invalid'));
     }
 }

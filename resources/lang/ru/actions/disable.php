@@ -1,19 +1,19 @@
 <?php
 
 return [
-    'label' => 'Turn off',
+    'label' => 'Отключить',
     'modal' => [
-        'heading' => 'Disable passkey verification',
-        'description' => 'Are you sure you want to remove all of your registered passkeys? Disabling this will remove an extra layer of security from your account.',
+        'heading' => 'Отключить подтверждение с помощью ключа доступа',
+        'description' => 'Вы уверены, что хотите удалить все зарегистрированные ключи доступа? Отключение удалит дополнительный уровень безопасности вашей учетной записи.',
         'actions' => [
             'submit' => [
-                'label' => 'Disable passkey verification',
+                'label' => 'Отключить подтверждение с помощью ключа доступа',
             ],
         ],
     ],
     'notifications' => [
         'disabled' => [
-            'title' => 'Passkey verification has been disabled',
+            'title' => 'Подтверждение с помощью ключа доступа отключено',
         ],
     ],
 ];

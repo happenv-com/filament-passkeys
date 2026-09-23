@@ -1,19 +1,19 @@
 <?php
 
 return [
-    'label' => 'Turn off',
+    'label' => '無効化',
     'modal' => [
-        'heading' => 'Disable passkey verification',
-        'description' => 'Are you sure you want to remove all of your registered passkeys? Disabling this will remove an extra layer of security from your account.',
+        'heading' => 'パスキー認証を無効化',
+        'description' => '登録済みのパスキーをすべて削除してもよろしいですか？この機能を無効にすると、アカウントのセキュリティが一段階低下します。',
         'actions' => [
             'submit' => [
-                'label' => 'Disable passkey verification',
+                'label' => 'パスキー認証を無効化',
             ],
         ],
     ],
     'notifications' => [
         'disabled' => [
-            'title' => 'Passkey verification has been disabled',
+            'title' => 'パスキー認証を無効化しました',
         ],
     ],
 ];

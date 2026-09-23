@@ -3,15 +3,26 @@
 return [
     'management_schema' => [
         'actions' => [
-            'label' => 'Passkey verification',
-            'below_content' => 'Use a passkey on this device (Face ID, Touch ID, Windows Hello, security key) to verify your identity during login.',
+            'label' => '通行密钥验证',
+            'below_content' => '登录时使用此设备上的通行密钥（Face ID、Touch ID、Windows Hello、安全密钥）验证您的身份。',
             'messages' => [
-                'enabled' => 'Enabled',
-                'disabled' => 'Disabled',
+                'enabled' => '已启用',
+                'disabled' => '已禁用',
             ],
         ],
     ],
     'login_form' => [
-        'label' => 'Use a passkey',
+        'label' => '使用通行密钥',
+        'credential' => [
+            'label' => '通行密钥',
+            'messages' => [
+                'invalid' => '无法验证通行密钥，请重试。',
+            ],
+        ],
+        'actions' => [
+            'verify' => [
+                'label' => '使用通行密钥验证',
+            ],
+        ],
     ],
 ];

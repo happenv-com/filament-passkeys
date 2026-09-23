@@ -1,26 +1,26 @@
 <?php
 
 return [
-    'label' => 'Set up',
+    'label' => 'Instellen',
     'modal' => [
-        'heading' => 'Set up passkey verification',
-        'description' => 'Register a passkey on this device. You will be asked to use your fingerprint, face, screen lock, or a security key. After registration, you will be able to sign in using this passkey.',
+        'heading' => 'Verificatie met toegangssleutel instellen',
+        'description' => 'Registreer een toegangssleutel op dit apparaat. Je wordt gevraagd je vingerafdruk, gezicht, schermvergrendeling of een beveiligingssleutel te gebruiken. Na de registratie kun je inloggen met deze toegangssleutel.',
         'form' => [
             'name' => [
-                'label' => 'Passkey name',
-                'placeholder' => 'e.g. MacBook Touch ID, YubiKey 5C',
+                'label' => 'Naam van de toegangssleutel',
+                'placeholder' => 'bijv. MacBook Touch ID, YubiKey 5C',
             ],
             'submit' => [
-                'label' => 'Register passkey',
+                'label' => 'Toegangssleutel registreren',
             ],
             'errors' => [
-                'failed' => 'We could not register your passkey. Please try again.',
+                'failed' => 'We konden je toegangssleutel niet registreren. Probeer het opnieuw.',
             ],
         ],
     ],
     'notifications' => [
         'enabled' => [
-            'title' => 'Passkey registered successfully',
+            'title' => 'Toegangssleutel is geregistreerd',
         ],
     ],
 ];

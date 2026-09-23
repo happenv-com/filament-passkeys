@@ -1,6 +1,6 @@
 <?php
 
-namespace Happenv\FilamentMultiFactorPasskeys\Tests\Support;
+namespace Happenv\FilamentPasskeys\Tests\Support;
 
 use CBOR\ByteStringObject;
 use CBOR\MapObject;

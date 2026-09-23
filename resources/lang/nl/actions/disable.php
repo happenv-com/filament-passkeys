@@ -1,19 +1,19 @@
 <?php
 
 return [
-    'label' => 'Turn off',
+    'label' => 'Uitschakelen',
     'modal' => [
-        'heading' => 'Disable passkey verification',
-        'description' => 'Are you sure you want to remove all of your registered passkeys? Disabling this will remove an extra layer of security from your account.',
+        'heading' => 'Verificatie met toegangssleutel uitschakelen',
+        'description' => 'Weet je zeker dat je al je geregistreerde toegangssleutels wilt verwijderen? Door dit uit te schakelen, verwijder je een extra beveiligingslaag van je account.',
         'actions' => [
             'submit' => [
-                'label' => 'Disable passkey verification',
+                'label' => 'Verificatie met toegangssleutel uitschakelen',
             ],
         ],
     ],
     'notifications' => [
         'disabled' => [
-            'title' => 'Passkey verification has been disabled',
+            'title' => 'Verificatie met toegangssleutel is uitgeschakeld',
         ],
     ],
 ];

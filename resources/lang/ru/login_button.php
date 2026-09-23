@@ -1,16 +1,16 @@
 <?php
 
 return [
-    'or' => 'or',
-    'label' => 'Sign in with a passkey',
-    'loading_label' => 'Waiting for device...',
+    'or' => 'или',
+    'label' => 'Войти с помощью ключа доступа',
+    'loading_label' => 'Ожидание устройства...',
     'errors' => [
-        'invalid' => 'Invalid or unknown passkey.',
+        'invalid' => 'Недействительный или неизвестный ключ доступа.',
     ],
     'notifications' => [
         'success' => [
-            'title' => 'Signed in with passkey',
-            'body' => 'You are now logged in.',
+            'title' => 'Вход выполнен с помощью ключа доступа',
+            'body' => 'Вы вошли в систему.',
         ],
     ],
 ];

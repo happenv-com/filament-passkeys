@@ -1,8 +1,8 @@
 <?php
 
-use Happenv\FilamentMultiFactorPasskeys\Livewire\AuthenticatePasskey;
-use Happenv\FilamentMultiFactorPasskeys\Tests\Fixtures\User;
-use Happenv\FilamentMultiFactorPasskeys\Tests\Support\VirtualAuthenticator;
+use Happenv\FilamentPasskeys\Livewire\AuthenticatePasskey;
+use Happenv\FilamentPasskeys\Tests\Fixtures\User;
+use Happenv\FilamentPasskeys\Tests\Support\VirtualAuthenticator;
 use Illuminate\Validation\ValidationException;
 use Laravel\Passkeys\Passkeys;
 use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
@@ -56,7 +56,7 @@ it('rejects an invalid assertion', function () {
     $component
         ->call('authenticate', (new VirtualAuthenticator)->authenticate($options, $user->getPasskeyUserHandle()))
         ->assertNoRedirect()
-        ->assertSee(__('filament-multifactor-passkeys::login_button.errors.invalid'));
+        ->assertSee(__('filament-passkeys::login_button.errors.invalid'));
 
     assertGuest();
 });

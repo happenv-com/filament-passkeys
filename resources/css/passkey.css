@@ -1,10 +1,10 @@
-.fmfp-login-wrapper {
+.filament-passkeys-login-wrapper {
     display: flex;
     flex-direction: column;
     gap: 1rem;
 }
 
-.fmfp-divider {
+.filament-passkeys-divider {
     position: relative;
     text-align: center;
     font-size: 0.75rem;
@@ -15,8 +15,8 @@
     letter-spacing: 0.05em;
 }
 
-.fmfp-divider::before,
-.fmfp-divider::after {
+.filament-passkeys-divider::before,
+.filament-passkeys-divider::after {
     content: '';
     position: absolute;
     top: 50%;
@@ -25,30 +25,30 @@
     background-color: rgb(229 231 235);
 }
 
-.fmfp-divider::before {
+.filament-passkeys-divider::before {
     left: 0;
 }
 
-.fmfp-divider::after {
+.filament-passkeys-divider::after {
     right: 0;
 }
 
-:where(.dark) .fmfp-divider {
+:where(.dark) .filament-passkeys-divider {
     color: rgb(156 163 175);
 }
 
-:where(.dark) .fmfp-divider::before,
-:where(.dark) .fmfp-divider::after {
+:where(.dark) .filament-passkeys-divider::before,
+:where(.dark) .filament-passkeys-divider::after {
     background-color: rgb(255 255 255 / 0.1);
 }
 
-.fmfp-login-button {
+.filament-passkeys-login-button {
     width: 100%;
     justify-content: center;
     margin-top: 0.75rem;
 }
 
-.fmfp-login-error {
+.filament-passkeys-login-error {
     padding: 0.75rem 1rem;
     font-size: 0.875rem;
     /* Filament 4+ exposes palette shades as full colors (oklch), not RGB triplets. */
@@ -58,6 +58,6 @@
     border-radius: 0.5rem;
 }
 
-.fmfp-challenge .fi-btn {
+.filament-passkeys-challenge .fi-btn {
     width: 100%;
 }

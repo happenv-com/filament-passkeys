@@ -1,19 +1,19 @@
 <?php
 
 return [
-    'label' => 'Turn off',
+    'label' => 'Apagar',
     'modal' => [
-        'heading' => 'Disable passkey verification',
-        'description' => 'Are you sure you want to remove all of your registered passkeys? Disabling this will remove an extra layer of security from your account.',
+        'heading' => 'Deshabilitar la verificación con llave de acceso',
+        'description' => '¿Seguro que quiere eliminar todas sus llaves de acceso registradas? Deshabilitar esta opción eliminará una capa adicional de seguridad de su cuenta.',
         'actions' => [
             'submit' => [
-                'label' => 'Disable passkey verification',
+                'label' => 'Deshabilitar verificación con llave de acceso',
             ],
         ],
     ],
     'notifications' => [
         'disabled' => [
-            'title' => 'Passkey verification has been disabled',
+            'title' => 'La verificación con llave de acceso ha sido deshabilitada',
         ],
     ],
 ];

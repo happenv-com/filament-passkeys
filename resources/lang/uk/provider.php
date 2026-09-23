@@ -3,15 +3,26 @@
 return [
     'management_schema' => [
         'actions' => [
-            'label' => 'Passkey verification',
-            'below_content' => 'Use a passkey on this device (Face ID, Touch ID, Windows Hello, security key) to verify your identity during login.',
+            'label' => 'Підтвердження ключем доступу',
+            'below_content' => 'Використовуйте ключ доступу на цьому пристрої (Face ID, Touch ID, Windows Hello, ключ безпеки) для підтвердження особи під час входу.',
             'messages' => [
-                'enabled' => 'Enabled',
-                'disabled' => 'Disabled',
+                'enabled' => 'Увімкнено',
+                'disabled' => 'Вимкнено',
             ],
         ],
     ],
     'login_form' => [
-        'label' => 'Use a passkey',
+        'label' => 'Використати ключ доступу',
+        'credential' => [
+            'label' => 'ключ доступу',
+            'messages' => [
+                'invalid' => 'Не вдалося перевірити ключ доступу. Спробуйте ще раз.',
+            ],
+        ],
+        'actions' => [
+            'verify' => [
+                'label' => 'Підтвердити ключем доступу',
+            ],
+        ],
     ],
 ];

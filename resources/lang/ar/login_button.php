@@ -1,16 +1,16 @@
 <?php
 
 return [
-    'or' => 'or',
-    'label' => 'Sign in with a passkey',
-    'loading_label' => 'Waiting for device...',
+    'or' => 'أو',
+    'label' => 'تسجيل الدخول باستخدام مفتاح المرور',
+    'loading_label' => 'في انتظار الجهاز...',
     'errors' => [
-        'invalid' => 'Invalid or unknown passkey.',
+        'invalid' => 'مفتاح المرور غير صالح أو غير معروف.',
     ],
     'notifications' => [
         'success' => [
-            'title' => 'Signed in with passkey',
-            'body' => 'You are now logged in.',
+            'title' => 'تم تسجيل الدخول باستخدام مفتاح المرور',
+            'body' => 'لقد سجّلت الدخول بنجاح.',
         ],
     ],
 ];

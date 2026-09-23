@@ -1,8 +1,8 @@
 <?php
 
-namespace Happenv\FilamentMultiFactorPasskeys\Concerns;
+namespace Happenv\FilamentPasskeys\Concerns;
 
-use Happenv\FilamentMultiFactorPasskeys\Contracts\HasPasskeysAuthentication;
+use Happenv\FilamentPasskeys\Contracts\HasPasskeysAuthentication;
 use Laravel\Passkeys\PasskeyAuthenticatable;
 
 /**

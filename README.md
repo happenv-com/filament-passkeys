@@ -1,13 +1,25 @@
-# Filament Multifactor Passkeys
+# Filament Passkeys
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/happenv-com/filament-multifactor-passkeys.svg?style=flat-square)](https://packagist.org/packages/happenv-com/filament-multifactor-passkeys)
-[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/happenv-com/filament-multifactor-passkeys/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/happenv-com/filament-multifactor-passkeys/actions?query=workflow%3A"Fix+PHP+code+styling"+branch%3Amain)
-[![Total Downloads](https://img.shields.io/packagist/dt/happenv-com/filament-multifactor-passkeys.svg?style=flat-square)](https://packagist.org/packages/happenv-com/filament-multifactor-passkeys)
-[![License](https://img.shields.io/github/license/happenv-com/filament-multifactor-passkeys.svg?style=flat-square)](LICENSE.md)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/happenv-com/filament-passkeys.svg?style=flat-square)](https://packagist.org/packages/happenv-com/filament-passkeys)
+[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/happenv-com/filament-passkeys/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/happenv-com/filament-passkeys/actions?query=workflow%3A"Fix+PHP+code+styling"+branch%3Amain)
+[![Total Downloads](https://img.shields.io/packagist/dt/happenv-com/filament-passkeys.svg?style=flat-square)](https://packagist.org/packages/happenv-com/filament-passkeys)
+[![License](https://img.shields.io/github/license/happenv-com/filament-passkeys.svg?style=flat-square)](LICENSE.md)
 
 Multi-factor authentication for Filament panels using WebAuthn passkeys, powered by [`laravel/passkeys`](https://github.com/laravel/passkeys-server).
 
 This package is a fork of [`jeffersongoncalves/filament-multifactor-passkeys`](https://github.com/jeffersongoncalves/filament-multifactor-passkeys), moved from `spatie/laravel-passkeys` to `laravel/passkeys`.
+
+## Key features
+
+- **Passkeys as a second factor.** A native Filament multi-factor provider: after the password step, users confirm with one of their passkeys. It sits alongside Filament's app and email code providers, and users choose between the methods they have turned on.
+- **Passwordless sign-in on the login page.** An optional "Sign in with a passkey" button under the login form signs users in with a discoverable credential, no email or password needed.
+- **Self-service management.** Users set up and turn off passkeys from the multi-factor section of their Filament profile page.
+- **A streamlined passkey-only challenge.** When a passkey is a user's only method, the prompt opens as soon as the challenge appears and Filament's redundant "Confirm sign in" button is hidden. Both are on by default and can be turned off.
+- **Secure by default.** Challenges are single use and bound to the user who passed the password step, so a replayed assertion or someone else's passkey is rejected. Passwordless sign-in honours `laravel/passkeys` login authorization and `FilamentUser::canAccessPanel()`.
+- **Built on `laravel/passkeys`.** Its actions handle challenge generation, verification and storage, and every ceremony runs through Livewire, so no extra routes are exposed.
+- **Testing helpers.** Livewire assertions check whether signing in stops at the multi-factor challenge and whether that challenge offers a passkey.
+- **Upgrade path from `spatie/laravel-passkeys`.** A migration converts existing passkeys to the `laravel/passkeys` schema.
+- **Translated** into [every language Filament supports](#supported-languages) (64 locales).
 
 ## Compatibility
 
@@ -20,7 +32,7 @@ This package is a fork of [`jeffersongoncalves/filament-multifactor-passkeys`](h
 Install the package via composer:
 
 ```bash
-composer require happenv-com/filament-multifactor-passkeys
+composer require happenv-com/filament-passkeys
 ```
 
 Publish and run the migrations from `laravel/passkeys`:
@@ -39,7 +51,7 @@ php artisan vendor:publish --tag="passkeys-config"
 Publish this package's config (optional):
 
 ```bash
-php artisan vendor:publish --tag="filament-multifactor-passkeys-config"
+php artisan vendor:publish --tag="filament-passkeys-config"
 ```
 
 > `laravel/passkeys` derives the relying party ID and the allowed origins from `APP_URL`. Make sure it matches the URL your panel is served from, or passkey ceremonies will be rejected.
@@ -50,7 +62,7 @@ Both packages use a `passkeys` table and a `config/passkeys.php` file, so they c
 
 ```bash
 composer remove spatie/laravel-passkeys
-php artisan vendor:publish --tag="filament-multifactor-passkeys-migrations"
+php artisan vendor:publish --tag="filament-passkeys-migrations"
 php artisan migrate
 ```
 
@@ -64,8 +76,8 @@ Implement the `HasPasskeysAuthentication` contract and use the `InteractsWithPas
 
 ```php
 use Filament\Models\Contracts\FilamentUser;
-use Happenv\FilamentMultiFactorPasskeys\Concerns\InteractsWithPasskeysAuthentication;
-use Happenv\FilamentMultiFactorPasskeys\Contracts\HasPasskeysAuthentication;
+use Happenv\FilamentPasskeys\Concerns\InteractsWithPasskeysAuthentication;
+use Happenv\FilamentPasskeys\Contracts\HasPasskeysAuthentication;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable implements FilamentUser, HasPasskeysAuthentication
@@ -86,12 +98,12 @@ Passkeys::useUserModel(\App\Models\Admin::class);
 
 ### 2. Register the MFA provider in your panel
 
-In your `PanelProvider`, register `PasskeyAuthentication` in the `multiFactorAuthentication()` array. To also expose a "Sign in with a passkey" button on the login screen, register the plugin as well:
+In your `PanelProvider`, register `PasskeyAuthentication` in the `multiFactorAuthentication()` array:
 
 ```php
 use Filament\Panel;
-use Happenv\FilamentMultiFactorPasskeys\MultiFactorPasskeysPlugin;
-use Happenv\FilamentMultiFactorPasskeys\PasskeyAuthentication;
+use Happenv\FilamentPasskeys\FilamentPasskeysPlugin;
+use Happenv\FilamentPasskeys\PasskeyAuthentication;
 
 public function panel(Panel $panel): Panel
 {
@@ -100,11 +112,14 @@ public function panel(Panel $panel): Panel
         ->multiFactorAuthentication([
             PasskeyAuthentication::make(),
         ])
-        ->plugin(MultiFactorPasskeysPlugin::make());
+        // Optional: adds a "Sign in with a passkey" button to the login page.
+        ->plugin(FilamentPasskeysPlugin::make());
 }
 ```
 
-That's it. The MFA section in the user profile page now shows a "Passkey verification" entry with **Set up** / **Turn off** buttons. After a user signs in with their password, Filament asks them to confirm with one of their passkeys. The plugin also injects a passkey login button after the standard login form, allowing users to authenticate without typing email/password.
+That's it. The MFA section in the user profile page now shows a "Passkey verification" entry with **Set up** / **Turn off** buttons. After a user signs in with their password, Filament asks them to confirm with one of their passkeys.
+
+Registering `FilamentPasskeysPlugin` is **optional**. Passkeys work as a second factor without it. The plugin only adds a "Sign in with a passkey" button directly on the login page, below the standard form, so users can sign in with a passkey without typing their email and password. Leave it out if you only want passkeys as a second factor.
 
 ### 3. Customising the redirect URL
 
@@ -115,7 +130,7 @@ PasskeyAuthentication::make()
     ->redirectUrlUsing(fn () => route('dashboard'));
 ```
 
-You can also set a static URL via `config/filament-multifactor-passkeys.php`:
+You can also set a static URL via `config/filament-passkeys.php`:
 
 ```php
 return [
@@ -144,14 +159,14 @@ Users who fail `FilamentUser::canAccessPanel()` are never signed in.
 
 ### 5. Passkey-only challenge
 
-When a passkey is the only multi-factor method a user has turned on, the challenge needs nothing but the "Verify with passkey" button, since the ceremony submits the form itself. Two options in `config/filament-multifactor-passkeys.php` tune that screen:
+When a passkey is the only multi-factor method a user has turned on, the challenge needs nothing but the "Verify with passkey" button, since the ceremony submits the form itself. By default, the passkey prompt opens as soon as the challenge appears and Filament's "Confirm sign in" button is hidden. Two options in `config/filament-passkeys.php` turn this off:
 
 ```php
 return [
     // Hide Filament's "Confirm sign in" button (default: true).
     'hide_challenge_confirm_button' => true,
 
-    // Open the passkey prompt as soon as the challenge appears (default: false).
+    // Open the passkey prompt as soon as the challenge appears (default: true).
     'auto_start_challenge' => true,
 ];
 ```
@@ -160,7 +175,29 @@ Users with more than one method enabled always get Filament's usual challenge. S
 
 ### 6. `laravel/passkeys` routes
 
-Every ceremony runs through Livewire, so this package does not need the HTTP routes `laravel/passkeys` registers and turns them off. To keep them, e.g. for the `@laravel/passkeys` JavaScript client elsewhere in your app, set `register_passkeys_routes` to `true` in `config/filament-multifactor-passkeys.php`.
+Every ceremony runs through Livewire, so this package does not need the HTTP routes `laravel/passkeys` registers and turns them off. To keep them, e.g. for the `@laravel/passkeys` JavaScript client elsewhere in your app, set `register_passkeys_routes` to `true` in `config/filament-passkeys.php`.
+
+### 7. Testing
+
+The package adds assertions to Livewire's `Testable` for Filament's login page, so your own tests can check that multi-factor authentication is enforced:
+
+```php
+use Filament\Auth\Pages\Login;
+use Livewire\Livewire;
+
+Livewire::test(Login::class)
+    ->fillForm(['email' => $user->email, 'password' => 'password'])
+    ->call('authenticate')
+    ->assertMultiFactorChallengeRequired()
+    ->assertPasskeyChallengeOffered();
+```
+
+| Assertion | Passes when |
+|-----------|-------------|
+| `assertMultiFactorChallengeRequired()` | Signing in stopped at the multi-factor challenge. |
+| `assertMultiFactorChallengeNotRequired()` | No multi-factor challenge is shown. |
+| `assertPasskeyChallengeOffered()` | The challenge is shown and offers a passkey, alone or next to other methods. |
+| `assertPasskeyChallengeNotOffered()` | No challenge is shown, or the challenge offers no passkey. |
 
 ## How it works
 
@@ -206,3 +243,26 @@ Please review [our security policy](../../security/policy) on how to report secu
 ## License
 
 The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
+
+## Supported languages
+
+The package ships translations for every locale Filament supports. Publish them with `php artisan vendor:publish --tag="filament-passkeys-translations"` to adjust any wording.
+
+| | | | |
+|---|---|---|---|
+| Amharic (`am`) | Persian (`fa`) | Lithuanian (`lt`) | Slovenian (`sl`) |
+| Arabic (`ar`) | Finnish (`fi`) | Mizo (`lus`) | Albanian (`sq`) |
+| Azerbaijani (`az`) | Filipino (`fil`) | Latvian (`lv`) | Serbian (Cyrillic) (`sr_Cyrl`) |
+| Bulgarian (`bg`) | French (`fr`) | Macedonian (`mk`) | Serbian (Latin) (`sr_Latn`) |
+| Bengali (`bn`) | Hebrew (`he`) | Mongolian (`mn`) | Swedish (`sv`) |
+| Bosnian (`bs`) | Hindi (`hi`) | Malay (`ms`) | Swahili (`sw`) |
+| Catalan (`ca`) | Croatian (`hr`) | Burmese (`my`) | Tajik (`tg`) |
+| Central Kurdish (`ckb`) | Hungarian (`hu`) | Norwegian Bokmål (`nb`) | Thai (`th`) |
+| Czech (`cs`) | Armenian (`hy`) | Nepali (`ne`) | Turkish (`tr`) |
+| Danish (`da`) | Indonesian (`id`) | Dutch (`nl`) | Ukrainian (`uk`) |
+| German (`de`) | Italian (`it`) | Polish (`pl`) | Urdu (`ur`) |
+| Greek (`el`) | Japanese (`ja`) | Portuguese (`pt`) | Uzbek (`uz`) |
+| English (`en`) | Georgian (`ka`) | Portuguese (Brazil) (`pt_BR`) | Vietnamese (`vi`) |
+| Spanish (`es`) | Khmer (`km`) | Romanian (`ro`) | Chinese (Simplified) (`zh_CN`) |
+| Estonian (`et`) | Korean (`ko`) | Russian (`ru`) | Chinese (Hong Kong) (`zh_HK`) |
+| Basque (`eu`) | Kurdish (`ku`) | Slovak (`sk`) | Chinese (Traditional) (`zh_TW`) |

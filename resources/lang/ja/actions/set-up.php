@@ -1,26 +1,26 @@
 <?php
 
 return [
-    'label' => 'Set up',
+    'label' => '設定',
     'modal' => [
-        'heading' => 'Set up passkey verification',
-        'description' => 'Register a passkey on this device. You will be asked to use your fingerprint, face, screen lock, or a security key. After registration, you will be able to sign in using this passkey.',
+        'heading' => 'パスキー認証の設定',
+        'description' => 'このデバイスにパスキーを登録します。指紋認証、顔認証、画面ロック、またはセキュリティキーの使用を求められます。登録後は、このパスキーでログインできるようになります。',
         'form' => [
             'name' => [
-                'label' => 'Passkey name',
-                'placeholder' => 'e.g. MacBook Touch ID, YubiKey 5C',
+                'label' => 'パスキーの名前',
+                'placeholder' => '例：MacBook Touch ID、YubiKey 5C',
             ],
             'submit' => [
-                'label' => 'Register passkey',
+                'label' => 'パスキーを登録',
             ],
             'errors' => [
-                'failed' => 'We could not register your passkey. Please try again.',
+                'failed' => 'パスキーを登録できませんでした。もう一度お試しください。',
             ],
         ],
     ],
     'notifications' => [
         'enabled' => [
-            'title' => 'Passkey registered successfully',
+            'title' => 'パスキーを登録しました',
         ],
     ],
 ];

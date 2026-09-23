@@ -1,26 +1,26 @@
 <?php
 
 return [
-    'label' => 'Set up',
+    'label' => 'Kur',
     'modal' => [
-        'heading' => 'Set up passkey verification',
-        'description' => 'Register a passkey on this device. You will be asked to use your fingerprint, face, screen lock, or a security key. After registration, you will be able to sign in using this passkey.',
+        'heading' => 'Geçiş anahtarı doğrulamasını kur',
+        'description' => 'Bu cihaza bir geçiş anahtarı kaydedin. Parmak izinizi, yüzünüzü, ekran kilidinizi veya bir güvenlik anahtarını kullanmanız istenecek. Kayıttan sonra bu geçiş anahtarıyla giriş yapabileceksiniz.',
         'form' => [
             'name' => [
-                'label' => 'Passkey name',
-                'placeholder' => 'e.g. MacBook Touch ID, YubiKey 5C',
+                'label' => 'Geçiş anahtarı adı',
+                'placeholder' => 'ör. MacBook Touch ID, YubiKey 5C',
             ],
             'submit' => [
-                'label' => 'Register passkey',
+                'label' => 'Geçiş anahtarını kaydet',
             ],
             'errors' => [
-                'failed' => 'We could not register your passkey. Please try again.',
+                'failed' => 'Geçiş anahtarınız kaydedilemedi. Lütfen tekrar deneyin.',
             ],
         ],
     ],
     'notifications' => [
         'enabled' => [
-            'title' => 'Passkey registered successfully',
+            'title' => 'Geçiş anahtarı başarıyla kaydedildi',
         ],
     ],
 ];

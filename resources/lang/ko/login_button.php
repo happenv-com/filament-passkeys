@@ -1,16 +1,16 @@
 <?php
 
 return [
-    'or' => 'or',
-    'label' => 'Sign in with a passkey',
-    'loading_label' => 'Waiting for device...',
+    'or' => '또는',
+    'label' => '패스키로 로그인',
+    'loading_label' => '기기의 응답을 기다리는 중...',
     'errors' => [
-        'invalid' => 'Invalid or unknown passkey.',
+        'invalid' => '유효하지 않거나 알 수 없는 패스키입니다.',
     ],
     'notifications' => [
         'success' => [
-            'title' => 'Signed in with passkey',
-            'body' => 'You are now logged in.',
+            'title' => '패스키로 로그인했습니다',
+            'body' => '로그인되었습니다.',
         ],
     ],
 ];
