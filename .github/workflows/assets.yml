@@ -1,0 +1,54 @@
+name: Assets
+
+on:
+  push:
+    paths:
+      - 'resources/js/**'
+      - 'resources/css/**'
+      - 'resources/dist/**'
+      - 'esbuild.config.js'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/assets.yml'
+  pull_request:
+    paths:
+      - 'resources/js/**'
+      - 'resources/css/**'
+      - 'resources/dist/**'
+      - 'esbuild.config.js'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/assets.yml'
+
+jobs:
+  build:
+    name: Check built assets
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build assets
+        run: npm run build
+
+      # resources/dist is committed and served by Filament as is, so it has to
+      # match what the sources build to.
+      - name: Check resources/dist is up to date
+        run: |
+          if [ -n "$(git status --porcelain -- resources/dist)" ]; then
+            git status --short -- resources/dist
+            git diff --stat -- resources/dist
+            echo "::error::resources/dist is out of date. Run \`npm run build\` and commit the result."
+            exit 1
+          fi
