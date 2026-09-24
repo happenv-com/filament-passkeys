@@ -113,9 +113,12 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
     {
         $user = $this->ensurePasskeyUser($user);
 
+        /** @var view-string $challengeView */
+        $challengeView = 'filament-passkeys::components.challenge';
+
         return [
             ViewField::make('credential')
-                ->view('filament-passkeys::components.challenge')
+                ->view($challengeView)
                 ->viewData([
                     'autoStart' => config('filament-passkeys.auto_start_challenge', true)
                         && $this->isOnlyEnabledProvider($user),

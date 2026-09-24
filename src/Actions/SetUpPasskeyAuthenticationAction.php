@@ -20,6 +20,9 @@ class SetUpPasskeyAuthenticationAction
 {
     public static function make(PasskeyAuthentication $passkeyAuthentication): Action
     {
+        /** @var view-string $credentialView */
+        $credentialView = 'filament-passkeys::components.register';
+
         return Action::make('setUpPasskeyAuthentication')
             ->label(__('filament-passkeys::actions/set-up.label'))
             ->color('primary')
@@ -41,7 +44,7 @@ class SetUpPasskeyAuthenticationAction
                 // Holds the browser's answer and the script that fetches it. Kept out of
                 // the grid like a Hidden field, so it adds no gap under the name input.
                 ViewField::make('credential')
-                    ->view('filament-passkeys::components.register')
+                    ->view($credentialView)
                     ->hiddenLabel()
                     ->columnSpan(['default' => 'hidden']),
             ])

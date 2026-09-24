@@ -19,6 +19,7 @@ All notable changes to `filament-passkeys` will be documented in this file.
 
 ### Added
 
+- Filament v4 support (`^4.13.3`) next to Filament v5. Earlier v4 releases fail with the only Livewire 3 releases Composer still installs (3.8+).
 - When a passkey is the user's only multi-factor method, Filament's "Confirm sign in" button is hidden on the challenge and "Verify with passkey" becomes the primary button (`hide_challenge_confirm_button`, on by default).
 - `auto_start_challenge` config option opens the passkey prompt as soon as the challenge appears, for users whose only method is a passkey (on by default).
 - Livewire testing assertions for the login page: `assertMultiFactorChallengeRequired()`, `assertMultiFactorChallengeNotRequired()`, `assertPasskeyChallengeOffered()` and `assertPasskeyChallengeNotOffered()`.
