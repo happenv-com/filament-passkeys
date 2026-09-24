@@ -4,7 +4,7 @@ return [
     'label' => 'Nustatyti',
     'add_label' => 'Pridėti slaptaraktį',
     'modal' => [
-        'heading' => 'Nustatyti patvirtinimą slaptaraktiu',
+        'heading' => 'Nustatyti patvirtinimą slaptarakčiu',
         'add_heading' => 'Pridėti slaptaraktį',
         'description' => 'Užregistruokite slaptaraktį šiame įrenginyje. Jūsų bus paprašyta naudoti piršto atspaudą, veidą, ekrano užraktą arba saugos raktą. Užregistravę galėsite prisijungti naudodami šį slaptaraktį.',
         'form' => [
