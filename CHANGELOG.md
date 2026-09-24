@@ -19,6 +19,9 @@ All notable changes to `filament-passkeys` will be documented in this file.
 
 ### Added
 
+- Multiple passkeys per user. **Set up** stays available as **Add passkey** once a passkey exists, and the profile lists every passkey in a table (name, authenticator, last used) with a **Remove** action for each one. Removing the last passkey turns passkey verification off.
+- The passkey name is optional. Without one, the passkey is named after its authenticator by AAGUID (e.g. "Windows Hello"), falling back to "Passkey".
+- Registering an authenticator that already holds a passkey for the account shows a notification instead of failing silently.
 - When a passkey is the user's only multi-factor method, Filament's "Confirm sign in" button is hidden on the challenge and "Verify with passkey" becomes the primary button (`hide_challenge_confirm_button`, on by default).
 - `auto_start_challenge` config option opens the passkey prompt as soon as the challenge appears, for users whose only method is a passkey (on by default).
 - Livewire testing assertions for the login page: `assertMultiFactorChallengeRequired()`, `assertMultiFactorChallengeNotRequired()`, `assertPasskeyChallengeOffered()` and `assertPasskeyChallengeNotOffered()`.

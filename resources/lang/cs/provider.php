@@ -4,11 +4,19 @@ return [
     'management_schema' => [
         'actions' => [
             'label' => 'Ověření přístupovým klíčem',
-            'below_content' => 'Použijte přístupový klíč na tomto zařízení (Face ID, Touch ID, Windows Hello, bezpečnostní klíč) k ověření své identity při přihlášení.',
+            'below_content' => 'Použijte přístupový klíč (Face ID, Touch ID, Windows Hello, Android, bezpečnostní klíč) k ověření své identity při přihlášení. Přidejte jej pro každé zařízení, ze kterého se přihlašujete.',
             'messages' => [
                 'enabled' => 'Povoleno',
                 'disabled' => 'Zakázáno',
             ],
+        ],
+        'passkeys' => [
+            'columns' => [
+                'name' => 'Přístupový klíč',
+                'last_used_at' => 'Naposledy použito',
+                'actions' => 'Akce',
+            ],
+            'never_used' => 'Nikdy',
         ],
     ],
     'login_form' => [

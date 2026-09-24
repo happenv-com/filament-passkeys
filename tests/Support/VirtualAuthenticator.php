@@ -26,6 +26,7 @@ class VirtualAuthenticator
     public function __construct(
         protected string $origin = 'http://localhost',
         protected string $rpId = 'localhost',
+        protected string $aaguid = '00000000-0000-0000-0000-000000000000',
     ) {
         $this->key = openssl_pkey_new([
             'private_key_type' => OPENSSL_KEYTYPE_EC,
@@ -42,7 +43,7 @@ class VirtualAuthenticator
     {
         $clientData = $this->clientData('webauthn.create', $options['challenge']);
 
-        $attestedCredentialData = str_repeat("\0", 16)
+        $attestedCredentialData = hex2bin(str_replace('-', '', $this->aaguid))
             .pack('n', strlen($this->credentialId))
             .$this->credentialId
             .$this->coseKey();

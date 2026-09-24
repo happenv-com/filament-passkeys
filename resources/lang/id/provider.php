@@ -4,11 +4,19 @@ return [
     'management_schema' => [
         'actions' => [
             'label' => 'Verifikasi kunci sandi',
-            'below_content' => 'Gunakan kunci sandi di perangkat ini (Face ID, Touch ID, Windows Hello, kunci keamanan) untuk memverifikasi identitas Anda saat login.',
+            'below_content' => 'Gunakan kunci sandi (Face ID, Touch ID, Windows Hello, Android, kunci keamanan) untuk memverifikasi identitas Anda saat login. Tambahkan satu untuk setiap perangkat yang Anda gunakan untuk masuk.',
             'messages' => [
                 'enabled' => 'Aktif',
                 'disabled' => 'Nonaktif',
             ],
+        ],
+        'passkeys' => [
+            'columns' => [
+                'name' => 'Kunci sandi',
+                'last_used_at' => 'Terakhir digunakan',
+                'actions' => 'Tindakan',
+            ],
+            'never_used' => 'Tidak pernah',
         ],
     ],
     'login_form' => [

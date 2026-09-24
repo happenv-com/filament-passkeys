@@ -4,11 +4,19 @@ return [
     'management_schema' => [
         'actions' => [
             'label' => 'Verificatie met toegangssleutel',
-            'below_content' => 'Gebruik een toegangssleutel op dit apparaat (Face ID, Touch ID, Windows Hello, beveiligingssleutel) om je identiteit te verifiëren tijdens het inloggen.',
+            'below_content' => 'Gebruik een toegangssleutel (Face ID, Touch ID, Windows Hello, Android, beveiligingssleutel) om je identiteit te verifiëren tijdens het inloggen. Voeg er een toe voor elk apparaat waarmee je inlogt.',
             'messages' => [
                 'enabled' => 'Ingeschakeld',
                 'disabled' => 'Uitgeschakeld',
             ],
+        ],
+        'passkeys' => [
+            'columns' => [
+                'name' => 'Toegangssleutel',
+                'last_used_at' => 'Laatst gebruikt',
+                'actions' => 'Acties',
+            ],
+            'never_used' => 'Nooit',
         ],
     ],
     'login_form' => [

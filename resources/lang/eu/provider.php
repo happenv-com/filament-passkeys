@@ -4,11 +4,19 @@ return [
     'management_schema' => [
         'actions' => [
             'label' => 'Sarbide-gako bidezko egiaztapena',
-            'below_content' => 'Erabili gailu honetako sarbide-gako bat (Face ID, Touch ID, Windows Hello, segurtasun-gakoa) saioa hastean zure identitatea egiaztatzeko.',
+            'below_content' => 'Erabili gailu honetako sarbide-gako bat (Face ID, Touch ID, Windows Hello, Android, segurtasun-gakoa) saioa hastean zure identitatea egiaztatzeko. Gehitu bat saioa hasten duzun gailu bakoitzerako.',
             'messages' => [
                 'enabled' => 'Gaituta',
                 'disabled' => 'Desgaituta',
             ],
+        ],
+        'passkeys' => [
+            'columns' => [
+                'name' => 'Sarbide-gakoa',
+                'last_used_at' => 'Azken erabilera',
+                'actions' => 'Ekintzak',
+            ],
+            'never_used' => 'Inoiz ez',
         ],
     ],
     'login_form' => [

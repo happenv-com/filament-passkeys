@@ -9,10 +9,15 @@ use Filament\Auth\MultiFactor\MultiFactorChallenge;
 use Filament\Auth\Pages\Login;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\ViewField;
+use Filament\Infolists\Components\RepeatableEntry;
+use Filament\Infolists\Components\RepeatableEntry\TableColumn;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Text;
+use Filament\Support\Enums\TextSize;
 use Filament\Support\Icons\Heroicon;
 use Happenv\FilamentPasskeys\Actions\DisablePasskeyAuthenticationAction;
+use Happenv\FilamentPasskeys\Actions\RemovePasskeyAction;
 use Happenv\FilamentPasskeys\Actions\SetUpPasskeyAuthenticationAction;
 use Happenv\FilamentPasskeys\Contracts\HasPasskeysAuthentication;
 use Illuminate\Auth\SessionGuard;
@@ -22,12 +27,14 @@ use Laravel\Passkeys\Actions\GenerateVerificationOptions;
 use Laravel\Passkeys\Actions\StorePasskey;
 use Laravel\Passkeys\Actions\VerifyPasskey;
 use Laravel\Passkeys\Passkey;
+use Laravel\Passkeys\Support\Aaguids;
 use Laravel\Passkeys\Support\WebAuthn;
 use Livewire\Component;
 use LogicException;
 use RuntimeException;
 use SensitiveParameter;
 use Throwable;
+use Webauthn\AuthenticatorAttestationResponse;
 use Webauthn\PublicKeyCredential;
 use Webauthn\PublicKeyCredentialCreationOptions;
 use Webauthn\PublicKeyCredentialRequestOptions;
@@ -94,7 +101,43 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
                         ->color('success')
                     : Text::make(__('filament-passkeys::provider.management_schema.actions.messages.disabled'))
                         ->badge()),
+            $this->getPasskeysTableComponent($user),
         ];
+    }
+
+    /**
+     * The user's passkeys, one row per device or password manager, each with its
+     * own remove action.
+     */
+    public function getPasskeysTableComponent(?Authenticatable $user): RepeatableEntry
+    {
+        return RepeatableEntry::make('passkeys')
+            ->hiddenLabel()
+            // Keyed by ID, so each row keeps its schema key when another one is removed.
+            ->state(fn (): array => $this->ensurePasskeyUser($user)->passkeys()->latest()->get()->keyBy('id')->all())
+            ->visible(fn (): bool => $this->isEnabled($user))
+            ->table([
+                TableColumn::make(__('filament-passkeys::provider.management_schema.passkeys.columns.name')),
+                TableColumn::make(__('filament-passkeys::provider.management_schema.passkeys.columns.last_used_at')),
+                TableColumn::make(__('filament-passkeys::provider.management_schema.passkeys.columns.actions'))
+                    ->hiddenHeaderLabel()
+                    ->alignEnd(),
+            ])
+            ->schema([
+                TextEntry::make('name')
+                    // The authenticator is worth showing only when the name does not already say it.
+                    ->belowContent(fn (Passkey $record): ?Text => (filled($record->authenticator) && ($record->authenticator !== $record->name))
+                        ? Text::make($record->authenticator)->color('gray')->size(TextSize::Small)
+                        : null),
+                TextEntry::make('last_used_at')
+                    ->since()
+                    ->placeholder(__('filament-passkeys::provider.management_schema.passkeys.never_used')),
+                Actions::make([
+                    RemovePasskeyAction::make($this),
+                ])
+                    ->key('actions')
+                    ->alignEnd(),
+            ]);
     }
 
     public function getActions(): array
@@ -102,8 +145,7 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
         $user = Filament::auth()->user();
 
         return [
-            SetUpPasskeyAuthenticationAction::make($this)
-                ->hidden(fn (): bool => $this->isEnabled($user)),
+            SetUpPasskeyAuthenticationAction::make($this),
             DisablePasskeyAuthenticationAction::make($this)
                 ->visible(fn (): bool => $this->isEnabled($user)),
         ];
@@ -159,10 +201,11 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
     /**
      * Verify the attestation against the pending registration options and store
      * the passkey. The options are single use, whether this succeeds or not.
+     * Without a name, the passkey is named after the authenticator that made it.
      *
      * @throws Throwable
      */
-    public function storeRegistration(HasPasskeysAuthentication $user, string $name, #[SensitiveParameter] string $credential): Passkey
+    public function storeRegistration(HasPasskeysAuthentication $user, ?string $name, #[SensitiveParameter] string $credential): Passkey
     {
         $serializedOptions = session()->pull(static::REGISTRATION_OPTIONS_SESSION_KEY);
 
@@ -170,12 +213,31 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
             throw new RuntimeException('Passkey registration options are missing or expired.');
         }
 
+        $publicKeyCredential = WebAuthn::fromJson($credential, PublicKeyCredential::class);
+
         return app(StorePasskey::class)(
             $user,
-            $name,
-            WebAuthn::fromJson($credential, PublicKeyCredential::class),
+            filled($name) ? $name : $this->getDefaultPasskeyName($publicKeyCredential),
+            $publicKeyCredential,
             WebAuthn::fromJson($serializedOptions, PublicKeyCredentialCreationOptions::class),
         );
+    }
+
+    /**
+     * The authenticator's name looked up by its AAGUID, e.g. "Windows Hello" or
+     * "Google Password Manager", or a generic name when it does not identify itself.
+     */
+    public function getDefaultPasskeyName(PublicKeyCredential $credential): string
+    {
+        $aaguid = ($credential->response instanceof AuthenticatorAttestationResponse)
+            ? $credential->response->attestationObject->authData->attestedCredentialData?->aaguid->toRfc4122()
+            : null;
+
+        $label = (filled($aaguid) && ($aaguid !== Aaguids::unknown()))
+            ? Aaguids::labelFor($aaguid)
+            : null;
+
+        return $label ?? __('filament-passkeys::actions/set-up.modal.form.name.default');
     }
 
     /**

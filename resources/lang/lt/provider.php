@@ -3,12 +3,20 @@
 return [
     'management_schema' => [
         'actions' => [
-            'label' => 'Patvirtinimas slaptaraktiu',
-            'below_content' => 'Naudokite šio įrenginio slaptaraktį (Face ID, Touch ID, Windows Hello, saugos raktą), kad prisijungdami patvirtintumėte savo tapatybę.',
+            'label' => 'Patvirtinimas slaptarakčiu',
+            'below_content' => 'Naudokite slaptaraktį (Face ID, Touch ID, Windows Hello, Android, saugos raktą), kad prisijungdami patvirtintumėte savo tapatybę. Pridėkite po vieną kiekvienam įrenginiui, iš kurio prisijungiate.',
             'messages' => [
                 'enabled' => 'Įjungta',
                 'disabled' => 'Išjungta',
             ],
+        ],
+        'passkeys' => [
+            'columns' => [
+                'name' => 'Slaptaraktis',
+                'last_used_at' => 'Paskutinį kartą naudotas',
+                'actions' => 'Veiksmai',
+            ],
+            'never_used' => 'Niekada',
         ],
     ],
     'login_form' => [
@@ -21,7 +29,7 @@ return [
         ],
         'actions' => [
             'verify' => [
-                'label' => 'Patvirtinti slaptaraktiu',
+                'label' => 'Patvirtinti slaptarakčiu',
             ],
         ],
     ],

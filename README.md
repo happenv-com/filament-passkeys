@@ -13,7 +13,7 @@ This package is a fork of [`jeffersongoncalves/filament-multifactor-passkeys`](h
 
 - **Passkeys as a second factor.** A native Filament multi-factor provider: after the password step, users confirm with one of their passkeys. It sits alongside Filament's app and email code providers, and users choose between the methods they have turned on.
 - **Passwordless sign-in on the login page.** An optional "Sign in with a passkey" button under the login form signs users in with a discoverable credential, no email or password needed.
-- **Self-service management.** Users set up and turn off passkeys from the multi-factor section of their Filament profile page.
+- **A passkey for every device.** Users can register as many passkeys as they need (Windows Hello, an Android phone, iCloud Keychain, a security key) and remove any one of them from a table on their Filament profile page. Each row shows which authenticator holds the passkey and when it was last used.
 - **A streamlined passkey-only challenge.** When a passkey is a user's only method, the prompt opens as soon as the challenge appears and Filament's redundant "Confirm sign in" button is hidden. Both are on by default and can be turned off.
 - **Secure by default.** Challenges are single use and bound to the user who passed the password step, so a replayed assertion or someone else's passkey is rejected. Passwordless sign-in honours `laravel/passkeys` login authorization and `FilamentUser::canAccessPanel()`.
 - **Built on `laravel/passkeys`.** Its actions handle challenge generation, verification and storage, and every ceremony runs through Livewire, so no extra routes are exposed.
@@ -117,7 +117,7 @@ public function panel(Panel $panel): Panel
 }
 ```
 
-That's it. The MFA section in the user profile page now shows a "Passkey verification" entry with **Set up** / **Turn off** buttons. After a user signs in with their password, Filament asks them to confirm with one of their passkeys.
+That's it. The MFA section in the user profile page now shows a "Passkey verification" entry with **Set up** / **Turn off** buttons. Once a passkey is registered, **Set up** becomes **Add passkey** and a table lists every passkey with a **Remove** button. After a user signs in with their password, Filament asks them to confirm with one of their passkeys.
 
 Registering `FilamentPasskeysPlugin` is **optional**. Passkeys work as a second factor without it. The plugin only adds a "Sign in with a passkey" button directly on the login page, below the standard form, so users can sign in with a passkey without typing their email and password. Leave it out if you only want passkeys as a second factor.
 
@@ -203,7 +203,8 @@ Livewire::test(Login::class)
 
 This package is a Filament adapter on top of `laravel/passkeys`. Challenge generation, attestation and assertion verification and persistence are handled by its actions; the browser side uses `@simplewebauthn/browser`.
 
-- **Set up** is a regular Filament action with a name field. Submitting it runs `GenerateRegistrationOptions` and hands the options to the browser, which completes the ceremony and submits the form again so the action can store the passkey with `StorePasskey`.
+- **Set up** / **Add passkey** is a regular Filament action with an optional name field. Submitting it runs `GenerateRegistrationOptions` and hands the options to the browser, which completes the ceremony and submits the form again so the action can store the passkey with `StorePasskey`. The options exclude the user's existing passkeys, so the same authenticator cannot be registered twice. A passkey saved without a name is named after its authenticator, looked up by AAGUID (e.g. "Windows Hello", "Google Password Manager").
+- **Remove** deletes a single passkey through `DeletePasskey`. Removing the last one turns passkey verification off, and its confirmation says so.
 - **Turn off** deletes each of the user's passkeys through `DeletePasskey`, so a `PasskeyDeleted` event fires for every one.
 - **Login challenge** is a regular field of Filament's MFA challenge form. Its button generates options scoped to the user who passed the password step, and the field's validation rule checks the assertion with `VerifyPasskey` for that same user, so a passkey belonging to anyone else is rejected.
 - **Sign in with a passkey** runs a discoverable-credential ceremony and logs the owner in on the panel's guard.

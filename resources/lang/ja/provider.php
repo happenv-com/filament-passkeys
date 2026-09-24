@@ -4,11 +4,19 @@ return [
     'management_schema' => [
         'actions' => [
             'label' => 'パスキー認証',
-            'below_content' => 'ログイン時の本人確認に、このデバイスのパスキー（Face ID、Touch ID、Windows Hello、セキュリティキー）を使用します。',
+            'below_content' => 'ログイン時の本人確認に、このデバイスのパスキー（Face ID、Touch ID、Windows Hello、Android、セキュリティキー）を使用します。ログインに使用するデバイスごとに追加してください。',
             'messages' => [
                 'enabled' => '有効',
                 'disabled' => '無効',
             ],
+        ],
+        'passkeys' => [
+            'columns' => [
+                'name' => 'パスキー',
+                'last_used_at' => '最終使用日',
+                'actions' => '操作',
+            ],
+            'never_used' => '未使用',
         ],
     ],
     'login_form' => [

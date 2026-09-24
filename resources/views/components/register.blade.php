@@ -26,6 +26,18 @@
                         return
                     }
 
+                    // The options exclude the user's existing passkeys, so an authenticator
+                    // that already holds one refuses to create another.
+                    if (err?.name === 'InvalidStateError') {
+                        new FilamentNotification()
+                            .title(@js(__('filament-passkeys::actions/set-up.notifications.already_registered.title')))
+                            .body(@js(__('filament-passkeys::actions/set-up.notifications.already_registered.body')))
+                            .warning()
+                            .send()
+
+                        return
+                    }
+
                     console.error('Passkey registration failed:', err)
                 }
             },

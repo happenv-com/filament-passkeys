@@ -4,11 +4,19 @@ return [
     'management_schema' => [
         'actions' => [
             'label' => 'Xác thực bằng khóa truy cập',
-            'below_content' => 'Sử dụng khóa truy cập trên thiết bị này (Face ID, Touch ID, Windows Hello, khóa bảo mật) để xác minh danh tính của bạn khi đăng nhập.',
+            'below_content' => 'Sử dụng khóa truy cập (Face ID, Touch ID, Windows Hello, Android, khóa bảo mật) để xác minh danh tính của bạn khi đăng nhập. Hãy thêm một khóa cho mỗi thiết bị bạn dùng để đăng nhập.',
             'messages' => [
                 'enabled' => 'Đã bật',
                 'disabled' => 'Đã tắt',
             ],
+        ],
+        'passkeys' => [
+            'columns' => [
+                'name' => 'Khóa truy cập',
+                'last_used_at' => 'Lần sử dụng gần nhất',
+                'actions' => 'Hành động',
+            ],
+            'never_used' => 'Chưa từng',
         ],
     ],
     'login_form' => [
