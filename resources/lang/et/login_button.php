@@ -7,10 +7,4 @@ return [
     'errors' => [
         'invalid' => 'Vigane või tundmatu pääsuvõti.',
     ],
-    'notifications' => [
-        'success' => [
-            'title' => 'Sisse logitud pääsuvõtmega',
-            'body' => 'Olete nüüd sisse logitud.',
-        ],
-    ],
 ];

@@ -7,10 +7,4 @@ return [
     'errors' => [
         'invalid' => 'Ongeldige of onbekende toegangssleutel.',
     ],
-    'notifications' => [
-        'success' => [
-            'title' => 'Ingelogd met toegangssleutel',
-            'body' => 'Je bent nu ingelogd.',
-        ],
-    ],
 ];

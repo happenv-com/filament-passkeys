@@ -7,10 +7,4 @@ return [
     'errors' => [
         'invalid' => 'Clau d\'accés no vàlida o desconeguda.',
     ],
-    'notifications' => [
-        'success' => [
-            'title' => 'Has iniciat la sessió amb una clau d\'accés',
-            'body' => 'Ja has iniciat la sessió.',
-        ],
-    ],
 ];

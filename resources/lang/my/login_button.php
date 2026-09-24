@@ -7,10 +7,4 @@ return [
     'errors' => [
         'invalid' => 'passkey မမှန်ကန်ပါ သို့မဟုတ် မသိရှိပါ။',
     ],
-    'notifications' => [
-        'success' => [
-            'title' => 'passkey ဖြင့် အကောင့်ဝင်ပြီးပါပြီ',
-            'body' => 'သင် ယခု အကောင့်ဝင်ထားပါပြီ။',
-        ],
-    ],
 ];

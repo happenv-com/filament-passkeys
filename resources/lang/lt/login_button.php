@@ -7,10 +7,4 @@ return [
     'errors' => [
         'invalid' => 'Neteisingas arba nežinomas slaptaraktis.',
     ],
-    'notifications' => [
-        'success' => [
-            'title' => 'Prisijungta naudojant slaptaraktį',
-            'body' => 'Jūs sėkmingai prisijungėte.',
-        ],
-    ],
 ];

@@ -113,3 +113,16 @@ it('honours the laravel/passkeys login authorization callback', function () {
 it('locks the panel and redirect url', function (string $property) {
     passkeyLoginButton()->set($property, 'other');
 })->with(['panel', 'redirectUrl'])->throws(CannotUpdateLockedPropertyException::class);
+
+it('does not send a notification after signing in', function () {
+    $user = createUser();
+    registerPasskey($user, $authenticator = new VirtualAuthenticator);
+
+    $component = passkeyLoginButton();
+    $options = requestLoginOptions($component);
+
+    $component
+        ->call('authenticate', $authenticator->authenticate($options, $user->getPasskeyUserHandle()))
+        ->assertRedirect('/admin')
+        ->assertNotNotified();
+});

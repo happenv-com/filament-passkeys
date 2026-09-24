@@ -7,10 +7,4 @@ return [
     'errors' => [
         'invalid' => 'Nevažeći ili nepoznat pristupni ključ.',
     ],
-    'notifications' => [
-        'success' => [
-            'title' => 'Prijavljeni ste pristupnim ključem',
-            'body' => 'Sada ste prijavljeni.',
-        ],
-    ],
 ];

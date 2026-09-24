@@ -6,7 +6,6 @@ use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
 use DanHarrin\LivewireRateLimiting\WithRateLimiting;
 use Filament\Facades\Filament;
 use Filament\Models\Contracts\FilamentUser;
-use Filament\Notifications\Notification;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -108,12 +107,6 @@ class AuthenticatePasskey extends Component
 
         Auth::guard($panel->getAuthGuard())->login($user);
         session()->regenerate();
-
-        Notification::make()
-            ->title(__('filament-passkeys::login_button.notifications.success.title'))
-            ->body(__('filament-passkeys::login_button.notifications.success.body'))
-            ->success()
-            ->send();
 
         $this->redirect($this->redirectUrl ?: url('/'), navigate: false);
     }

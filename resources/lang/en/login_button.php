@@ -7,10 +7,4 @@ return [
     'errors' => [
         'invalid' => 'Invalid or unknown passkey.',
     ],
-    'notifications' => [
-        'success' => [
-            'title' => 'Signed in with passkey',
-            'body' => 'You are now logged in.',
-        ],
-    ],
 ];

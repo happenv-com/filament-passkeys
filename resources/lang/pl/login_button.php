@@ -7,10 +7,4 @@ return [
     'errors' => [
         'invalid' => 'Nieprawidłowy lub nieznany klucz dostępu.',
     ],
-    'notifications' => [
-        'success' => [
-            'title' => 'Zalogowano kluczem dostępu',
-            'body' => 'Jesteś teraz zalogowany.',
-        ],
-    ],
 ];

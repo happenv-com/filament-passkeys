@@ -7,10 +7,4 @@ return [
     'errors' => [
         'invalid' => 'Kirish kaliti noto\'g\'ri yoki noma\'lum.',
     ],
-    'notifications' => [
-        'success' => [
-            'title' => 'Kirish kaliti bilan tizimga kirildi',
-            'body' => 'Siz tizimga kirdingiz.',
-        ],
-    ],
 ];

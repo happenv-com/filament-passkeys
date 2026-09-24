@@ -7,10 +7,4 @@ return [
     'errors' => [
         'invalid' => 'Khóa truy cập không hợp lệ hoặc không xác định.',
     ],
-    'notifications' => [
-        'success' => [
-            'title' => 'Đã đăng nhập bằng khóa truy cập',
-            'body' => 'Bạn đã đăng nhập.',
-        ],
-    ],
 ];

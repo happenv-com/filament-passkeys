@@ -7,10 +7,4 @@ return [
     'errors' => [
         'invalid' => 'Sarbide-gakoa baliogabea edo ezezaguna da.',
     ],
-    'notifications' => [
-        'success' => [
-            'title' => 'Saioa sarbide-gakoarekin hasi da',
-            'body' => 'Saioa hasita duzu orain.',
-        ],
-    ],
 ];

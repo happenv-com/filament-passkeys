@@ -7,10 +7,4 @@ return [
     'errors' => [
         'invalid' => '密碼金鑰無效或無法識別。',
     ],
-    'notifications' => [
-        'success' => [
-            'title' => '已使用密碼金鑰登入',
-            'body' => '您已成功登入。',
-        ],
-    ],
 ];
