@@ -26,6 +26,7 @@ All notable changes to `filament-passkeys` will be documented in this file.
 - `auto_start_challenge` config option opens the passkey prompt as soon as the challenge appears, for users whose only method is a passkey (on by default).
 - Livewire testing assertions for the login page: `assertMultiFactorChallengeRequired()`, `assertMultiFactorChallengeNotRequired()`, `assertPasskeyChallengeOffered()` and `assertPasskeyChallengeNotOffered()`.
 - Translations for every locale Filament supports.
+- Filament v4 support (`^4.13.3`) next to Filament v5. Earlier v4 releases fail with the only Livewire 3 releases Composer still installs (3.8+).
 
 ### Changed
 

@@ -23,9 +23,10 @@ This package is a fork of [`jeffersongoncalves/filament-multifactor-passkeys`](h
 
 ## Compatibility
 
-| Filament | Laravel | PHP  |
-|----------|---------|------|
-| v5       | 12 / 13 | ^8.2 |
+| Filament          | Laravel | PHP  |
+|-------------------|---------|------|
+| v4 (`^4.13.3`)    | 12 / 13 | ^8.2 |
+| v5 (`^5.3`)       | 12 / 13 | ^8.2 |
 
 ## Installation
 
