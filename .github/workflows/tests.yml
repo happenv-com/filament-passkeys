@@ -64,8 +64,12 @@ jobs:
             filament-constraint: '^4.13.3'
             pest: '^4.0'
           # Pest 5 needs PHP 8.4, so Composer picks Pest 4 on PHP 8.3.
+          # composer.json allows ^5.8 (MultiFactorChallenge arrived in 5.8.0),
+          # but under Testbench 5.8.0 - 5.8.2 break every Livewire component
+          # render (`ViewErrorBag::put()` gets null), so prefer-lowest starts at
+          # 5.8.3, the release that pairs with the Filament 4 floor (4.13.3).
           - filament: '5'
-            filament-constraint: '^5.3'
+            filament-constraint: '^5.8.3'
             pest: '^4.0 || ^5.0'
         exclude:
           # The lowest dependency set predates PHP 8.5 and only reports its
