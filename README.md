@@ -1,5 +1,11 @@
 # Filament Passkeys
 
+<div class="filament-hidden">
+
+![Filament Passkeys](art/banner.png)
+
+</div>
+
 [![Latest Version](https://img.shields.io/github/v/release/happenv-com/filament-passkeys?style=flat-square&label=version)](https://github.com/happenv-com/filament-passkeys/releases)
 [![Tests](https://img.shields.io/github/actions/workflow/status/happenv-com/filament-passkeys/tests.yml?label=tests&style=flat-square)](https://github.com/happenv-com/filament-passkeys/actions/workflows/tests.yml)
 [![PHPStan](https://img.shields.io/github/actions/workflow/status/happenv-com/filament-passkeys/phpstan.yml?label=phpstan&style=flat-square)](https://github.com/happenv-com/filament-passkeys/actions/workflows/phpstan.yml)
