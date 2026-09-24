@@ -14,7 +14,7 @@ use Webauthn\PublicKeyCredentialRequestOptions;
 use function Pest\Laravel\assertAuthenticatedAs;
 use function Pest\Laravel\assertGuest;
 
-beforeEach(function () {
+beforeEach(function (): void {
     Filament::setCurrentPanel('admin');
 });
 
@@ -39,7 +39,7 @@ function requestChallengeOptions(Testable $login): array
     return browserOptionsFromSession(PasskeyAuthentication::CHALLENGE_OPTIONS_SESSION_KEY, PublicKeyCredentialRequestOptions::class);
 }
 
-it('challenges a user with a passkey after the password step', function () {
+it('challenges a user with a passkey after the password step', function (): void {
     $user = createUser();
     registerPasskey($user, new VirtualAuthenticator);
 
@@ -48,7 +48,7 @@ it('challenges a user with a passkey after the password step', function () {
     assertGuest();
 });
 
-it('signs the user in after a valid passkey assertion', function () {
+it('signs the user in after a valid passkey assertion', function (): void {
     $user = createUser();
     registerPasskey($user, $authenticator = new VirtualAuthenticator);
 
@@ -66,7 +66,7 @@ it('signs the user in after a valid passkey assertion', function () {
     expect($user->passkeys()->sole()->last_used_at)->not->toBeNull();
 });
 
-it('renders the passkey button on the challenge', function () {
+it('renders the passkey button on the challenge', function (): void {
     $user = createUser();
     registerPasskey($user, new VirtualAuthenticator);
 
@@ -74,7 +74,7 @@ it('renders the passkey button on the challenge', function () {
         ->assertSee(__('filament-passkeys::provider.login_form.actions.verify.label'));
 });
 
-it('rejects a passkey that belongs to another user', function () {
+it('rejects a passkey that belongs to another user', function (): void {
     $user = createUser();
     registerPasskey($user, new VirtualAuthenticator);
 
@@ -94,7 +94,7 @@ it('rejects a passkey that belongs to another user', function () {
     assertGuest();
 });
 
-it('rejects an assertion replayed against a used challenge', function () {
+it('rejects an assertion replayed against a used challenge', function (): void {
     $user = createUser();
     registerPasskey($user, $authenticator = new VirtualAuthenticator);
 
@@ -115,7 +115,7 @@ it('rejects an assertion replayed against a used challenge', function () {
     assertGuest();
 });
 
-it('rejects an assertion signed by an unknown key', function () {
+it('rejects an assertion signed by an unknown key', function (): void {
     $user = createUser();
     registerPasskey($user, new VirtualAuthenticator);
 
@@ -130,7 +130,7 @@ it('rejects an assertion signed by an unknown key', function () {
     assertGuest();
 });
 
-it('requires an assertion to complete the challenge', function () {
+it('requires an assertion to complete the challenge', function (): void {
     $user = createUser();
     registerPasskey($user, new VirtualAuthenticator);
 
@@ -141,12 +141,12 @@ it('requires an assertion to complete the challenge', function () {
     assertGuest();
 });
 
-it('offers the passwordless passkey button on the login form', function () {
+it('offers the passwordless passkey button on the login form', function (): void {
     Livewire::test(Login::class)
         ->assertSee(__('filament-passkeys::login_button.label'));
 });
 
-it('hides the passwordless passkey button during the challenge', function () {
+it('hides the passwordless passkey button during the challenge', function (): void {
     $user = createUser();
     registerPasskey($user, new VirtualAuthenticator);
 
@@ -160,7 +160,7 @@ function confirmSignInLabel(): string
     return __('filament-panels::auth/pages/login.multi_factor.form.actions.authenticate.label');
 }
 
-it('hides the confirm button when a passkey is the only method', function () {
+it('hides the confirm button when a passkey is the only method', function (): void {
     $user = createUser();
     registerPasskey($user, new VirtualAuthenticator);
 
@@ -168,7 +168,7 @@ it('hides the confirm button when a passkey is the only method', function () {
         ->assertDontSee(confirmSignInLabel());
 });
 
-it('keeps the confirm button when the option is off', function () {
+it('keeps the confirm button when the option is off', function (): void {
     config()->set('filament-passkeys.hide_challenge_confirm_button', false);
 
     $user = createUser();
@@ -178,7 +178,7 @@ it('keeps the confirm button when the option is off', function () {
         ->assertSee(confirmSignInLabel());
 });
 
-it('keeps the confirm button when the user has another method', function () {
+it('keeps the confirm button when the user has another method', function (): void {
     FakeCodeAuthentication::$enabled = true;
 
     $user = createUser();
@@ -188,14 +188,14 @@ it('keeps the confirm button when the user has another method', function () {
         ->assertSee(confirmSignInLabel());
 });
 
-it('keeps the confirm button for a user without passkeys', function () {
+it('keeps the confirm button for a user without passkeys', function (): void {
     FakeCodeAuthentication::$enabled = true;
 
     startLoginChallenge(createUser())
         ->assertSee(confirmSignInLabel());
 });
 
-it('starts the passkey prompt on its own by default', function () {
+it('starts the passkey prompt on its own by default', function (): void {
     $user = createUser();
     registerPasskey($user, new VirtualAuthenticator);
 
@@ -203,7 +203,7 @@ it('starts the passkey prompt on its own by default', function () {
         ->assertSee('__filamentPasskeysChallengeAutoStarted', escape: false);
 });
 
-it('does not start the passkey prompt on its own when the option is off', function () {
+it('does not start the passkey prompt on its own when the option is off', function (): void {
     config()->set('filament-passkeys.auto_start_challenge', false);
 
     $user = createUser();
@@ -213,7 +213,7 @@ it('does not start the passkey prompt on its own when the option is off', functi
         ->assertDontSee('__filamentPasskeysChallengeAutoStarted');
 });
 
-it('does not start the passkey prompt on its own when the user has another method', function () {
+it('does not start the passkey prompt on its own when the user has another method', function (): void {
     FakeCodeAuthentication::$enabled = true;
 
     $user = createUser();
@@ -228,7 +228,7 @@ function verifyWithPasskeyAction(): TestAction
     return TestAction::make('verifyWithPasskey')->schemaComponent('passkey.credential', schema: 'multiFactorChallengeForm');
 }
 
-it('makes the passkey button primary when it is the only action', function () {
+it('makes the passkey button primary when it is the only action', function (): void {
     $user = createUser();
     registerPasskey($user, new VirtualAuthenticator);
 
@@ -236,7 +236,7 @@ it('makes the passkey button primary when it is the only action', function () {
         ->assertActionHasColor(verifyWithPasskeyAction(), 'primary');
 });
 
-it('keeps the passkey button gray next to the confirm button', function () {
+it('keeps the passkey button gray next to the confirm button', function (): void {
     config()->set('filament-passkeys.hide_challenge_confirm_button', false);
 
     $user = createUser();
@@ -246,7 +246,7 @@ it('keeps the passkey button gray next to the confirm button', function () {
         ->assertActionHasColor(verifyWithPasskeyAction(), 'gray');
 });
 
-it('keeps the passkey button gray when the user has another method', function () {
+it('keeps the passkey button gray when the user has another method', function (): void {
     FakeCodeAuthentication::$enabled = true;
 
     $user = createUser();

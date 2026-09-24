@@ -12,7 +12,7 @@ use Webauthn\PublicKeyCredentialRequestOptions;
 use function Pest\Laravel\assertAuthenticatedAs;
 use function Pest\Laravel\assertGuest;
 
-afterEach(function () {
+afterEach(function (): void {
     Passkeys::authorizeLoginUsing(null);
 });
 
@@ -30,7 +30,7 @@ function requestLoginOptions($component): array
     return browserOptionsFromSession(AuthenticatePasskey::OPTIONS_SESSION_KEY, PublicKeyCredentialRequestOptions::class);
 }
 
-it('signs in with a discoverable passkey', function () {
+it('signs in with a discoverable passkey', function (): void {
     $user = createUser();
     registerPasskey($user, $authenticator = new VirtualAuthenticator);
 
@@ -46,7 +46,7 @@ it('signs in with a discoverable passkey', function () {
     assertAuthenticatedAs($user);
 });
 
-it('rejects an invalid assertion', function () {
+it('rejects an invalid assertion', function (): void {
     $user = createUser();
     registerPasskey($user, new VirtualAuthenticator);
 
@@ -61,7 +61,7 @@ it('rejects an invalid assertion', function () {
     assertGuest();
 });
 
-it('rejects an assertion without pending options', function () {
+it('rejects an assertion without pending options', function (): void {
     $user = createUser();
     registerPasskey($user, $authenticator = new VirtualAuthenticator);
 
@@ -76,7 +76,7 @@ it('rejects an assertion without pending options', function () {
     assertGuest();
 });
 
-it('does not sign in a user who cannot access the panel', function () {
+it('does not sign in a user who cannot access the panel', function (): void {
     $user = createUser();
     registerPasskey($user, $authenticator = new VirtualAuthenticator);
     User::$canAccessPanel = false;
@@ -91,7 +91,7 @@ it('does not sign in a user who cannot access the panel', function () {
     assertGuest();
 });
 
-it('honours the laravel/passkeys login authorization callback', function () {
+it('honours the laravel/passkeys login authorization callback', function (): void {
     $user = createUser();
     registerPasskey($user, $authenticator = new VirtualAuthenticator);
 
@@ -110,11 +110,11 @@ it('honours the laravel/passkeys login authorization callback', function () {
     assertGuest();
 });
 
-it('locks the panel and redirect url', function (string $property) {
+it('locks the panel and redirect url', function (string $property): void {
     passkeyLoginButton()->set($property, 'other');
 })->with(['panel', 'redirectUrl'])->throws(CannotUpdateLockedPropertyException::class);
 
-it('does not send a notification after signing in', function () {
+it('does not send a notification after signing in', function (): void {
     $user = createUser();
     registerPasskey($user, $authenticator = new VirtualAuthenticator);
 

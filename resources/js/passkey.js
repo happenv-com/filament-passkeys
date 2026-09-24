@@ -1,7 +1,4 @@
-import {
-    startAuthentication,
-    startRegistration,
-} from '@simplewebauthn/browser'
+import { startAuthentication, startRegistration } from '@simplewebauthn/browser'
 
 window.FilamentPasskeys = {
     startRegistration,

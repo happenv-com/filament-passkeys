@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Happenv\FilamentPasskeys\Concerns;
 
 use Happenv\FilamentPasskeys\Contracts\HasPasskeysAuthentication;

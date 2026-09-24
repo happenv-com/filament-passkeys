@@ -53,8 +53,13 @@
     font-size: 0.875rem;
     /* Filament 4+ exposes palette shades as full colors (oklch), not RGB triplets. */
     color: var(--danger-600, rgb(220 38 38));
-    background-color: color-mix(in oklab, var(--danger-600, rgb(220 38 38)) 10%, transparent);
-    border: 1px solid color-mix(in oklab, var(--danger-600, rgb(220 38 38)) 30%, transparent);
+    background-color: color-mix(
+        in oklab,
+        var(--danger-600, rgb(220 38 38)) 10%,
+        transparent
+    );
+    border: 1px solid
+        color-mix(in oklab, var(--danger-600, rgb(220 38 38)) 30%, transparent);
     border-radius: 0.5rem;
 }
 

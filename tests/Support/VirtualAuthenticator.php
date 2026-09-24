@@ -44,15 +44,15 @@ class VirtualAuthenticator
         $clientData = $this->clientData('webauthn.create', $options['challenge']);
 
         $attestedCredentialData = hex2bin(str_replace('-', '', $this->aaguid))
-            .pack('n', strlen($this->credentialId))
-            .$this->credentialId
-            .$this->coseKey();
+            . pack('n', strlen($this->credentialId))
+            . $this->credentialId
+            . $this->coseKey();
 
         $attestationObject = MapObject::create()
             ->add(TextStringObject::create('fmt'), TextStringObject::create('none'))
             ->add(TextStringObject::create('attStmt'), MapObject::create())
             ->add(TextStringObject::create('authData'), ByteStringObject::create(
-                $this->authenticatorData(flags: 0x01 | 0x04 | 0x40).$attestedCredentialData
+                $this->authenticatorData(flags: 0x01 | 0x04 | 0x40) . $attestedCredentialData
             ));
 
         return $this->credential([
@@ -70,7 +70,7 @@ class VirtualAuthenticator
         $clientData = $this->clientData('webauthn.get', $options['challenge']);
         $authenticatorData = $this->authenticatorData(flags: 0x01 | 0x04, counter: ++$this->counter);
 
-        openssl_sign($authenticatorData.hash('sha256', $clientData, true), $signature, $this->key, OPENSSL_ALGO_SHA256);
+        openssl_sign($authenticatorData . hash('sha256', $clientData, true), $signature, $this->key, OPENSSL_ALGO_SHA256);
 
         return $this->credential([
             'clientDataJSON' => Base64UrlSafe::encodeUnpadded($clientData),
@@ -92,7 +92,7 @@ class VirtualAuthenticator
 
     protected function authenticatorData(int $flags, int $counter = 0): string
     {
-        return hash('sha256', $this->rpId, true).chr($flags).pack('N', $counter);
+        return hash('sha256', $this->rpId, true) . chr($flags) . pack('N', $counter);
     }
 
     protected function coseKey(): string

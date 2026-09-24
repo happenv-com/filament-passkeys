@@ -5,3 +5,9 @@ parameters:
 			identifier: trait.unused
 			count: 1
 			path: src/Concerns/InteractsWithPasskeysAuthentication.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains generic class Livewire\\Features\\SupportTesting\\Testable but does not specify its types\: TComponent$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Testing/TestsPasskeyAuthentication.php

@@ -1,13 +1,25 @@
 # Filament Passkeys
 
 [![Latest Version](https://img.shields.io/github/v/release/happenv-com/filament-passkeys?style=flat-square&label=version)](https://github.com/happenv-com/filament-passkeys/releases)
-[![Tests](https://img.shields.io/github/actions/workflow/status/happenv-com/filament-passkeys/tests.yml?branch=1.x&label=tests&style=flat-square)](https://github.com/happenv-com/filament-passkeys/actions/workflows/tests.yml?query=branch%3A1.x)
-[![PHPStan](https://img.shields.io/github/actions/workflow/status/happenv-com/filament-passkeys/phpstan.yml?branch=1.x&label=phpstan&style=flat-square)](https://github.com/happenv-com/filament-passkeys/actions/workflows/phpstan.yml?query=branch%3A1.x)
-[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/happenv-com/filament-passkeys/fix-php-code-style-issues.yml?branch=1.x&label=code%20style&style=flat-square)](https://github.com/happenv-com/filament-passkeys/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3A1.x)
+[![Tests](https://img.shields.io/github/actions/workflow/status/happenv-com/filament-passkeys/tests.yml?label=tests&style=flat-square)](https://github.com/happenv-com/filament-passkeys/actions/workflows/tests.yml)
+[![PHPStan](https://img.shields.io/github/actions/workflow/status/happenv-com/filament-passkeys/phpstan.yml?label=phpstan&style=flat-square)](https://github.com/happenv-com/filament-passkeys/actions/workflows/phpstan.yml)
+[![Quality](https://img.shields.io/github/actions/workflow/status/happenv-com/filament-passkeys/quality.yml?label=code%20quality&style=flat-square)](https://github.com/happenv-com/filament-passkeys/actions/workflows/quality.yml)
 [![Total Downloads](https://img.shields.io/packagist/dt/happenv-com/filament-passkeys.svg?style=flat-square)](https://packagist.org/packages/happenv-com/filament-passkeys)
 [![License](https://img.shields.io/github/license/happenv-com/filament-passkeys.svg?style=flat-square)](LICENSE.md)
 
 Multi-factor authentication for Filament panels using WebAuthn passkeys, powered by [`laravel/passkeys`](https://github.com/laravel/passkeys-server).
+
+```php
+use Happenv\FilamentPasskeys\FilamentPasskeysPlugin;
+use Happenv\FilamentPasskeys\PasskeyAuthentication;
+
+$panel
+    ->multiFactorAuthentication([
+        PasskeyAuthentication::make(),
+    ])
+    // Optional: a "Sign in with a passkey" button on the login page.
+    ->plugin(FilamentPasskeysPlugin::make());
+```
 
 ## Key features
 
@@ -20,17 +32,20 @@ Multi-factor authentication for Filament panels using WebAuthn passkeys, powered
 - **Testing helpers.** Livewire assertions check whether signing in stops at the multi-factor challenge and whether that challenge offers a passkey.
 - **Upgrade path from `spatie/laravel-passkeys`.** A migration converts existing passkeys to the `laravel/passkeys` schema.
 - **Translated** into [every language Filament supports](#supported-languages) (64 locales).
+- **Tested.** A Pest suite runs real WebAuthn ceremonies against a virtual authenticator on every supported PHP, Laravel and Filament combination.
 
-## Compatibility
+## Requirements
 
-| Filament          | Laravel | PHP  |
-|-------------------|---------|------|
-| v4 (`^4.13.3`)    | 12 / 13 | ^8.2 |
-| v5 (`^5.3`)       | 12 / 13 | ^8.2 |
+| Package            | Versions                                  |
+|--------------------|-------------------------------------------|
+| PHP                | ^8.2 (CI runs 8.3 – 8.5)                  |
+| Laravel            | 12, 13                                    |
+| Filament           | 4 (`^4.13.3`), 5 (`^5.8`)                 |
+| `laravel/passkeys` | `^0.2.1`                                  |
 
 ## Installation
 
-Install the package via composer:
+Install the package via Composer:
 
 ```bash
 composer require happenv-com/filament-passkeys
@@ -49,12 +64,6 @@ Publish the `laravel/passkeys` config (optional, to tweak the relying party ID, 
 php artisan vendor:publish --tag="passkeys-config"
 ```
 
-Publish this package's config (optional):
-
-```bash
-php artisan vendor:publish --tag="filament-passkeys-config"
-```
-
 > `laravel/passkeys` derives the relying party ID and the allowed origins from `APP_URL`. Make sure it matches the URL your panel is served from, or passkey ceremonies will be rejected.
 
 ### Upgrading from `spatie/laravel-passkeys`
@@ -68,6 +77,28 @@ php artisan migrate
 ```
 
 The migration renames `authenticatable_id` to `user_id` and `data` to `credential`, and rebuilds `credential_id` from the stored credential record. It does nothing when the table already has the `laravel/passkeys` schema. Remove the old `config/passkeys.php` published by Spatie and publish the new one if you need to customise it.
+
+## Configuration
+
+Publish this package's config (optional):
+
+```bash
+php artisan vendor:publish --tag="filament-passkeys-config"
+```
+
+| Option                          | Default | What it does                                                                                             |
+|---------------------------------|---------|----------------------------------------------------------------------------------------------------------|
+| `redirect`                      | `null`  | Where to send the user after registering a passkey — see [Customising the redirect URL](#3-customising-the-redirect-url). |
+| `register_passkeys_routes`      | `false` | Keeps the `laravel/passkeys` HTTP routes — see [`laravel/passkeys` routes](#6-laravelpasskeys-routes).   |
+| `hide_challenge_confirm_button` | `true`  | Hides Filament's "Confirm sign in" button on a passkey-only challenge — see [Passkey-only challenge](#5-passkey-only-challenge). |
+| `auto_start_challenge`          | `true`  | Opens the passkey prompt as soon as a passkey-only challenge appears — see [Passkey-only challenge](#5-passkey-only-challenge). |
+
+Optionally, publish the views and translations:
+
+```bash
+php artisan vendor:publish --tag="filament-passkeys-views"
+php artisan vendor:publish --tag="filament-passkeys-translations"
+```
 
 ## Usage
 
@@ -178,7 +209,17 @@ Users with more than one method enabled always get Filament's usual challenge. S
 
 Every ceremony runs through Livewire, so this package does not need the HTTP routes `laravel/passkeys` registers and turns them off. To keep them, e.g. for the `@laravel/passkeys` JavaScript client elsewhere in your app, set `register_passkeys_routes` to `true` in `config/filament-passkeys.php`.
 
-### 7. Testing
+## How it works
+
+This package is a Filament adapter on top of `laravel/passkeys`. Challenge generation, attestation and assertion verification and persistence are handled by its actions; the browser side uses `@simplewebauthn/browser`.
+
+- **Set up** / **Add passkey** is a regular Filament action with an optional name field. Submitting it runs `GenerateRegistrationOptions` and hands the options to the browser, which completes the ceremony and submits the form again so the action can store the passkey with `StorePasskey`. The options exclude the user's existing passkeys, so the same authenticator cannot be registered twice. A passkey saved without a name is named after its authenticator, looked up by AAGUID (e.g. "Windows Hello", "Google Password Manager").
+- **Remove** deletes a single passkey through `DeletePasskey`. Removing the last one turns passkey verification off, and its confirmation says so.
+- **Turn off** deletes each of the user's passkeys through `DeletePasskey`, so a `PasskeyDeleted` event fires for every one.
+- **Login challenge** is a regular field of Filament's MFA challenge form. Its button generates options scoped to the user who passed the password step, and the field's validation rule checks the assertion with `VerifyPasskey` for that same user, so a passkey belonging to anyone else is rejected.
+- **Sign in with a passkey** runs a discoverable-credential ceremony and logs the owner in on the panel's guard.
+
+## Testing your application
 
 The package adds assertions to Livewire's `Testable` for Filament's login page, so your own tests can check that multi-factor authentication is enforced:
 
@@ -200,53 +241,9 @@ Livewire::test(Login::class)
 | `assertPasskeyChallengeOffered()` | The challenge is shown and offers a passkey, alone or next to other methods. |
 | `assertPasskeyChallengeNotOffered()` | No challenge is shown, or the challenge offers no passkey. |
 
-## How it works
+## Translations
 
-This package is a Filament adapter on top of `laravel/passkeys`. Challenge generation, attestation and assertion verification and persistence are handled by its actions; the browser side uses `@simplewebauthn/browser`.
-
-- **Set up** / **Add passkey** is a regular Filament action with an optional name field. Submitting it runs `GenerateRegistrationOptions` and hands the options to the browser, which completes the ceremony and submits the form again so the action can store the passkey with `StorePasskey`. The options exclude the user's existing passkeys, so the same authenticator cannot be registered twice. A passkey saved without a name is named after its authenticator, looked up by AAGUID (e.g. "Windows Hello", "Google Password Manager").
-- **Remove** deletes a single passkey through `DeletePasskey`. Removing the last one turns passkey verification off, and its confirmation says so.
-- **Turn off** deletes each of the user's passkeys through `DeletePasskey`, so a `PasskeyDeleted` event fires for every one.
-- **Login challenge** is a regular field of Filament's MFA challenge form. Its button generates options scoped to the user who passed the password step, and the field's validation rule checks the assertion with `VerifyPasskey` for that same user, so a passkey belonging to anyone else is rejected.
-- **Sign in with a passkey** runs a discoverable-credential ceremony and logs the owner in on the panel's guard.
-
-## Development
-
-```bash
-# Static analysis
-composer analyse
-
-# Code style
-composer format
-
-# Tests
-composer test
-```
-
-## Changelog
-
-Please see the [GitHub releases](https://github.com/happenv-com/filament-passkeys/releases) for what has changed in each version.
-
-## Contributing
-
-Please see [CONTRIBUTING](.github/CONTRIBUTING.md) for details.
-
-## Security Vulnerabilities
-
-Please review [our security policy](../../security/policy) on how to report security vulnerabilities.
-
-## Credits
-
-- [Happenv](https://github.com/happenv-com)
-- [Jefferson Gonçalves](https://github.com/jeffersongoncalves) — original author
-- [Laravel](https://github.com/laravel/passkeys-server) — for the underlying WebAuthn implementation
-- [All Contributors](../../contributors)
-
-## License
-
-The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
-
-## Supported languages
+### Supported languages
 
 The package ships translations for every locale Filament supports. Publish them with `php artisan vendor:publish --tag="filament-passkeys-translations"` to adjust any wording.
 
@@ -268,3 +265,58 @@ The package ships translations for every locale Filament supports. Publish them 
 | Spanish (`es`) | Khmer (`km`) | Romanian (`ro`) | Chinese (Simplified) (`zh_CN`) |
 | Estonian (`et`) | Korean (`ko`) | Russian (`ru`) | Chinese (Hong Kong) (`zh_HK`) |
 | Basque (`eu`) | Kurdish (`ku`) | Slovak (`sk`) | Chinese (Traditional) (`zh_TW`) |
+
+`tests/Unit/TranslationsTest.php` checks that every locale has exactly the keys English has.
+
+## Development
+
+```bash
+composer test          # unit and feature tests
+composer phpstan       # static analysis
+composer cs            # fix code style: composer normalize, Rector, Pint
+composer ci            # everything CI checks, locally
+```
+
+The package's JavaScript and CSS are built by `bin/build.js` into `resources/dist`, which is committed. After changing `resources/js` or `resources/css`, rebuild and commit the result — CI refuses outdated assets:
+
+```bash
+npm ci
+npm run build   # or `npm run dev` to rebuild on change
+npm run lint    # Prettier check, as in CI
+```
+
+## Upgrading
+
+Breaking changes and how to migrate are described in [UPGRADING](UPGRADING.md) for every major version.
+
+## Changelog
+
+See [CHANGELOG](CHANGELOG.md) and [GitHub releases](https://github.com/happenv-com/filament-passkeys/releases) for what has changed recently.
+
+## Contributing
+
+See [CONTRIBUTING](.github/CONTRIBUTING.md) for details.
+
+## Security vulnerabilities
+
+Please review [our security policy](.github/SECURITY.md) on how to report security vulnerabilities.
+
+## Credits
+
+- [Happenv sp. z o.o.](https://happenv.com)
+- [webard](https://github.com/webard)
+- [Jefferson Gonçalves](https://github.com/jeffersongoncalves) — original author of [filament-multifactor-passkeys](https://github.com/jeffersongoncalves/filament-multifactor-passkeys)
+- [Laravel](https://github.com/laravel/passkeys-server) — for the underlying WebAuthn implementation
+- [All contributors](../../contributors)
+
+## License
+
+The MIT License (MIT). See [License File](LICENSE.md) for more information.
+
+---
+
+<p align="center">
+    <a href="https://happenv.com">
+        <img src="art/happenv-logo.png" alt="Happenv" width="400">
+    </a>
+</p>

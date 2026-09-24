@@ -1,13 +1,17 @@
 {
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "build": "node esbuild.config.js"
-  },
-  "devDependencies": {
-    "esbuild": "^0.28.1"
-  },
-  "dependencies": {
-    "@simplewebauthn/browser": "^11.0.0"
-  }
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "node bin/build.js",
+        "dev": "node bin/build.js --dev",
+        "format": "prettier --write resources/js resources/css bin",
+        "lint": "prettier --check resources/js resources/css bin"
+    },
+    "dependencies": {
+        "@simplewebauthn/browser": "^11.0.0"
+    },
+    "devDependencies": {
+        "esbuild": "^0.28.1",
+        "prettier": "^3.6.0"
+    }
 }

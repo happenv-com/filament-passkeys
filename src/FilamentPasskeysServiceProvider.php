@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Happenv\FilamentPasskeys;
 
 use Filament\Actions\Action;
@@ -50,8 +52,8 @@ class FilamentPasskeysServiceProvider extends PackageServiceProvider
         });
 
         FilamentAsset::register([
-            Js::make('filament-passkeys', __DIR__.'/../resources/dist/passkey.js'),
-            Css::make('filament-passkeys', __DIR__.'/../resources/dist/passkey.css'),
+            Js::make('filament-passkeys', __DIR__ . '/../resources/dist/passkey.js'),
+            Css::make('filament-passkeys', __DIR__ . '/../resources/dist/passkey.css'),
         ], package: 'happenv-com/filament-passkeys');
 
         Testable::mixin(new TestsPasskeyAuthentication);

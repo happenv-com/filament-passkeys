@@ -3,26 +3,26 @@
 use Happenv\FilamentPasskeys\PasskeyAuthentication;
 use Happenv\FilamentPasskeys\Tests\Fixtures\User;
 
-it('can create passkey authentication instance', function () {
+it('can create passkey authentication instance', function (): void {
     $auth = PasskeyAuthentication::make();
 
     expect($auth)->toBeInstanceOf(PasskeyAuthentication::class);
 });
 
-it('returns passkey as id', function () {
+it('returns passkey as id', function (): void {
     $auth = PasskeyAuthentication::make();
 
     expect($auth->getId())->toBe('passkey');
 });
 
-it('returns login form label as translation', function () {
+it('returns login form label as translation', function (): void {
     $auth = PasskeyAuthentication::make();
     $label = $auth->getLoginFormLabel();
 
     expect($label)->toBeString();
 });
 
-it('returns challenge form components as array', function () {
+it('returns challenge form components as array', function (): void {
     $user = new User([
         'name' => 'Test User',
         'email' => 'test@example.com',
@@ -37,24 +37,24 @@ it('returns challenge form components as array', function () {
         ->not->toBeEmpty();
 });
 
-it('does not redirect after set-up by default', function () {
+it('does not redirect after set-up by default', function (): void {
     expect(PasskeyAuthentication::make()->getRedirectUrl())->toBeNull();
 });
 
-it('uses the configured redirect url', function () {
+it('uses the configured redirect url', function (): void {
     config()->set('filament-passkeys.redirect', '/dashboard');
 
     expect(PasskeyAuthentication::make()->getRedirectUrl())->toBe('/dashboard');
 });
 
-it('uses custom redirect closure when provided', function () {
+it('uses custom redirect closure when provided', function (): void {
     $auth = PasskeyAuthentication::make()
-        ->redirectUrlUsing(fn () => '/custom-url');
+        ->redirectUrlUsing(fn (): string => '/custom-url');
 
     expect($auth->getRedirectUrl())->toBe('/custom-url');
 });
 
-it('returns management schema components as array', function () {
+it('returns management schema components as array', function (): void {
     $user = User::create([
         'name' => 'Test User',
         'email' => 'test@example.com',
@@ -71,7 +71,7 @@ it('returns management schema components as array', function () {
         ->not->toBeEmpty();
 });
 
-it('returns actions as array', function () {
+it('returns actions as array', function (): void {
     $user = User::create([
         'name' => 'Test User',
         'email' => 'test@example.com',
@@ -88,7 +88,7 @@ it('returns actions as array', function () {
         ->not->toBeEmpty();
 });
 
-it('reports user as disabled when user has no passkeys', function () {
+it('reports user as disabled when user has no passkeys', function (): void {
     $user = User::create([
         'name' => 'Test User',
         'email' => 'test@example.com',

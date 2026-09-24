@@ -26,7 +26,7 @@ class DisablePasskeyAuthenticationAction
             ->modalIcon(Heroicon::OutlinedLockOpen)
             ->modalHeading(__('filament-passkeys::actions/disable.modal.heading'))
             ->modalDescription(__('filament-passkeys::actions/disable.modal.description'))
-            ->modalSubmitAction(fn (Action $action) => $action
+            ->modalSubmitAction(fn (Action $action): Action => $action
                 ->label(__('filament-passkeys::actions/disable.modal.actions.submit.label')))
             ->action(function (): void {
                 /** @var HasPasskeysAuthentication $user */

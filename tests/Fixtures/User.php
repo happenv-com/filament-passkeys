@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Happenv\FilamentPasskeys\Tests\Fixtures;
 
 use Filament\Models\Contracts\FilamentUser;
