@@ -3,9 +3,7 @@
 declare(strict_types=1);
 
 use Rector\Config\RectorConfig;
-use Rector\Renaming\Rector\Name\RenameClassRector;
-use RectorLaravel\Rector\Class_\FillablePropertyToFillableAttributeRector;
-use RectorLaravel\Rector\Class_\HiddenPropertyToHiddenAttributeRector;
+use RectorLaravel\Set\LaravelLevelSetList;
 
 /*
  * Library, not an application: no privatization and no "treat classes as
@@ -18,19 +16,18 @@ return RectorConfig::configure()
         __DIR__ . '/src',
         __DIR__ . '/tests',
     ])
-    ->withComposerBased(laravel: true)
+    // The LOWEST Laravel the package supports, not the installed one:
+    // `withComposerBased(laravel: true)` would follow the newest Laravel that
+    // `composer update` resolves and rewrite code into forms (e.g. Laravel 13
+    // Eloquent attributes) that break the older versions CI still tests.
+    // Raise it when the package drops a Laravel version.
+    ->withSets([
+        LaravelLevelSetList::UP_TO_LARAVEL_120,
+    ])
     ->withPreparedSets(
         deadCode: true,
         codeQuality: true,
         typeDeclarations: true,
         earlyReturn: true,
     )
-    ->withPhpSets()
-    // The composer-based Laravel set follows the INSTALLED Laravel (13 locally
-    // and in CI), but the package also supports Laravel 12, which has neither
-    // the Eloquent #[Fillable] / #[Hidden] attributes nor PreventRequestForgery.
-    ->withSkip([
-        FillablePropertyToFillableAttributeRector::class,
-        HiddenPropertyToHiddenAttributeRector::class,
-        RenameClassRector::class,
-    ]);
+    ->withPhpSets();
