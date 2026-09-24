@@ -9,8 +9,6 @@
 
 Multi-factor authentication for Filament panels using WebAuthn passkeys, powered by [`laravel/passkeys`](https://github.com/laravel/passkeys-server).
 
-This package is a fork of [`jeffersongoncalves/filament-multifactor-passkeys`](https://github.com/jeffersongoncalves/filament-multifactor-passkeys), moved from `spatie/laravel-passkeys` to `laravel/passkeys`.
-
 ## Key features
 
 - **Passkeys as a second factor.** A native Filament multi-factor provider: after the password step, users confirm with one of their passkeys. It sits alongside Filament's app and email code providers, and users choose between the methods they have turned on.

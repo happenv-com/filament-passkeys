@@ -23,7 +23,13 @@
     {
       "name": "Happenv",
       "homepage": "https://github.com/happenv-com",
+      "email": "code@happenv.com",
       "role": "Maintainer"
+    },
+    {
+        "name":"Bartłomiej Gajda",
+        "role": "Contributor",
+        "email": "code@webard.me"
     },
     {
       "name": "Jefferson Gonçalves",
