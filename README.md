@@ -225,7 +225,7 @@ composer test
 
 ## Changelog
 
-Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
+Please see the [GitHub releases](https://github.com/happenv-com/filament-passkeys/releases) for what has changed in each version.
 
 ## Contributing
 
