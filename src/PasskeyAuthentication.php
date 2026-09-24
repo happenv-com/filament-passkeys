@@ -70,7 +70,7 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
      */
     public function getRedirectUrl(): ?string
     {
-        if ($this->resolveRedirectUrlUsing) {
+        if ($this->resolveRedirectUrlUsing instanceof Closure) {
             return ($this->resolveRedirectUrlUsing)();
         }
 
@@ -140,6 +140,9 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
             ]);
     }
 
+    /**
+     * @return array<Action>
+     */
     public function getActions(): array
     {
         $user = Filament::auth()->user();
@@ -176,14 +179,12 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
                         ->action(fn (Component $livewire) => $this->startChallenge($user, $livewire)),
                 ])
                 ->required()
-                ->rule(function () use ($user): Closure {
-                    return function (string $attribute, #[SensitiveParameter] $value, Closure $fail) use ($user): void {
-                        if (is_string($value) && $this->verifyChallenge($value, $user)) {
-                            return;
-                        }
+                ->rule(fn (): Closure => function (string $attribute, #[SensitiveParameter] $value, Closure $fail) use ($user): void {
+                    if (is_string($value) && $this->verifyChallenge($value, $user)) {
+                        return;
+                    }
 
-                        $fail(__('filament-passkeys::provider.login_form.credential.messages.invalid'));
-                    };
+                    $fail(__('filament-passkeys::provider.login_form.credential.messages.invalid'));
                 }),
         ];
     }
@@ -334,7 +335,7 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
     protected function ensurePasskeyUser(?Authenticatable $user): HasPasskeysAuthentication
     {
         if (! ($user instanceof HasPasskeysAuthentication)) {
-            throw new LogicException('The user model must implement the ['.HasPasskeysAuthentication::class.'] interface to use passkey authentication.');
+            throw new LogicException('The user model must implement the [' . HasPasskeysAuthentication::class . '] interface to use passkey authentication.');
         }
 
         return $user;

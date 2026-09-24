@@ -14,7 +14,7 @@ use Webauthn\PublicKeyCredentialCreationOptions;
 
 use function Pest\Laravel\actingAs;
 
-beforeEach(function () {
+beforeEach(function (): void {
     Filament::setCurrentPanel('admin');
 });
 
@@ -36,15 +36,13 @@ function startPasskeySetUp(string $name = 'MacBook Touch ID'): array
         ->callMountedAction()
         ->assertHasNoActionErrors()
         ->assertActionMounted(setUpAction())
-        ->assertDispatched('filament-passkeys-registration-options-ready', function (string $event, array $params): bool {
-            return is_string($params['options']['challenge'] ?? null)
-                && ($params['options']['authenticatorSelection']['residentKey'] ?? null) === 'required';
-        });
+        ->assertDispatched('filament-passkeys-registration-options-ready', fn (string $event, array $params): bool => is_string($params['options']['challenge'] ?? null)
+            && ($params['options']['authenticatorSelection']['residentKey'] ?? null) === 'required');
 
     return [$page, browserOptionsFromSession(PasskeyAuthentication::REGISTRATION_OPTIONS_SESSION_KEY, PublicKeyCredentialCreationOptions::class)];
 }
 
-it('registers a passkey through a real WebAuthn ceremony', function () {
+it('registers a passkey through a real WebAuthn ceremony', function (): void {
     Event::fake([PasskeyRegistered::class]);
 
     $user = createUser();
@@ -70,7 +68,7 @@ it('registers a passkey through a real WebAuthn ceremony', function () {
     Event::assertDispatched(PasskeyRegistered::class);
 });
 
-it('redirects after set-up when a redirect url is configured', function () {
+it('redirects after set-up when a redirect url is configured', function (): void {
     config()->set('filament-passkeys.redirect', '/dashboard');
     actingAs(createUser());
 
@@ -82,7 +80,7 @@ it('redirects after set-up when a redirect url is configured', function () {
         ->assertRedirect('/dashboard');
 });
 
-it('rejects a registration response for a different challenge and allows a retry', function () {
+it('rejects a registration response for a different challenge and allows a retry', function (): void {
     $user = createUser();
     actingAs($user);
 
@@ -104,7 +102,7 @@ it('rejects a registration response for a different challenge and allows a retry
         ->assertDispatched('filament-passkeys-registration-options-ready');
 });
 
-it('rejects a credential without pending options', function () {
+it('rejects a credential without pending options', function (): void {
     $user = createUser();
     actingAs($user);
 
@@ -117,7 +115,7 @@ it('rejects a credential without pending options', function () {
     expect($user->passkeys()->exists())->toBeFalse();
 });
 
-it('names the passkey after its authenticator when no name is given', function () {
+it('names the passkey after its authenticator when no name is given', function (): void {
     $user = createUser();
     actingAs($user);
 
@@ -131,7 +129,7 @@ it('names the passkey after its authenticator when no name is given', function (
     expect($user->passkeys()->sole()->name)->toBe('Windows Hello');
 });
 
-it('falls back to a generic name when the authenticator is unknown', function () {
+it('falls back to a generic name when the authenticator is unknown', function (): void {
     $user = createUser();
     actingAs($user);
 
@@ -145,7 +143,7 @@ it('falls back to a generic name when the authenticator is unknown', function ()
     expect($user->passkeys()->sole()->name)->toBe(__('filament-passkeys::actions/set-up.modal.form.name.default'));
 });
 
-it('offers to add another passkey once one is registered', function () {
+it('offers to add another passkey once one is registered', function (): void {
     $user = createUser();
     registerPasskey($user, new VirtualAuthenticator, 'MacBook');
     actingAs($user);
@@ -155,7 +153,7 @@ it('offers to add another passkey once one is registered', function () {
         ->assertActionHasLabel(setUpAction(), __('filament-passkeys::actions/set-up.add_label'));
 });
 
-it('registers another passkey next to an existing one', function () {
+it('registers another passkey next to an existing one', function (): void {
     $user = createUser();
     $first = new VirtualAuthenticator;
     registerPasskey($user, $first, 'MacBook');
@@ -175,7 +173,7 @@ it('registers another passkey next to an existing one', function () {
     expect($user->passkeys()->pluck('name')->all())->toEqualCanonicalizing(['MacBook', 'Android phone']);
 });
 
-it('builds the set-up form from Filament fields', function () {
+it('builds the set-up form from Filament fields', function (): void {
     actingAs(createUser());
 
     Livewire::test(EditProfile::class)

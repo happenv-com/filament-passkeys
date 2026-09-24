@@ -60,7 +60,7 @@ class TestsPasskeyAuthentication
             $provider = collect(Filament::getMultiFactorAuthenticationProviders())
                 ->first(fn ($provider): bool => $provider instanceof PasskeyAuthentication);
 
-            Assert::assertNotNull($provider, 'Failed asserting that the panel registers the ['.PasskeyAuthentication::class.'] multi-factor provider.');
+            Assert::assertNotNull($provider, 'Failed asserting that the panel registers the [' . PasskeyAuthentication::class . '] multi-factor provider.');
 
             // Filament nests each provider's challenge fields under the provider's ID.
             $this->assertSchemaComponentExists("{$provider->getId()}.credential", 'multiFactorChallengeForm');

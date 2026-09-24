@@ -9,7 +9,7 @@ use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
 use PHPUnit\Framework\ExpectationFailedException;
 
-beforeEach(function () {
+beforeEach(function (): void {
     Filament::setCurrentPanel('admin');
 });
 
@@ -20,7 +20,7 @@ function signInWithPassword(User $user): Testable
         ->call('authenticate');
 }
 
-it('asserts a passkey challenge for a user with a passkey', function () {
+it('asserts a passkey challenge for a user with a passkey', function (): void {
     $user = createUser();
     registerPasskey($user, new VirtualAuthenticator);
 
@@ -29,7 +29,7 @@ it('asserts a passkey challenge for a user with a passkey', function () {
         ->assertPasskeyChallengeOffered();
 });
 
-it('asserts a passkey challenge next to another method', function () {
+it('asserts a passkey challenge next to another method', function (): void {
     FakeCodeAuthentication::$enabled = true;
 
     $user = createUser();
@@ -39,13 +39,13 @@ it('asserts a passkey challenge next to another method', function () {
         ->assertPasskeyChallengeOffered();
 });
 
-it('asserts no challenge for a user without multi-factor authentication', function () {
+it('asserts no challenge for a user without multi-factor authentication', function (): void {
     signInWithPassword(createUser())
         ->assertMultiFactorChallengeNotRequired()
         ->assertPasskeyChallengeNotOffered();
 });
 
-it('asserts no passkey challenge for a user with only another method', function () {
+it('asserts no passkey challenge for a user with only another method', function (): void {
     FakeCodeAuthentication::$enabled = true;
 
     signInWithPassword(createUser())
@@ -53,12 +53,12 @@ it('asserts no passkey challenge for a user with only another method', function 
         ->assertPasskeyChallengeNotOffered();
 });
 
-it('fails when a passkey challenge is expected but missing', function () {
+it('fails when a passkey challenge is expected but missing', function (): void {
     signInWithPassword(createUser())
         ->assertPasskeyChallengeOffered();
 })->throws(ExpectationFailedException::class);
 
-it('fails when no challenge is expected but one is shown', function () {
+it('fails when no challenge is expected but one is shown', function (): void {
     $user = createUser();
     registerPasskey($user, new VirtualAuthenticator);
 

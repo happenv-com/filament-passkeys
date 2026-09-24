@@ -12,7 +12,7 @@ use Livewire\Livewire;
 
 use function Pest\Laravel\actingAs;
 
-beforeEach(function () {
+beforeEach(function (): void {
     Filament::setCurrentPanel('admin');
 });
 
@@ -21,7 +21,7 @@ function removePasskeyAction(Passkey $passkey): TestAction
     return TestAction::make('removePasskey')->schemaComponent("passkey.passkeys.{$passkey->getKey()}.actions", schema: 'content');
 }
 
-it('lists the passkeys of the user on the profile', function () {
+it('lists the passkeys of the user on the profile', function (): void {
     $user = createUser();
     registerPasskey($user, new VirtualAuthenticator, 'MacBook');
     registerPasskey($user, new VirtualAuthenticator, 'Android phone');
@@ -37,7 +37,7 @@ it('lists the passkeys of the user on the profile', function () {
         ->assertDontSee('Someone else');
 });
 
-it('shows which authenticator holds a passkey', function () {
+it('shows which authenticator holds a passkey', function (): void {
     $user = createUser();
     registerPasskey($user, new VirtualAuthenticator(aaguid: '08987058-cadc-4b81-b6e1-30de50dcbe96'), 'Work laptop');
 
@@ -48,14 +48,14 @@ it('shows which authenticator holds a passkey', function () {
         ->assertSee('Windows Hello');
 });
 
-it('hides the list when the user has no passkeys', function () {
+it('hides the list when the user has no passkeys', function (): void {
     actingAs(createUser());
 
     Livewire::test(EditProfile::class)
         ->assertSchemaComponentHidden('passkey.passkeys', 'content');
 });
 
-it('removes a single passkey and keeps the others', function () {
+it('removes a single passkey and keeps the others', function (): void {
     Event::fake([PasskeyDeleted::class]);
 
     $user = createUser();
@@ -76,7 +76,7 @@ it('removes a single passkey and keeps the others', function () {
     Event::assertDispatchedTimes(PasskeyDeleted::class, 1);
 });
 
-it('warns that removing the last passkey turns passkey verification off', function () {
+it('warns that removing the last passkey turns passkey verification off', function (): void {
     $user = createUser();
     $passkey = registerPasskey($user, new VirtualAuthenticator, 'MacBook');
 
@@ -91,7 +91,7 @@ it('warns that removing the last passkey turns passkey verification off', functi
     expect($user->hasPasskeysEnabled())->toBeFalse();
 });
 
-it('does not warn about turning passkey verification off while other passkeys remain', function () {
+it('does not warn about turning passkey verification off while other passkeys remain', function (): void {
     $user = createUser();
     $passkey = registerPasskey($user, new VirtualAuthenticator, 'MacBook');
     registerPasskey($user, new VirtualAuthenticator, 'Android phone');
@@ -104,7 +104,7 @@ it('does not warn about turning passkey verification off while other passkeys re
         ->assertMountedActionModalDontSee(__('filament-passkeys::actions/remove.modal.description_last'));
 });
 
-it('cannot reach a passkey of another user', function () {
+it('cannot reach a passkey of another user', function (): void {
     $user = createUser();
     registerPasskey($user, new VirtualAuthenticator, 'MacBook');
 
@@ -118,7 +118,7 @@ it('cannot reach a passkey of another user', function () {
     expect(Passkey::whereKey($foreign->getKey())->exists())->toBeTrue();
 });
 
-it('shows remove as an icon button with a tooltip', function () {
+it('shows remove as an icon button with a tooltip', function (): void {
     $user = createUser();
     $passkey = registerPasskey($user, new VirtualAuthenticator, 'MacBook');
 

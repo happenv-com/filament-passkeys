@@ -9,7 +9,7 @@ use Livewire\Livewire;
 
 use function Pest\Laravel\actingAs;
 
-it('removes every passkey of the user and reports each deletion', function () {
+it('removes every passkey of the user and reports each deletion', function (): void {
     Event::fake([PasskeyDeleted::class]);
     Filament::setCurrentPanel('admin');
 

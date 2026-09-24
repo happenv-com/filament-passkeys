@@ -11,7 +11,7 @@ use Webauthn\PublicKeyCredential;
 
 function runUpgradeMigration(): void
 {
-    (require __DIR__.'/../../database/migrations/upgrade_passkeys_table_from_spatie.php.stub')->up();
+    (require __DIR__ . '/../../database/migrations/upgrade_passkeys_table_from_spatie.php.stub')->up();
 }
 
 /**
@@ -23,7 +23,7 @@ function createSpatiePasskeysTable(array $rows): void
 {
     Schema::drop('passkeys');
 
-    Schema::create('passkeys', function (Blueprint $table) {
+    Schema::create('passkeys', function (Blueprint $table): void {
         $table->id();
         $table->foreignId('authenticatable_id')
             ->constrained(table: 'users', indexName: 'passkeys_authenticatable_fk')
@@ -38,7 +38,7 @@ function createSpatiePasskeysTable(array $rows): void
     DB::table('passkeys')->insert($rows);
 }
 
-it('converts spatie passkeys into the laravel/passkeys schema', function () {
+it('converts spatie passkeys into the laravel/passkeys schema', function (): void {
     $user = createUser();
     $passkey = registerPasskey($user, $authenticator = new VirtualAuthenticator, 'MacBook');
     $credential = $passkey->credential;
@@ -79,7 +79,7 @@ it('converts spatie passkeys into the laravel/passkeys schema', function () {
     expect($verified->is($migrated))->toBeTrue();
 });
 
-it('leaves a laravel/passkeys table untouched', function () {
+it('leaves a laravel/passkeys table untouched', function (): void {
     $user = createUser();
     $passkey = registerPasskey($user, new VirtualAuthenticator);
 
@@ -88,7 +88,7 @@ it('leaves a laravel/passkeys table untouched', function () {
     expect($user->passkeys()->sole()->is($passkey))->toBeTrue();
 });
 
-it('refuses rows without a credential id instead of dropping them', function () {
+it('refuses rows without a credential id instead of dropping them', function (): void {
     $user = createUser();
 
     createSpatiePasskeysTable([[
