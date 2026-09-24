@@ -26,6 +26,7 @@ All notable changes to `filament-passkeys` will be documented in this file.
 
 ### Changed
 
+- Signing in with the passkey button no longer shows a "Signed in with passkey" notification.
 - **Set up** is now a native Filament action form instead of a nested Livewire component with hand-rolled inputs. The name field uses Filament's styling, Enter submits it, and errors show under the field. The `RegisterPasskey` Livewire component and its view are removed.
 - After registering a passkey the modal closes and the user stays on their profile page. Set `redirect` in the config or `redirectUrlUsing()` to redirect instead.
 - Fixed the passkey login error colours on Filament 4+, whose palette variables are full colours rather than RGB triplets.

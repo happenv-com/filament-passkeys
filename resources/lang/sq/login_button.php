@@ -7,10 +7,4 @@ return [
     'errors' => [
         'invalid' => 'Çelës kalimi i pavlefshëm ose i panjohur.',
     ],
-    'notifications' => [
-        'success' => [
-            'title' => 'Hyrët me çelës kalimi',
-            'body' => 'Tani keni hyrë në llogari.',
-        ],
-    ],
 ];

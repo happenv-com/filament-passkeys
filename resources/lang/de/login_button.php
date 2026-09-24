@@ -7,10 +7,4 @@ return [
     'errors' => [
         'invalid' => 'Ungültiger oder unbekannter Passkey.',
     ],
-    'notifications' => [
-        'success' => [
-            'title' => 'Mit Passkey angemeldet',
-            'body' => 'Sie sind jetzt angemeldet.',
-        ],
-    ],
 ];

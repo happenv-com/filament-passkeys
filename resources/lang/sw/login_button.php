@@ -7,10 +7,4 @@ return [
     'errors' => [
         'invalid' => 'Passkey si sahihi au haijulikani.',
     ],
-    'notifications' => [
-        'success' => [
-            'title' => 'Umeingia kwa passkey',
-            'body' => 'Sasa umeingia.',
-        ],
-    ],
 ];

@@ -7,10 +7,4 @@ return [
     'errors' => [
         'invalid' => 'Neplatný nebo neznámý přístupový klíč.',
     ],
-    'notifications' => [
-        'success' => [
-            'title' => 'Přihlášeno přístupovým klíčem',
-            'body' => 'Nyní jste přihlášeni.',
-        ],
-    ],
 ];

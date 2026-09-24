@@ -7,10 +7,4 @@ return [
     'errors' => [
         'invalid' => 'Nederīga vai nezināma piekļuves atslēga.',
     ],
-    'notifications' => [
-        'success' => [
-            'title' => 'Pierakstījāties ar piekļuves atslēgu',
-            'body' => 'Pierakstīšanās ir veiksmīga.',
-        ],
-    ],
 ];

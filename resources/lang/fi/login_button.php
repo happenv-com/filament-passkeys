@@ -7,10 +7,4 @@ return [
     'errors' => [
         'invalid' => 'Virheellinen tai tuntematon pääsyavain.',
     ],
-    'notifications' => [
-        'success' => [
-            'title' => 'Kirjauduttu pääsyavaimella',
-            'body' => 'Olet nyt kirjautunut sisään.',
-        ],
-    ],
 ];

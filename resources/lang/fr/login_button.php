@@ -7,10 +7,4 @@ return [
     'errors' => [
         'invalid' => 'Clé d\'accès invalide ou inconnue.',
     ],
-    'notifications' => [
-        'success' => [
-            'title' => 'Connexion réussie avec une clé d\'accès',
-            'body' => 'Vous êtes maintenant connecté.',
-        ],
-    ],
 ];

@@ -7,10 +7,4 @@ return [
     'errors' => [
         'invalid' => 'Hindi valid o hindi kilalang passkey.',
     ],
-    'notifications' => [
-        'success' => [
-            'title' => 'Naka-sign in gamit ang passkey',
-            'body' => 'Naka-log in ka na.',
-        ],
-    ],
 ];

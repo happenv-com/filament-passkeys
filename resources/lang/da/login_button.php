@@ -7,10 +7,4 @@ return [
     'errors' => [
         'invalid' => 'Ugyldig eller ukendt adgangsnøgle.',
     ],
-    'notifications' => [
-        'success' => [
-            'title' => 'Logget ind med adgangsnøgle',
-            'body' => 'Du er nu logget ind.',
-        ],
-    ],
 ];

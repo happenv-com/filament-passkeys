@@ -7,10 +7,4 @@ return [
     'errors' => [
         'invalid' => '유효하지 않거나 알 수 없는 패스키입니다.',
     ],
-    'notifications' => [
-        'success' => [
-            'title' => '패스키로 로그인했습니다',
-            'body' => '로그인되었습니다.',
-        ],
-    ],
 ];

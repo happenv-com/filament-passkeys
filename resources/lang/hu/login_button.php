@@ -7,10 +7,4 @@ return [
     'errors' => [
         'invalid' => 'Érvénytelen vagy ismeretlen azonosítókulcs.',
     ],
-    'notifications' => [
-        'success' => [
-            'title' => 'Bejelentkeztél azonosítókulccsal',
-            'body' => 'Sikeresen bejelentkeztél.',
-        ],
-    ],
 ];

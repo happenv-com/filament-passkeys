@@ -7,10 +7,4 @@ return [
     'errors' => [
         'invalid' => '通行密钥无效或未知。',
     ],
-    'notifications' => [
-        'success' => [
-            'title' => '已使用通行密钥登录',
-            'body' => '您已成功登录。',
-        ],
-    ],
 ];
