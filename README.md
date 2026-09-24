@@ -1,6 +1,8 @@
 # Filament Passkeys
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/happenv-com/filament-passkeys.svg?style=flat-square)](https://packagist.org/packages/happenv-com/filament-passkeys)
+[![Latest Version](https://img.shields.io/github/v/release/happenv-com/filament-passkeys?style=flat-square&label=version)](https://github.com/happenv-com/filament-passkeys/releases)
+[![Tests](https://img.shields.io/github/actions/workflow/status/happenv-com/filament-passkeys/tests.yml?branch=1.x&label=tests&style=flat-square)](https://github.com/happenv-com/filament-passkeys/actions/workflows/tests.yml?query=branch%3A1.x)
+[![PHPStan](https://img.shields.io/github/actions/workflow/status/happenv-com/filament-passkeys/phpstan.yml?branch=1.x&label=phpstan&style=flat-square)](https://github.com/happenv-com/filament-passkeys/actions/workflows/phpstan.yml?query=branch%3A1.x)
 [![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/happenv-com/filament-passkeys/fix-php-code-style-issues.yml?branch=1.x&label=code%20style&style=flat-square)](https://github.com/happenv-com/filament-passkeys/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3A1.x)
 [![Total Downloads](https://img.shields.io/packagist/dt/happenv-com/filament-passkeys.svg?style=flat-square)](https://packagist.org/packages/happenv-com/filament-passkeys)
 [![License](https://img.shields.io/github/license/happenv-com/filament-passkeys.svg?style=flat-square)](LICENSE.md)
