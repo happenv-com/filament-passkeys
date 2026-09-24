@@ -1,7 +1,6 @@
 The MIT License (MIT)
 
-Copyright (c) Happenv
-Copyright (c) jeffersongoncalves <gerson.simao.92@gmail.com>
+Copyright (c) Happenv sp. z o.o. <https://happenv.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
