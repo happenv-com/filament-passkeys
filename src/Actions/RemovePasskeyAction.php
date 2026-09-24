@@ -19,8 +19,10 @@ class RemovePasskeyAction
         return Action::make('removePasskey')
             ->label(__('filament-passkeys::actions/remove.label'))
             ->color('danger')
-            ->icon(Heroicon::Trash)
-            ->link()
+            ->icon(Heroicon::OutlinedTrash)
+            // Icon only; the label stays as the button's accessible name and tooltip.
+            ->iconButton()
+            ->tooltip(__('filament-passkeys::actions/remove.label'))
             ->requiresConfirmation()
             ->modalWidth(Width::Medium)
             ->modalIcon(Heroicon::OutlinedTrash)

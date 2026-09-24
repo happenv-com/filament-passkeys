@@ -1,5 +1,6 @@
 <?php
 
+use Filament\Actions\Action;
 use Filament\Actions\Exceptions\ActionNotResolvableException;
 use Filament\Actions\Testing\TestAction;
 use Filament\Auth\Pages\EditProfile;
@@ -115,4 +116,18 @@ it('cannot reach a passkey of another user', function () {
         ->toThrow(ActionNotResolvableException::class);
 
     expect(Passkey::whereKey($foreign->getKey())->exists())->toBeTrue();
+});
+
+it('shows remove as an icon button with a tooltip', function () {
+    $user = createUser();
+    $passkey = registerPasskey($user, new VirtualAuthenticator, 'MacBook');
+
+    actingAs($user);
+
+    Livewire::test(EditProfile::class)
+        ->assertActionExists(
+            removePasskeyAction($passkey),
+            fn (Action $action): bool => $action->isIconButton()
+                && ($action->getTooltip() === __('filament-passkeys::actions/remove.label')),
+        );
 });
