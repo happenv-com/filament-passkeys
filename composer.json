@@ -1,6 +1,7 @@
 {
   "name": "happenv-com/filament-passkeys",
   "description": "Filament 5 multi-factor authentication via WebAuthn passkeys, powered by laravel/passkeys.",
+  "license": "MIT",
   "keywords": [
     "happenv",
     "laravel",
@@ -17,19 +18,17 @@
     "authentication",
     "filament-passkeys"
   ],
-  "homepage": "https://github.com/happenv-com/filament-passkeys",
-  "license": "MIT",
   "authors": [
     {
       "name": "Happenv",
-      "homepage": "https://happenv.com",
       "email": "code@happenv.com",
+      "homepage": "https://happenv.com",
       "role": "Maintainer"
     },
     {
-        "name":"Bartłomiej Gajda",
-        "role": "Contributor",
-        "email": "code@webard.me"
+      "name": "Bartłomiej Gajda",
+      "email": "code@webard.me",
+      "role": "Contributor"
     },
     {
       "name": "Jefferson Gonçalves",
@@ -37,19 +36,22 @@
       "role": "Original author"
     }
   ],
+  "homepage": "https://github.com/happenv-com/filament-passkeys",
   "require": {
     "php": "^8.2",
-    "filament/filament": "^4.13.3|^5.3",
+    "filament/filament": "^4.13.3 || ^5.3",
     "laravel/passkeys": "^0.2",
     "spatie/laravel-package-tools": "^1.14.0"
   },
   "require-dev": {
     "larastan/larastan": "^3.0",
     "laravel/pint": "^1.21",
-    "orchestra/testbench": "^10.0|^11.0",
-    "pestphp/pest": "^4.0|^5.0",
-    "pestphp/pest-plugin-laravel": "^4.0|^5.0"
+    "orchestra/testbench": "^10.0 || ^11.0",
+    "pestphp/pest": "^4.0 || ^5.0",
+    "pestphp/pest-plugin-laravel": "^4.0 || ^5.0"
   },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
   "autoload": {
     "psr-4": {
       "Happenv\\FilamentPasskeys\\": "src"
@@ -60,18 +62,12 @@
       "Happenv\\FilamentPasskeys\\Tests\\": "tests"
     }
   },
-  "scripts": {
-    "post-autoload-dump": "@php ./vendor/bin/testbench package:discover --ansi",
-    "analyse": "vendor/bin/phpstan analyse",
-    "format": "vendor/bin/pint",
-    "test": "vendor/bin/pest"
-  },
   "config": {
-    "sort-packages": true,
     "allow-plugins": {
       "pestphp/pest-plugin": true,
       "phpstan/extension-installer": true
-    }
+    },
+    "sort-packages": true
   },
   "extra": {
     "laravel": {
@@ -80,6 +76,10 @@
       ]
     }
   },
-  "minimum-stability": "dev",
-  "prefer-stable": true
+  "scripts": {
+    "post-autoload-dump": "@php ./vendor/bin/testbench package:discover --ansi",
+    "analyse": "vendor/bin/phpstan analyse",
+    "format": "vendor/bin/pint",
+    "test": "vendor/bin/pest"
+  }
 }
