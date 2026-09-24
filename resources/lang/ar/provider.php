@@ -4,11 +4,19 @@ return [
     'management_schema' => [
         'actions' => [
             'label' => 'التحقق عبر مفتاح المرور',
-            'below_content' => 'استخدم مفتاح مرور على هذا الجهاز (Face ID أو Touch ID أو Windows Hello أو مفتاح أمان) للتحقق من هويتك أثناء تسجيل الدخول.',
+            'below_content' => 'استخدم مفتاح مرور (Face ID أو Touch ID أو Windows Hello أو Android أو مفتاح أمان) للتحقق من هويتك أثناء تسجيل الدخول. أضف مفتاحًا لكل جهاز تسجّل الدخول منه.',
             'messages' => [
                 'enabled' => 'مفعل',
                 'disabled' => 'معطل',
             ],
+        ],
+        'passkeys' => [
+            'columns' => [
+                'name' => 'مفتاح المرور',
+                'last_used_at' => 'آخر استخدام',
+                'actions' => 'الإجراءات',
+            ],
+            'never_used' => 'أبدًا',
         ],
     ],
     'login_form' => [

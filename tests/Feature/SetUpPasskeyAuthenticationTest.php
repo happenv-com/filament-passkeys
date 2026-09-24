@@ -9,6 +9,7 @@ use Happenv\FilamentPasskeys\Tests\Support\VirtualAuthenticator;
 use Laravel\Passkeys\Events\PasskeyRegistered;
 use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
+use ParagonIE\ConstantTime\Base64UrlSafe;
 use Webauthn\PublicKeyCredentialCreationOptions;
 
 use function Pest\Laravel\actingAs;
@@ -116,14 +117,62 @@ it('rejects a credential without pending options', function () {
     expect($user->passkeys()->exists())->toBeFalse();
 });
 
-it('requires a name before starting the ceremony', function () {
-    actingAs(createUser());
+it('names the passkey after its authenticator when no name is given', function () {
+    $user = createUser();
+    actingAs($user);
+
+    [$page, $options] = startPasskeySetUp(name: '');
+
+    $page
+        ->setActionData(['credential' => (new VirtualAuthenticator(aaguid: '08987058-cadc-4b81-b6e1-30de50dcbe96'))->register($options)])
+        ->callMountedAction()
+        ->assertHasNoActionErrors();
+
+    expect($user->passkeys()->sole()->name)->toBe('Windows Hello');
+});
+
+it('falls back to a generic name when the authenticator is unknown', function () {
+    $user = createUser();
+    actingAs($user);
+
+    [$page, $options] = startPasskeySetUp(name: '');
+
+    $page
+        ->setActionData(['credential' => (new VirtualAuthenticator)->register($options)])
+        ->callMountedAction()
+        ->assertHasNoActionErrors();
+
+    expect($user->passkeys()->sole()->name)->toBe(__('filament-passkeys::actions/set-up.modal.form.name.default'));
+});
+
+it('offers to add another passkey once one is registered', function () {
+    $user = createUser();
+    registerPasskey($user, new VirtualAuthenticator, 'MacBook');
+    actingAs($user);
 
     Livewire::test(EditProfile::class)
-        ->mountAction(setUpAction())
+        ->assertActionVisible(setUpAction())
+        ->assertActionHasLabel(setUpAction(), __('filament-passkeys::actions/set-up.add_label'));
+});
+
+it('registers another passkey next to an existing one', function () {
+    $user = createUser();
+    $first = new VirtualAuthenticator;
+    registerPasskey($user, $first, 'MacBook');
+    actingAs($user);
+
+    [$page, $options] = startPasskeySetUp('Android phone');
+
+    // The authenticator that is already registered is excluded from the ceremony.
+    expect(collect($options['excludeCredentials'] ?? [])->pluck('id'))
+        ->toContain(Base64UrlSafe::encodeUnpadded($first->credentialId));
+
+    $page
+        ->setActionData(['credential' => (new VirtualAuthenticator)->register($options)])
         ->callMountedAction()
-        ->assertHasActionErrors(['name' => 'required'])
-        ->assertNotDispatched('filament-passkeys-registration-options-ready');
+        ->assertHasNoActionErrors();
+
+    expect($user->passkeys()->pluck('name')->all())->toEqualCanonicalizing(['MacBook', 'Android phone']);
 });
 
 it('builds the set-up form from Filament fields', function () {
@@ -131,6 +180,6 @@ it('builds the set-up form from Filament fields', function () {
 
     Livewire::test(EditProfile::class)
         ->mountAction(setUpAction())
-        ->assertFormFieldExists('name', 'mountedActionSchema0', fn (TextInput $field): bool => $field->isRequired())
+        ->assertFormFieldExists('name', 'mountedActionSchema0', fn (TextInput $field): bool => ! $field->isRequired())
         ->assertFormFieldExists('credential', 'mountedActionSchema0');
 });

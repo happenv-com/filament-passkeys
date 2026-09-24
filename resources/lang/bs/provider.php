@@ -4,11 +4,19 @@ return [
     'management_schema' => [
         'actions' => [
             'label' => 'Verifikacija pristupnim ključem',
-            'below_content' => 'Koristite pristupni ključ na ovom uređaju (Face ID, Touch ID, Windows Hello, sigurnosni ključ) da potvrdite svoj identitet prilikom prijave.',
+            'below_content' => 'Koristite pristupni ključ (Face ID, Touch ID, Windows Hello, Android, sigurnosni ključ) da potvrdite svoj identitet prilikom prijave. Dodajte po jedan za svaki uređaj s kojeg se prijavljujete.',
             'messages' => [
                 'enabled' => 'Uključeno',
                 'disabled' => 'Isključeno',
             ],
+        ],
+        'passkeys' => [
+            'columns' => [
+                'name' => 'Pristupni ključ',
+                'last_used_at' => 'Posljednja upotreba',
+                'actions' => 'Radnje',
+            ],
+            'never_used' => 'Nikad',
         ],
     ],
     'login_form' => [

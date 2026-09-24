@@ -4,11 +4,19 @@ return [
     'management_schema' => [
         'actions' => [
             'label' => 'Geçiş anahtarı doğrulaması',
-            'below_content' => 'Giriş sırasında kimliğinizi doğrulamak için bu cihazdaki bir geçiş anahtarını (Face ID, Touch ID, Windows Hello, güvenlik anahtarı) kullanın.',
+            'below_content' => 'Giriş sırasında kimliğinizi doğrulamak için bir geçiş anahtarı (Face ID, Touch ID, Windows Hello, Android, güvenlik anahtarı) kullanın. Giriş yaptığınız her cihaz için bir tane ekleyin.',
             'messages' => [
                 'enabled' => 'Etkin',
                 'disabled' => 'Devre dışı',
             ],
+        ],
+        'passkeys' => [
+            'columns' => [
+                'name' => 'Geçiş anahtarı',
+                'last_used_at' => 'Son kullanım',
+                'actions' => 'İşlemler',
+            ],
+            'never_used' => 'Hiç',
         ],
     ],
     'login_form' => [

@@ -4,11 +4,19 @@ return [
     'management_schema' => [
         'actions' => [
             'label' => 'Passkey-Verifizierung',
-            'below_content' => 'Verwenden Sie einen Passkey auf diesem Gerät (Face ID, Touch ID, Windows Hello, Sicherheitsschlüssel), um Ihre Identität bei der Anmeldung zu verifizieren.',
+            'below_content' => 'Verwenden Sie einen Passkey auf diesem Gerät (Face ID, Touch ID, Windows Hello, Android, Sicherheitsschlüssel), um Ihre Identität bei der Anmeldung zu verifizieren. Fügen Sie für jedes Gerät, mit dem Sie sich anmelden, einen hinzu.',
             'messages' => [
                 'enabled' => 'Aktiviert',
                 'disabled' => 'Deaktiviert',
             ],
+        ],
+        'passkeys' => [
+            'columns' => [
+                'name' => 'Passkey',
+                'last_used_at' => 'Zuletzt verwendet',
+                'actions' => 'Aktionen',
+            ],
+            'never_used' => 'Nie',
         ],
     ],
     'login_form' => [

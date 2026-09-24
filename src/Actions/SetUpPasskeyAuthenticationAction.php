@@ -21,20 +21,24 @@ class SetUpPasskeyAuthenticationAction
     public static function make(PasskeyAuthentication $passkeyAuthentication): Action
     {
         return Action::make('setUpPasskeyAuthentication')
-            ->label(__('filament-passkeys::actions/set-up.label'))
+            ->label(fn (): string => $passkeyAuthentication->isEnabled(Filament::auth()->user())
+                ? __('filament-passkeys::actions/set-up.add_label')
+                : __('filament-passkeys::actions/set-up.label'))
             ->color('primary')
             ->icon(Heroicon::FingerPrint)
             ->link()
             ->modalWidth(Width::Large)
             ->modalIcon(Heroicon::OutlinedFingerPrint)
             ->modalIconColor('primary')
-            ->modalHeading(__('filament-passkeys::actions/set-up.modal.heading'))
+            ->modalHeading(fn (): string => $passkeyAuthentication->isEnabled(Filament::auth()->user())
+                ? __('filament-passkeys::actions/set-up.modal.add_heading')
+                : __('filament-passkeys::actions/set-up.modal.heading'))
             ->modalDescription(__('filament-passkeys::actions/set-up.modal.description'))
             ->schema([
                 TextInput::make('name')
                     ->label(__('filament-passkeys::actions/set-up.modal.form.name.label'))
                     ->placeholder(__('filament-passkeys::actions/set-up.modal.form.name.placeholder'))
-                    ->required()
+                    ->helperText(__('filament-passkeys::actions/set-up.modal.form.name.helper_text'))
                     ->maxLength(255)
                     ->autocomplete(false)
                     ->autofocus(),
@@ -59,7 +63,7 @@ class SetUpPasskeyAuthenticationAction
                 }
 
                 try {
-                    $passkeyAuthentication->storeRegistration($user, $data['name'], $data['credential']);
+                    $passkeyAuthentication->storeRegistration($user, $data['name'] ?? null, $data['credential']);
                 } catch (Throwable) {
                     $fields = $schema->getFlatFields();
 

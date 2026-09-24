@@ -4,11 +4,19 @@ return [
     'management_schema' => [
         'actions' => [
             'label' => 'Verificare cu cheie de acces',
-            'below_content' => 'Folosiți o cheie de acces pe acest dispozitiv (Face ID, Touch ID, Windows Hello, cheie de securitate) pentru a vă verifica identitatea la autentificare.',
+            'below_content' => 'Folosiți o cheie de acces (Face ID, Touch ID, Windows Hello, Android, cheie de securitate) pentru a vă verifica identitatea la autentificare. Adăugați una pentru fiecare dispozitiv de pe care vă conectați.',
             'messages' => [
                 'enabled' => 'Activat',
                 'disabled' => 'Dezactivat',
             ],
+        ],
+        'passkeys' => [
+            'columns' => [
+                'name' => 'Cheie de acces',
+                'last_used_at' => 'Ultima utilizare',
+                'actions' => 'Acțiuni',
+            ],
+            'never_used' => 'Niciodată',
         ],
     ],
     'login_form' => [
