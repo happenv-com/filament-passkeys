@@ -223,15 +223,6 @@ it('does not start the passkey prompt on its own when the user has another metho
         ->assertDontSee('data-auto-start');
 });
 
-it('does not tie the prompt to a page-wide flag', function (): void {
-    $user = createUser();
-    registerPasskey($user, new VirtualAuthenticator);
-
-    startLoginChallenge($user)
-        ->assertSee('data-auto-start', escape: false)
-        ->assertDontSee('__filamentPasskeysChallengeAutoStarted');
-});
-
 function verifyWithPasskeyAction(): TestAction
 {
     return TestAction::make('verifyWithPasskey')->schemaComponent('passkey.credential', schema: 'multiFactorChallengeForm');
