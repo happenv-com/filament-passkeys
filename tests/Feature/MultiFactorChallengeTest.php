@@ -200,7 +200,7 @@ it('starts the passkey prompt on its own by default', function (): void {
     registerPasskey($user, new VirtualAuthenticator);
 
     startLoginChallenge($user)
-        ->assertSee('__filamentPasskeysChallengeAutoStarted', escape: false);
+        ->assertSee('data-auto-start', escape: false);
 });
 
 it('does not start the passkey prompt on its own when the option is off', function (): void {
@@ -210,7 +210,7 @@ it('does not start the passkey prompt on its own when the option is off', functi
     registerPasskey($user, new VirtualAuthenticator);
 
     startLoginChallenge($user)
-        ->assertDontSee('__filamentPasskeysChallengeAutoStarted');
+        ->assertDontSee('data-auto-start');
 });
 
 it('does not start the passkey prompt on its own when the user has another method', function (): void {
@@ -220,6 +220,15 @@ it('does not start the passkey prompt on its own when the user has another metho
     registerPasskey($user, new VirtualAuthenticator);
 
     startLoginChallenge($user)
+        ->assertDontSee('data-auto-start');
+});
+
+it('does not tie the prompt to a page-wide flag', function (): void {
+    $user = createUser();
+    registerPasskey($user, new VirtualAuthenticator);
+
+    startLoginChallenge($user)
+        ->assertSee('data-auto-start', escape: false)
         ->assertDontSee('__filamentPasskeysChallengeAutoStarted');
 });
 

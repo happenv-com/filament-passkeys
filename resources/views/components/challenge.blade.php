@@ -32,10 +32,12 @@
         }"
         x-on:filament-passkeys-challenge-options-ready.window="verify($event.detail.options)"
         @if ($autoStart ?? false)
-            {{-- Once per page load, so a failed attempt does not start another prompt. --}}
+            data-auto-start
+            {{-- Only while nothing has been queued: a challenge redisplayed after a
+                 rejected assertion waits for the user, while one shown afresh -- in a
+                 reopened modal, say -- starts on its own. --}}
             x-init="
-                if (! window.__filamentPasskeysChallengeAutoStarted) {
-                    window.__filamentPasskeysChallengeAutoStarted = true
+                if (! $wire.$get(@js($getStatePath()))) {
                     $nextTick(() => $el.querySelector('.fi-btn')?.click())
                 }
             "
