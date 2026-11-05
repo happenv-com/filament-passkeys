@@ -2,6 +2,17 @@
 
 All notable changes to `filament-passkeys` are documented in this file. Each section is written automatically from the GitHub release notes when a release is published — do not edit it by hand.
 
+## v1.5.1 - 2026-11-05
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.x -->
+### What's Changed
+
+#### Fixes
+
+* fix: harden related origins resolution and ordering by @webard in https://github.com/happenv-com/filament-passkeys/pull/18
+
+**Full Changelog**: https://github.com/happenv-com/filament-passkeys/compare/v1.5.0...v1.5.1
+
 ## v1.5.0 - 2026-11-05
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.x -->
