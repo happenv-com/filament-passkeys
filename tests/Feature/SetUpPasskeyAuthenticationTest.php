@@ -4,6 +4,7 @@ use Filament\Actions\Testing\TestAction;
 use Filament\Auth\Pages\EditProfile;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ViewField;
 use Happenv\FilamentPasskeys\PasskeyAuthentication;
 use Happenv\FilamentPasskeys\Tests\Support\VirtualAuthenticator;
 use Laravel\Passkeys\Events\PasskeyRegistered;
@@ -180,4 +181,14 @@ it('builds the set-up form from Filament fields', function (): void {
         ->mountAction(setUpAction())
         ->assertFormFieldExists('name', 'mountedActionSchema0', fn (TextInput $field): bool => ! $field->isRequired())
         ->assertFormFieldExists('credential', 'mountedActionSchema0');
+});
+
+it('hands the RP ID to the set-up modal so the browser can detect a related origin', function (): void {
+    config()->set('passkeys.relying_party_id', 'acme.example.test');
+
+    actingAs(createUser());
+
+    Livewire::test(EditProfile::class)
+        ->mountAction(setUpAction())
+        ->assertSchemaComponentExists('credential', 'mountedActionSchema0', fn (ViewField $field): bool => $field->getViewData()['rpId'] === 'acme.example.test');
 });

@@ -37,6 +37,18 @@ class VirtualAuthenticator
     }
 
     /**
+     * The same authenticator (same key and credential) used from another origin,
+     * e.g. a related origin of the RP ID.
+     */
+    public function onOrigin(string $origin): static
+    {
+        $authenticator = clone $this;
+        $authenticator->origin = $origin;
+
+        return $authenticator;
+    }
+
+    /**
      * @param  array<string, mixed>  $options  Creation options in their browser (JSON) form.
      */
     public function register(array $options): string

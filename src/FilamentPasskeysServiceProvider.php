@@ -40,6 +40,10 @@ class FilamentPasskeysServiceProvider extends PackageServiceProvider
     {
         Livewire::component('filament-passkeys-authenticate', AuthenticatePasskey::class);
 
+        if (config('filament-passkeys.related_origins.enabled', false)) {
+            $this->loadRoutesFrom(__DIR__ . '/../routes/related-origins.php');
+        }
+
         // Filament's login page gives its challenge a "Confirm sign in" button that
         // passkeys never need: the ceremony submits the form itself. Both of the
         // page's submit actions are called `authenticate`.

@@ -3,6 +3,8 @@
 use Happenv\FilamentPasskeys\Livewire\AuthenticatePasskey;
 use Happenv\FilamentPasskeys\Tests\Fixtures\User;
 use Happenv\FilamentPasskeys\Tests\Support\VirtualAuthenticator;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Validation\ValidationException;
 use Laravel\Passkeys\Passkeys;
 use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
@@ -125,4 +127,60 @@ it('does not send a notification after signing in', function (): void {
         ->call('authenticate', $authenticator->authenticate($options, $user->getPasskeyUserHandle()))
         ->assertRedirect('/admin')
         ->assertNotNotified();
+});
+
+it('hands the RP ID to the login button so the browser can detect a related origin', function (): void {
+    config()->set('passkeys.relying_party_id', 'acme.example.test');
+
+    passkeyLoginButton()
+        ->assertSeeHtml("isCeremonyBlocked('acme.example.test')")
+        ->assertSee(__('filament-passkeys::related_origin.unsupported'));
+});
+
+it('remembers the user when the remember box was ticked', function (): void {
+    $user = createUser();
+    registerPasskey($user, $authenticator = new VirtualAuthenticator);
+
+    $component = passkeyLoginButton();
+    $options = requestLoginOptions($component);
+
+    $component
+        ->call('authenticate', $authenticator->authenticate($options, $user->getPasskeyUserHandle()), true)
+        ->assertRedirect('/admin');
+
+    assertAuthenticatedAs($user);
+    expect($user->fresh()->getRememberToken())->not->toBeEmpty()
+        ->and(Cookie::hasQueued(Auth::guard()->getRecallerName()))->toBeTrue();
+});
+
+it('does not remember the user by default or when the box was not ticked', function (array $arguments): void {
+    $user = createUser();
+    registerPasskey($user, $authenticator = new VirtualAuthenticator);
+
+    $component = passkeyLoginButton();
+    $options = requestLoginOptions($component);
+
+    $component
+        ->call('authenticate', $authenticator->authenticate($options, $user->getPasskeyUserHandle()), ...$arguments)
+        ->assertRedirect('/admin');
+
+    assertAuthenticatedAs($user);
+    expect($user->fresh()->getRememberToken())->toBeEmpty()
+        ->and(Cookie::hasQueued(Auth::guard()->getRecallerName()))->toBeFalse();
+})->with([[[]], [[false]]]);
+
+it('limits how often a guest can ask for login options', function (): void {
+    $component = passkeyLoginButton();
+
+    foreach (range(1, 20) as $attempt) {
+        $component->call('getOptions')->assertDispatched('passkey-authentication-options-ready');
+    }
+
+    session()->forget(AuthenticatePasskey::OPTIONS_SESSION_KEY);
+
+    passkeyLoginButton()
+        ->call('getOptions')
+        ->assertNotDispatched('passkey-authentication-options-ready');
+
+    expect(session()->has(AuthenticatePasskey::OPTIONS_SESSION_KEY))->toBeFalse();
 });

@@ -1,5 +1,15 @@
-<div class="filament-passkeys-login-wrapper">
-    <div class="filament-passkeys-divider">
+<div
+    class="filament-passkeys-login-wrapper"
+    x-data="{
+        // On a related origin the button stays hidden until the browser has confirmed
+        // it supports Related Origin Requests; without that the ceremony cannot work.
+        unsupported: window.FilamentPasskeys?.isRelatedOrigin(@js($rpId)) ?? false,
+        // Set when the browser refused a ceremony it had claimed to support.
+        refused: false,
+    }"
+    x-init="unsupported = (await window.FilamentPasskeys?.isCeremonyBlocked(@js($rpId))) ?? false"
+>
+    <div class="filament-passkeys-divider" x-show="! unsupported">
         <span>{{ __('filament-passkeys::login_button.or') }}</span>
     </div>
 
@@ -11,6 +21,7 @@
         wire:loading.attr="disabled"
         wire:target="getOptions,authenticate"
         class="filament-passkeys-login-button"
+        x-show="! unsupported"
     >
         <span wire:loading.remove wire:target="getOptions,authenticate">
             {{ __('filament-passkeys::login_button.label') }}
@@ -23,6 +34,10 @@
     @if ($message = session()->get('authenticatePasskey::message'))
         <div class="filament-passkeys-login-error">{{ $message }}</div>
     @endif
+
+    <div class="filament-passkeys-login-error" x-show="refused" x-cloak role="alert">
+        {{ __('filament-passkeys::related_origin.unsupported') }}
+    </div>
 
     @script
     <script>
@@ -47,7 +62,11 @@
 
                 try {
                     const assertion = await window.FilamentPasskeys.startAuthentication({ optionsJSON: options });
-                    @this.call('authenticate', JSON.stringify(assertion));
+                    // The login form belongs to the parent Login page. Panels whose form has
+                    // no remember field leave it undefined, which means a session-only login.
+                    const remember = $wire.$parent?.data?.remember === true;
+
+                    @this.call('authenticate', JSON.stringify(assertion), remember);
                 } catch (err) {
                     // WebAuthn reports a cancellation as an error. NotAllowedError is the
                     // user dismissing the prompt or letting it time out - the browser gives
@@ -56,6 +75,14 @@
                     // which is what navigating away looks like. Neither is a fault, and
                     // logging them red sends people hunting a bug that is not there.
                     if (err?.name === 'NotAllowedError' || err?.name === 'AbortError') {
+                        return;
+                    }
+
+                    // A client without Related Origin Requests support (a password manager,
+                    // say) refuses the ceremony on a related origin with a SecurityError.
+                    // The button cannot work here, so it goes away and says why.
+                    if (window.FilamentPasskeys.isRelatedOriginFailure(err, @js($rpId))) {
+                        Object.assign(Alpine.$data($wire.$el), { unsupported: true, refused: true });
                         return;
                     }
 
