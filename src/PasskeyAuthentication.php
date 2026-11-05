@@ -20,7 +20,6 @@ use Happenv\FilamentPasskeys\Actions\DisablePasskeyAuthenticationAction;
 use Happenv\FilamentPasskeys\Actions\RemovePasskeyAction;
 use Happenv\FilamentPasskeys\Actions\SetUpPasskeyAuthenticationAction;
 use Happenv\FilamentPasskeys\Contracts\HasPasskeysAuthentication;
-use Happenv\FilamentPasskeys\Exceptions\TooManyRelatedOrigins;
 use Illuminate\Auth\SessionGuard;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Laravel\Passkeys\Actions\GenerateRegistrationOptions;
@@ -215,6 +214,8 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
      */
     public function storeRegistration(HasPasskeysAuthentication $user, ?string $name, #[SensitiveParameter] string $credential): Passkey
     {
+        $webauthnOrigins = FilamentPasskeys::webauthnOrigins(request());
+
         $serializedOptions = session()->pull(static::REGISTRATION_OPTIONS_SESSION_KEY);
 
         if (blank($serializedOptions)) {
@@ -223,7 +224,7 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
 
         $publicKeyCredential = WebAuthn::fromJson($credential, PublicKeyCredential::class);
 
-        return FilamentPasskeys::withRelatedOrigins(fn (): Passkey => app(StorePasskey::class)(
+        return FilamentPasskeys::withWebauthnOrigins($webauthnOrigins, fn (): Passkey => app(StorePasskey::class)(
             $user,
             filled($name) ? $name : $this->getDefaultPasskeyName($publicKeyCredential),
             $publicKeyCredential,
@@ -268,6 +269,9 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
      */
     public function verifyChallenge(#[SensitiveParameter] string $assertion, HasPasskeysAuthentication $user): bool
     {
+        // Outside the try: a failing resolver is the app's error, not a wrong passkey.
+        $webauthnOrigins = FilamentPasskeys::webauthnOrigins(request());
+
         $serializedOptions = session()->pull(static::CHALLENGE_OPTIONS_SESSION_KEY);
 
         if (blank($serializedOptions)) {
@@ -275,14 +279,11 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
         }
 
         try {
-            FilamentPasskeys::withRelatedOrigins(fn (): Passkey => app(VerifyPasskey::class)(
+            FilamentPasskeys::withWebauthnOrigins($webauthnOrigins, fn (): Passkey => app(VerifyPasskey::class)(
                 WebAuthn::fromJson($assertion, PublicKeyCredential::class),
                 WebAuthn::fromJson($serializedOptions, PublicKeyCredentialRequestOptions::class),
                 $user,
             ));
-        } catch (TooManyRelatedOrigins $exception) {
-            // A misconfiguration, not a bad passkey: let it surface.
-            throw $exception;
         } catch (Throwable) {
             return false;
         }

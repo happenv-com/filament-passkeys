@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Happenv\FilamentPasskeys;
 
 use Closure;
+use Happenv\FilamentPasskeys\Exceptions\RelatedOriginsResolverFailed;
 use Happenv\FilamentPasskeys\Exceptions\TooManyRelatedOrigins;
 use Illuminate\Http\Request;
 use Laravel\Passkeys\Passkeys;
+use Throwable;
 
 class FilamentPasskeys
 {
@@ -24,6 +26,12 @@ class FilamentPasskeys
      * that may use the relying party ID besides the RP ID's own origin. Without
      * one, `filament-passkeys.related_origins.origins` is used.
      *
+     * Every listed origin can obtain assertions for the whole RP ID, so list only
+     * origins you control, from trusted server-side data keyed by the validated
+     * host the request is served on: never from query, header or body input.
+     * The callback is registered once at boot and runs on every relevant request,
+     * so resolve services inside it (`app(...)`) instead of capturing them.
+     *
      * @param  (Closure(Request): iterable<mixed>)|null  $resolver
      */
     public static function relatedOriginsUsing(?Closure $resolver): void
@@ -36,12 +44,18 @@ class FilamentPasskeys
      * Entries that are not an https origin (or http on localhost) are dropped.
      *
      * @return list<string>
+     *
+     * @throws RelatedOriginsResolverFailed
      */
     public static function relatedOrigins(Request $request): array
     {
-        $resolved = (static::$relatedOriginsResolver instanceof Closure)
-            ? (static::$relatedOriginsResolver)($request)
-            : config('filament-passkeys.related_origins.origins', []);
+        try {
+            $resolved = (static::$relatedOriginsResolver instanceof Closure)
+                ? (static::$relatedOriginsResolver)($request)
+                : config('filament-passkeys.related_origins.origins', []);
+        } catch (Throwable $exception) {
+            throw new RelatedOriginsResolverFailed($exception);
+        }
 
         $origins = [];
 
@@ -66,6 +80,7 @@ class FilamentPasskeys
      *
      * @return list<string>
      *
+     * @throws RelatedOriginsResolverFailed
      * @throws TooManyRelatedOrigins
      */
     public static function webauthnOrigins(Request $request): array
@@ -154,12 +169,26 @@ class FilamentPasskeys
      * @param  Closure(): TResult  $ceremony
      * @return TResult
      *
+     * @throws RelatedOriginsResolverFailed
      * @throws TooManyRelatedOrigins
      */
     public static function withRelatedOrigins(Closure $ceremony, ?Request $request = null): mixed
     {
-        $webauthnOrigins = static::webauthnOrigins($request ?? request());
+        return static::withWebauthnOrigins(static::webauthnOrigins($request ?? request()), $ceremony);
+    }
 
+    /**
+     * Like withRelatedOrigins(), with origins already resolved by webauthnOrigins().
+     * Resolving them first keeps a resolver failure apart from a failed ceremony.
+     *
+     * @template TResult
+     *
+     * @param  list<string>  $webauthnOrigins
+     * @param  Closure(): TResult  $ceremony
+     * @return TResult
+     */
+    public static function withWebauthnOrigins(array $webauthnOrigins, Closure $ceremony): mixed
+    {
         if ($webauthnOrigins === []) {
             return $ceremony();
         }
@@ -181,7 +210,9 @@ class FilamentPasskeys
     /**
      * Normalise an origin to `scheme://host[:port]`: lowercase, without the
      * default port or a trailing slash. Returns null for anything that is not an
-     * https origin, or an http one on `localhost` (for local development).
+     * https origin, or an http one on `localhost` (for local development), and
+     * for hosts no browser relates to an RP ID: IP addresses, single labels
+     * other than `localhost`, and a trailing dot.
      */
     public static function normalizeOrigin(mixed $origin): ?string
     {
@@ -211,13 +242,26 @@ class FilamentPasskeys
             return null;
         }
 
+        if ((filter_var($host, FILTER_VALIDATE_IP) !== false) || str_ends_with($host, '.')) {
+            return null;
+        }
+
         $isLocalhost = ($host === 'localhost') || str_ends_with($host, '.localhost');
+
+        if ((! str_contains($host, '.')) && (! $isLocalhost)) {
+            return null;
+        }
 
         if (($scheme !== 'https') && (($scheme !== 'http') || (! $isLocalhost))) {
             return null;
         }
 
         $port = $parts['port'] ?? null;
+
+        if ($port === 0) {
+            return null;
+        }
+
         $defaultPort = ($scheme === 'https') ? 443 : 80;
 
         return "{$scheme}://{$host}" . ((($port !== null) && ($port !== $defaultPort)) ? ":{$port}" : '');

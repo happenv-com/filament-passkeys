@@ -6,7 +6,6 @@ use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
 use DanHarrin\LivewireRateLimiting\WithRateLimiting;
 use Filament\Facades\Filament;
 use Filament\Models\Contracts\FilamentUser;
-use Happenv\FilamentPasskeys\Exceptions\TooManyRelatedOrigins;
 use Happenv\FilamentPasskeys\FilamentPasskeys;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
@@ -70,6 +69,10 @@ class AuthenticatePasskey extends Component
      */
     public function authenticate(string $assertion, bool $remember = false): void
     {
+        // Resolved before the rate limit and the try: a failing resolver is the
+        // app's error, not a wrong passkey, and must neither count nor be hidden.
+        $webauthnOrigins = FilamentPasskeys::webauthnOrigins(request());
+
         try {
             $this->rateLimit(5);
         } catch (TooManyRequestsException) {
@@ -87,13 +90,10 @@ class AuthenticatePasskey extends Component
         }
 
         try {
-            $passkey = FilamentPasskeys::withRelatedOrigins(fn (): Passkey => app(VerifyPasskey::class)(
+            $passkey = FilamentPasskeys::withWebauthnOrigins($webauthnOrigins, fn (): Passkey => app(VerifyPasskey::class)(
                 WebAuthn::fromJson($assertion, PublicKeyCredential::class),
                 WebAuthn::fromJson($serializedOptions, PublicKeyCredentialRequestOptions::class),
             ));
-        } catch (TooManyRelatedOrigins $exception) {
-            // A misconfiguration, not a bad passkey: let it surface.
-            throw $exception;
         } catch (Throwable) {
             $this->fail();
 

@@ -256,7 +256,26 @@ Passkeys are bound to an RP ID, and a panel normally runs on that RP ID or one o
 
 Origins are normalised (lowercase scheme and host, no default port, no trailing slash) and de-duplicated. Entries that are not an `https://` origin are dropped, e.g. a bare host, a path or a query; `http://` is kept only for `localhost` and `*.localhost`, for local development. Internationalised domains must be given in their punycode form.
 
-**One list for the browser and the server.** While a passkey is registered or verified (set-up, MFA challenge, "Sign in with a passkey"), the package adds the RP ID's origin and the related origins to `passkeys.allowed_origins` and restores the configured value right after the ceremony. The server therefore accepts what the file lists, plus whatever you already allow, and nothing leaks into the next request under Octane. The resolver runs only for the file and for ceremonies, not on every request. **Backward compatible:** without a resolver and with `origins` empty (the default), the package behaves exactly like 1.4.x: no route is registered and `passkeys.allowed_origins` is neither changed nor extended, so the `laravel/passkeys` defaults (`APP_URL`) apply as before. A resolver that returns nothing behaves the same way. The `laravel/passkeys` HTTP routes (`register_passkeys_routes`) are not covered; to cover them, add a middleware to `passkeys.middleware` that returns `FilamentPasskeys::withRelatedOrigins(fn () => $next($request), $request)`.
+**One list for the browser and the server.** While a passkey is registered or verified (set-up, MFA challenge, "Sign in with a passkey"), the package adds the RP ID's origin and the related origins to `passkeys.allowed_origins` and restores the configured value right after the ceremony. The server therefore accepts what the file lists, plus whatever you already allow, and nothing leaks into the next request under Octane. The resolver runs only for the file and for ceremonies, not on every request. **Backward compatible:** without a resolver and with `origins` empty (the default), the package behaves exactly like 1.4.x: no route is registered and `passkeys.allowed_origins` is neither changed nor extended, so the `laravel/passkeys` defaults (`APP_URL`) apply as before. A resolver that returns nothing behaves the same way.
+
+**When the resolver fails.** An exception thrown by the resolver is wrapped in `Happenv\FilamentPasskeys\Exceptions\RelatedOriginsResolverFailed`, with the original as its previous exception. It surfaces as an ordinary application error: a reported `500` on the file and on every ceremony. It never shows up as an invalid passkey or a failed set-up, and it does not count toward the login button's rate limit.
+
+**`laravel/passkeys` HTTP routes.** The routes enabled by `register_passkeys_routes` are not covered on their own. To cover them, append a middleware like this one to `passkeys.middleware`, after `web`:
+
+```php
+use Closure;
+use Happenv\FilamentPasskeys\FilamentPasskeys;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+class AllowRelatedPasskeyOrigins
+{
+    public function handle(Request $request, Closure $next): Response
+    {
+        return FilamentPasskeys::withRelatedOrigins(fn (): Response => $next($request), $request);
+    }
+}
+```
 
 **Limit.** Browsers honour related origins from a limited number of registrable domain labels (WebAuthn L3 `maxLabels`, at least 5): `shop.customer.com` and `customer.pl` share the label `customer`. Origins beyond the limit are silently ignored, so passkeys would just fail on them. Without a Public Suffix List the package counts conservatively: distinct **hosts** among the related origins, never fewer than labels. The RP ID's own host is not counted, since the file lists it last where it never takes a slot, and duplicates count once after normalisation. When the count exceeds `related_origins.max_origins` (default `5`), building the list throws `Happenv\FilamentPasskeys\Exceptions\TooManyRelatedOrigins`, both for the file and for every ceremony, rather than truncating it. The exception exposes `$count` and `$limit`. Validate when a domain is added, so the limit is never reached in production:
 
@@ -276,6 +295,13 @@ try {
 
 `FilamentPasskeys::maxRelatedOrigins()` returns the configured limit.
 
+**Security model.** Every origin in the list can make browsers produce assertions for the whole RP ID, for every user registered under it. The server accepts them because the origin is listed. Treat the list as part of your authentication boundary:
+
+- **List only origins you control**, for as long as they are listed. Keep the list in sync with DNS ownership: remove a customer domain the moment it stops pointing at you, e.g. it is detached, fails verification or lapses. Otherwise whoever takes over the domain can serve a phishing page that signs in as your users. Removal takes effect on the server immediately; browsers may keep a cached file for up to `cache_max_age`.
+- **Key the resolver only on the validated host it is serving**, e.g. through `TrustHosts` or your tenancy package's host lookup, and derive the list from trusted server-side data. Never derive it from query, header or body input: during verification the request is shaped by whoever sends the assertion. Return the same list for the RP ID's host and for each of its related hosts, and set the per-request `passkeys.relying_party_id` through the same tenant lookup.
+- **Prefer a per-tenant RP ID when tenants bring their own domains**, e.g. `acme.example.com` rather than one shared `example.com`. A lost customer domain then exposes only that tenant's users, not everyone's.
+- Resolve services inside the resolver (`app(...)`, `$request`); don't capture them when registering it. Under Octane the closure outlives the request it was registered in.
+
 **Multi-tenant apps.** When each tenant has its own RP ID (e.g. `acme.example.com`, set per request) and its own custom domains, return the current tenant's domains, and nothing on any other host:
 
 ```php
@@ -294,7 +320,7 @@ FilamentPasskeys::relatedOriginsUsing(function (Request $request): array {
 
 The file request lands on the tenant's RP ID host, a ceremony on the custom domain; both resolve the same tenant, so the file and the server agree.
 
-**Route options.** The route runs outside the `web` middleware group: no session, no cookies, no CSRF. `related_origins.middleware` is its whole middleware stack (default `[]`), e.g. `['throttle:60,1']` to rate-limit it. `related_origins.cache_max_age` sets `Cache-Control: public, max-age=N` (default `300` seconds), so a new domain is picked up within that time.
+**Route options.** The route runs outside the `web` middleware group: no session, no cookies, no CSRF. `related_origins.middleware` is its whole middleware stack (default `[]`). The file is public and answers on every host, so when the resolver queries a database, add a throttle, e.g. `['throttle:60,1']`. `related_origins.cache_max_age` sets `Cache-Control: public, max-age=N` (default `300` seconds), so a new domain is picked up within that time. Your app's *global* middleware still runs, e.g. maintenance mode, tenancy initialisers, or debug bars that set cookies, so check it does not get in the way. With `enabled` on, don't also define a `/.well-known/webauthn` route in your app, because the two conflict. A static `public/.well-known/webauthn` file served by the web server takes precedence over the package's route.
 
 **CDNs and proxies.** Browsers fetch the file without cookies and cannot get past a redirect or a challenge page, so the ceremony fails. Make sure Cloudflare or any other CDN or WAF does not redirect `/.well-known/webauthn` (e.g. to `www.` or a login page), does not put a bot challenge or "Under Attack" interstitial in front of it, and does not cache it longer than you want. The response must be a plain `200` JSON from `https://{rpId}`.
 

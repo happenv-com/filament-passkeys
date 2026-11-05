@@ -4,14 +4,18 @@ use Filament\Actions\Testing\TestAction;
 use Filament\Auth\Pages\EditProfile;
 use Filament\Auth\Pages\Login;
 use Filament\Facades\Filament;
+use Happenv\FilamentPasskeys\Exceptions\RelatedOriginsResolverFailed;
 use Happenv\FilamentPasskeys\Exceptions\TooManyRelatedOrigins;
 use Happenv\FilamentPasskeys\FilamentPasskeys;
+use Happenv\FilamentPasskeys\FilamentPasskeysServiceProvider;
 use Happenv\FilamentPasskeys\Livewire\AuthenticatePasskey;
 use Happenv\FilamentPasskeys\PasskeyAuthentication;
 use Happenv\FilamentPasskeys\Tests\Fixtures\User;
 use Happenv\FilamentPasskeys\Tests\Support\VirtualAuthenticator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Exceptions;
 use Laravel\Passkeys\Passkeys;
+use Livewire\Features\SupportDisablingBackButtonCache\SupportDisablingBackButtonCache;
 use Livewire\Livewire;
 use Webauthn\PublicKeyCredentialCreationOptions;
 use Webauthn\PublicKeyCredentialRequestOptions;
@@ -26,14 +30,14 @@ afterEach(function (): void {
 });
 
 /**
- * Register the route the way the service provider does when the app boots with
- * `filament-passkeys.related_origins.enabled` set.
+ * Boot the service provider again with `filament-passkeys.related_origins.enabled`
+ * set, as an app that enables it does.
  */
 function enableRelatedOriginsRoute(): void
 {
     config()->set('filament-passkeys.related_origins.enabled', true);
 
-    require dirname(__DIR__, 2) . '/routes/related-origins.php';
+    app()->register(FilamentPasskeysServiceProvider::class, force: true);
 }
 
 /**
@@ -55,6 +59,13 @@ function signInWithPasskeyFrom(string $origin): User
 }
 
 describe('the /.well-known/webauthn route', function (): void {
+    beforeEach(function (): void {
+        // Livewire::test() renders outside HTTP, so a Filament page rendered by an
+        // earlier test leaves this flag on and Livewire's global middleware would
+        // add no-cache headers. A real request resets it after every response.
+        SupportDisablingBackButtonCache::$disableBackButtonCache = false;
+    });
+
     it('is not registered by default', function (): void {
         FilamentPasskeys::relatedOriginsUsing(fn (): array => ['https://shop.customer.test']);
 
@@ -76,6 +87,13 @@ describe('the /.well-known/webauthn route', function (): void {
             'http://insecure.customer.test',
             'https://shop.customer.test/login',
             'shop.customer.test',
+            'https://user:secret@shop.customer.test',
+            'https://shöp.customer.test',
+            'https://1.2.3.4',
+            'https://shop.customer.test.',
+            'https://customer',
+            'https://shop.customer.test:0',
+            'http://app.localhost:8000',
             'not an origin',
             '',
             42,
@@ -90,6 +108,7 @@ describe('the /.well-known/webauthn route', function (): void {
             'origins' => [
                 'https://shop.customer.test',
                 'https://other.customer.test:8443',
+                'http://app.localhost:8000',
                 'https://acme.example.test',
             ],
         ])
@@ -164,6 +183,45 @@ describe('server-side verification', function (): void {
         signInWithPasskeyFrom('https://evil.example.test');
 
         assertGuest();
+        expect(config('passkeys.allowed_origins'))->toBe(['http://localhost']);
+    });
+
+    it('restores the outer allowed origins after a nested ceremony', function (): void {
+        FilamentPasskeys::relatedOriginsUsing(fn (): array => ['https://shop.customer.test']);
+
+        [$outer, $inner, $afterInner] = FilamentPasskeys::withRelatedOrigins(fn (): array => [
+            Passkeys::allowedOrigins(),
+            FilamentPasskeys::withRelatedOrigins(fn (): array => Passkeys::allowedOrigins()),
+            Passkeys::allowedOrigins(),
+        ]);
+
+        expect($outer)->toBe(['http://localhost', 'https://shop.customer.test', 'https://localhost'])
+            ->and($inner)->toBe($outer)
+            ->and($afterInner)->toBe($outer)
+            ->and(Passkeys::allowedOrigins())->toBe(['http://localhost']);
+    });
+
+    it('calls the resolver only to verify a ceremony, not to render or start it', function (): void {
+        $calls = 0;
+        FilamentPasskeys::relatedOriginsUsing(function () use (&$calls): array {
+            $calls++;
+
+            return ['https://shop.customer.test'];
+        });
+
+        $user = createUser();
+        registerPasskey($user, $authenticator = new VirtualAuthenticator);
+
+        $component = Livewire::test(AuthenticatePasskey::class, ['panel' => 'admin', 'redirectUrl' => '/admin'])
+            ->call('getOptions');
+
+        expect($calls)->toBe(0);
+
+        $options = browserOptionsFromSession(AuthenticatePasskey::OPTIONS_SESSION_KEY, PublicKeyCredentialRequestOptions::class);
+        $component->call('authenticate', $authenticator->onOrigin('https://shop.customer.test')->authenticate($options, $user->getPasskeyUserHandle()));
+
+        expect($calls)->toBe(1);
+        assertAuthenticatedAs($user);
     });
 
     it('rejects a related origin when none are configured, as before', function (): void {
@@ -336,4 +394,81 @@ describe('the related origins limit', function (): void {
 
         get('/.well-known/webauthn');
     })->throws(TooManyRelatedOrigins::class, 'limit of 1');
+});
+
+describe('a failing resolver', function (): void {
+    beforeEach(function (): void {
+        FilamentPasskeys::relatedOriginsUsing(fn (): array => throw new RuntimeException('Tenant database is down.'));
+    });
+
+    it('answers 500 on the route and is reported', function (): void {
+        Exceptions::fake();
+        enableRelatedOriginsRoute();
+
+        get('/.well-known/webauthn')->assertInternalServerError();
+
+        Exceptions::assertReported(fn (RelatedOriginsResolverFailed $exception): bool => $exception->getPrevious()?->getMessage() === 'Tenant database is down.');
+    });
+
+    it('surfaces from the login button without counting toward its rate limit', function (): void {
+        $user = createUser();
+        registerPasskey($user, $authenticator = new VirtualAuthenticator);
+
+        $component = Livewire::test(AuthenticatePasskey::class, ['panel' => 'admin', 'redirectUrl' => '/admin'])
+            ->call('getOptions');
+        $options = browserOptionsFromSession(AuthenticatePasskey::OPTIONS_SESSION_KEY, PublicKeyCredentialRequestOptions::class);
+
+        // More attempts than the limit of 5: none of them is the user's fault.
+        foreach (range(1, 6) as $attempt) {
+            expect(fn () => $component->call('authenticate', 'not even an assertion'))
+                ->toThrow(RelatedOriginsResolverFailed::class, 'Tenant database is down.');
+        }
+
+        FilamentPasskeys::relatedOriginsUsing(fn (): array => ['https://shop.customer.test']);
+
+        $component->call('authenticate', $authenticator->onOrigin('https://shop.customer.test')->authenticate($options, $user->getPasskeyUserHandle()));
+
+        assertAuthenticatedAs($user);
+    });
+
+    it('surfaces from the multi-factor challenge', function (): void {
+        Filament::setCurrentPanel('admin');
+        $user = createUser();
+        registerPasskey($user, $authenticator = new VirtualAuthenticator);
+
+        $login = Livewire::test(Login::class)
+            ->fillForm(['email' => $user->email, 'password' => 'password'])
+            ->call('authenticate')
+            ->callAction(TestAction::make('verifyWithPasskey')->schemaComponent('passkey.credential', schema: 'multiFactorChallengeForm'));
+
+        $options = browserOptionsFromSession(PasskeyAuthentication::CHALLENGE_OPTIONS_SESSION_KEY, PublicKeyCredentialRequestOptions::class);
+
+        expect(fn () => $login
+            ->set('data.multiFactor.passkey.credential', $authenticator->authenticate($options, $user->getPasskeyUserHandle()))
+            ->call('authenticate'))
+            ->toThrow(RelatedOriginsResolverFailed::class);
+
+        assertGuest();
+    });
+
+    it('surfaces from passkey set-up', function (): void {
+        Filament::setCurrentPanel('admin');
+        actingAs($user = createUser());
+
+        $setUp = TestAction::make('setUpPasskeyAuthentication')->schemaComponent('passkey', schema: 'content');
+
+        $page = Livewire::test(EditProfile::class)
+            ->mountAction($setUp)
+            ->setActionData(['name' => 'Phone'])
+            ->callMountedAction();
+
+        $options = browserOptionsFromSession(PasskeyAuthentication::REGISTRATION_OPTIONS_SESSION_KEY, PublicKeyCredentialCreationOptions::class);
+
+        expect(fn () => $page
+            ->setActionData(['credential' => (new VirtualAuthenticator)->register($options)])
+            ->callMountedAction())
+            ->toThrow(RelatedOriginsResolverFailed::class);
+
+        expect($user->passkeys()->exists())->toBeFalse();
+    });
 });
