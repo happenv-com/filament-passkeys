@@ -87,7 +87,7 @@ describe('the /.well-known/webauthn route', function (): void {
             'http://insecure.customer.test',
             'https://shop.customer.test/login',
             'shop.customer.test',
-            'https://user:secret@shop.customer.test',
+            'https://user@shop.customer.test',
             'https://shöp.customer.test',
             'https://1.2.3.4',
             'https://shop.customer.test.',
