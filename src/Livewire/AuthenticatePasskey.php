@@ -69,8 +69,24 @@ class AuthenticatePasskey extends Component
      */
     public function authenticate(string $assertion, bool $remember = false): void
     {
-        // Resolved before the rate limit and the try: a failing resolver is the
-        // app's error, not a wrong passkey, and must neither count nor be hidden.
+        // Cheap checks first, so a throttled guest or one without pending options
+        // never triggers the (possibly database-backed) origins resolver.
+        if ($this->isRateLimited(5)) {
+            $this->fail();
+
+            return;
+        }
+
+        if (blank(session()->get(self::OPTIONS_SESSION_KEY))) {
+            $this->hitRateLimiter();
+            $this->fail();
+
+            return;
+        }
+
+        // Resolved before the attempt is recorded and outside the try: a failing
+        // resolver is the app's error, not a wrong passkey, and must neither
+        // count nor be hidden.
         $webauthnOrigins = FilamentPasskeys::webauthnOrigins(request());
 
         try {

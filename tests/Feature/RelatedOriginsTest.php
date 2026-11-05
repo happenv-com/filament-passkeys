@@ -385,6 +385,17 @@ describe('the related origins limit', function (): void {
             });
     });
 
+    it('lists every origin on the RP host after the others, whatever its port', function (): void {
+        config()->set('passkeys.relying_party_id', 'acme.example.test');
+
+        $customerOrigins = originsOnDistinctHosts(5);
+
+        FilamentPasskeys::relatedOriginsUsing(fn (): array => ['https://acme.example.test:8443', ...$customerOrigins]);
+
+        expect(FilamentPasskeys::webauthnOrigins(Request::create('/')))
+            ->toBe([...$customerOrigins, 'https://acme.example.test:8443', 'https://acme.example.test']);
+    });
+
     it('applies a lower configured limit to the file', function (): void {
         config()->set('filament-passkeys.related_origins.max_origins', 1);
         enableRelatedOriginsRoute();
@@ -410,6 +421,23 @@ describe('a failing resolver', function (): void {
         Exceptions::assertReported(fn (RelatedOriginsResolverFailed $exception): bool => $exception->getPrevious()?->getMessage() === 'Tenant database is down.');
     });
 
+    it('surfaces an exception thrown while iterating a lazy resolver result', function (): void {
+        FilamentPasskeys::relatedOriginsUsing(function (): Generator {
+            yield 'https://shop.customer.test';
+
+            throw new RuntimeException('Tenant database is down.');
+        });
+        Exceptions::fake();
+        enableRelatedOriginsRoute();
+
+        get('/.well-known/webauthn')->assertInternalServerError();
+
+        Exceptions::assertReported(fn (RelatedOriginsResolverFailed $exception): bool => $exception->getPrevious()?->getMessage() === 'Tenant database is down.');
+
+        expect(fn (): array => FilamentPasskeys::relatedOrigins(Request::create('/')))
+            ->toThrow(RelatedOriginsResolverFailed::class, 'Tenant database is down.');
+    });
+
     it('surfaces from the login button without counting toward its rate limit', function (): void {
         $user = createUser();
         registerPasskey($user, $authenticator = new VirtualAuthenticator);
@@ -431,6 +459,44 @@ describe('a failing resolver', function (): void {
         assertAuthenticatedAs($user);
     });
 
+    it('does not run the resolver for a throttled client', function (): void {
+        $calls = 0;
+        FilamentPasskeys::relatedOriginsUsing(function () use (&$calls): array {
+            $calls++;
+
+            return ['https://shop.customer.test'];
+        });
+
+        $component = Livewire::test(AuthenticatePasskey::class, ['panel' => 'admin', 'redirectUrl' => '/admin']);
+
+        foreach (range(1, 5) as $attempt) {
+            session()->put(AuthenticatePasskey::OPTIONS_SESSION_KEY, '{}');
+            $component->call('authenticate', 'not even an assertion');
+        }
+
+        expect($calls)->toBe(5);
+
+        session()->put(AuthenticatePasskey::OPTIONS_SESSION_KEY, '{}');
+
+        $component->call('authenticate', 'not even an assertion');
+
+        expect($calls)->toBe(5);
+    });
+
+    it('does not run the resolver without pending options', function (): void {
+        $calls = 0;
+        FilamentPasskeys::relatedOriginsUsing(function () use (&$calls): array {
+            $calls++;
+
+            return ['https://shop.customer.test'];
+        });
+
+        Livewire::test(AuthenticatePasskey::class, ['panel' => 'admin', 'redirectUrl' => '/admin'])
+            ->call('authenticate', 'not even an assertion');
+
+        expect($calls)->toBe(0);
+    });
+
     it('surfaces from the multi-factor challenge', function (): void {
         Filament::setCurrentPanel('admin');
         $user = createUser();
@@ -449,6 +515,30 @@ describe('a failing resolver', function (): void {
             ->toThrow(RelatedOriginsResolverFailed::class);
 
         assertGuest();
+    });
+
+    it('surfaces a lazy resolver failure from passkey set-up', function (): void {
+        FilamentPasskeys::relatedOriginsUsing(function (): Generator {
+            yield 'https://shop.customer.test';
+
+            throw new RuntimeException('Tenant database is down.');
+        });
+        Filament::setCurrentPanel('admin');
+        actingAs(createUser());
+
+        $setUp = TestAction::make('setUpPasskeyAuthentication')->schemaComponent('passkey', schema: 'content');
+
+        $page = Livewire::test(EditProfile::class)
+            ->mountAction($setUp)
+            ->setActionData(['name' => 'Phone'])
+            ->callMountedAction();
+
+        $options = browserOptionsFromSession(PasskeyAuthentication::REGISTRATION_OPTIONS_SESSION_KEY, PublicKeyCredentialCreationOptions::class);
+
+        expect(fn () => $page
+            ->setActionData(['credential' => (new VirtualAuthenticator)->register($options)])
+            ->callMountedAction())
+            ->toThrow(RelatedOriginsResolverFailed::class);
     });
 
     it('surfaces from passkey set-up', function (): void {

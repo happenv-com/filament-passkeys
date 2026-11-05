@@ -53,13 +53,16 @@ class FilamentPasskeys
             $resolved = (static::$relatedOriginsResolver instanceof Closure)
                 ? (static::$relatedOriginsResolver)($request)
                 : config('filament-passkeys.related_origins.origins', []);
+
+            // A generator or lazy collection runs its code while being iterated.
+            $resolved = is_iterable($resolved) ? iterator_to_array($resolved, false) : [];
         } catch (Throwable $exception) {
             throw new RelatedOriginsResolverFailed($exception);
         }
 
         $origins = [];
 
-        foreach ((is_iterable($resolved) ? $resolved : []) as $origin) {
+        foreach ($resolved as $origin) {
             $origin = static::normalizeOrigin($origin);
 
             if ($origin !== null) {
@@ -72,7 +75,7 @@ class FilamentPasskeys
 
     /**
      * The origins of the `/.well-known/webauthn` file: the related origins,
-     * then the RP ID's own origin. Empty when there are no related origins.
+     * then the origins on the RP host, then the RP ID's own origin. Empty when there are no related origins.
      *
      * The RP origin comes last because browsers stop at a limited number of
      * registrable domain labels while reading the list, and a same-site caller
@@ -94,17 +97,27 @@ class FilamentPasskeys
         static::assertWithinRelatedOriginsLimit($relatedOrigins);
 
         $relyingPartyOrigin = static::relyingPartyOrigin();
+        $relyingPartyHost = strtolower(Passkeys::relyingPartyId());
 
-        $relatedOrigins = array_values(array_filter(
+        $isOnRelyingPartyHost = fn (string $origin): bool => parse_url($origin, PHP_URL_HOST) === $relyingPartyHost;
+
+        $otherOrigins = array_values(array_filter(
             $relatedOrigins,
-            fn (string $origin): bool => $origin !== $relyingPartyOrigin,
+            fn (string $origin): bool => ! $isOnRelyingPartyHost($origin),
         ));
 
-        if ($relatedOrigins === []) {
+        if ($otherOrigins === []) {
             return [];
         }
 
-        return [...$relatedOrigins, $relyingPartyOrigin];
+        // Origins on the RP host, whatever their port, add no label to the limit
+        // count, so they go last like the RP origin and use up no browser slot.
+        $relyingPartyHostOrigins = array_values(array_filter(
+            $relatedOrigins,
+            fn (string $origin): bool => $isOnRelyingPartyHost($origin) && ($origin !== $relyingPartyOrigin),
+        ));
+
+        return [...$otherOrigins, ...$relyingPartyHostOrigins, $relyingPartyOrigin];
     }
 
     /**
