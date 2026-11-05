@@ -157,7 +157,7 @@ public function panel(Panel $panel): Panel
 
 That's it. The MFA section in the user profile page now shows a "Passkey verification" entry with **Set up** / **Turn off** buttons. Once a passkey is registered, **Set up** becomes **Add passkey** and a table lists every passkey with a **Remove** button. After a user signs in with their password, Filament asks them to confirm with one of their passkeys.
 
-Registering `FilamentPasskeysPlugin` is **optional**. Passkeys work as a second factor without it. The plugin only adds a "Sign in with a passkey" button directly on the login page, below the standard form, so users can sign in with a passkey without typing their email and password. Leave it out if you only want passkeys as a second factor.
+Registering `FilamentPasskeysPlugin` is **optional**. Passkeys work as a second factor without it. The plugin only adds a "Sign in with a passkey" button directly on the login page, below the standard form, so users can sign in with a passkey without typing their email and password. Leave it out if you only want passkeys as a second factor. The button honours the login form's "Remember me" checkbox, just like the password login.
 
 ### 3. Customising the redirect URL
 

@@ -54,7 +54,10 @@ class AuthenticatePasskey extends Component
         $this->dispatch('passkey-authentication-options-ready', options: WebAuthn::toBrowserArray($options));
     }
 
-    public function authenticate(string $assertion): void
+    /**
+     * @param  bool  $remember  Whether the login form's "Remember me" box was ticked.
+     */
+    public function authenticate(string $assertion, bool $remember = false): void
     {
         try {
             $this->rateLimit(5);
@@ -105,7 +108,7 @@ class AuthenticatePasskey extends Component
             return;
         }
 
-        Auth::guard($panel->getAuthGuard())->login($user);
+        Auth::guard($panel->getAuthGuard())->login($user, $remember);
         session()->regenerate();
 
         $this->redirect($this->redirectUrl ?: url('/'), navigate: false);

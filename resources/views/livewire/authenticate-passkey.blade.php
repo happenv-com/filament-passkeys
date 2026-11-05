@@ -62,7 +62,11 @@
 
                 try {
                     const assertion = await window.FilamentPasskeys.startAuthentication({ optionsJSON: options });
-                    @this.call('authenticate', JSON.stringify(assertion));
+                    // The login form belongs to the parent Login page. Panels whose form has
+                    // no remember field leave it undefined, which means a session-only login.
+                    const remember = $wire.$parent?.data?.remember === true;
+
+                    @this.call('authenticate', JSON.stringify(assertion), remember);
                 } catch (err) {
                     // WebAuthn reports a cancellation as an error. NotAllowedError is the
                     // user dismissing the prompt or letting it time out - the browser gives
