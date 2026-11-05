@@ -246,19 +246,19 @@ Passkeys are bound to an RP ID, and a panel normally runs on that RP ID or one o
    ]);
    ```
 
-3. **Turn on the route** with `related_origins.enabled`. It serves `GET /.well-known/webauthn` (route name `filament-passkeys.related-origins`) on every host the app answers, as `application/json`, with the RP ID's own origin first:
+3. **Turn on the route** with `related_origins.enabled`. It serves `GET /.well-known/webauthn` (route name `filament-passkeys.related-origins`) on every host the app answers, as `application/json`, listing the related origins and then the RP ID's own origin:
 
    ```json
-   {"origins": ["https://example.com", "https://shop.customer.com"]}
+   {"origins": ["https://shop.customer.com", "https://example.com"]}
    ```
 
-   With no related origins it answers `404`. Browsers fetch the file from `https://{rpId}/.well-known/webauthn`, so the app must answer on the RP ID's host. Leave `enabled` off if you serve the file yourself; the server-side check below still applies.
+   The RP ID's origin comes last on purpose: browsers count domain labels as they read the list (see **Limit** below), and a page on the RP ID never needs the file, so listed first it would only use up a slot. With no related origins it answers `404`. Browsers fetch the file from `https://{rpId}/.well-known/webauthn`, so the app must answer on the RP ID's host. Leave `enabled` off if you serve the file yourself; the server-side check below still applies.
 
 Origins are normalised (lowercase scheme and host, no default port, no trailing slash) and de-duplicated. Entries that are not an `https://` origin are dropped, e.g. a bare host, a path or a query; `http://` is kept only for `localhost` and `*.localhost`, for local development. Internationalised domains must be given in their punycode form.
 
 **One list for the browser and the server.** While a passkey is registered or verified (set-up, MFA challenge, "Sign in with a passkey"), the package adds the RP ID's origin and the related origins to `passkeys.allowed_origins` and restores the configured value right after the ceremony. The server therefore accepts what the file lists, plus whatever you already allow, and nothing leaks into the next request under Octane. The resolver runs only for the file and for ceremonies, not on every request. **Backward compatible:** without a resolver and with `origins` empty (the default), the package behaves exactly like 1.4.x: no route is registered and `passkeys.allowed_origins` is neither changed nor extended, so the `laravel/passkeys` defaults (`APP_URL`) apply as before. A resolver that returns nothing behaves the same way. The `laravel/passkeys` HTTP routes (`register_passkeys_routes`) are not covered; to cover them, add a middleware to `passkeys.middleware` that returns `FilamentPasskeys::withRelatedOrigins(fn () => $next($request), $request)`.
 
-**Limit.** Browsers honour related origins from a limited number of registrable domain labels (WebAuthn L3 `maxLabels`, at least 5): `shop.customer.com` and `customer.pl` share the label `customer`. Origins beyond the limit are silently ignored, so passkeys would just fail on them. Without a Public Suffix List the package counts conservatively: distinct **hosts** among the related origins, never fewer than labels. The RP ID's own host is not counted, and duplicates count once after normalisation. When the count exceeds `related_origins.max_origins` (default `5`), building the list throws `Happenv\FilamentPasskeys\Exceptions\TooManyRelatedOrigins`, both for the file and for every ceremony, rather than truncating it. The exception exposes `$count` and `$limit`. Validate when a domain is added, so the limit is never reached in production:
+**Limit.** Browsers honour related origins from a limited number of registrable domain labels (WebAuthn L3 `maxLabels`, at least 5): `shop.customer.com` and `customer.pl` share the label `customer`. Origins beyond the limit are silently ignored, so passkeys would just fail on them. Without a Public Suffix List the package counts conservatively: distinct **hosts** among the related origins, never fewer than labels. The RP ID's own host is not counted, since the file lists it last where it never takes a slot, and duplicates count once after normalisation. When the count exceeds `related_origins.max_origins` (default `5`), building the list throws `Happenv\FilamentPasskeys\Exceptions\TooManyRelatedOrigins`, both for the file and for every ceremony, rather than truncating it. The exception exposes `$count` and `$limit`. Validate when a domain is added, so the limit is never reached in production:
 
 ```php
 use Happenv\FilamentPasskeys\Exceptions\TooManyRelatedOrigins;

@@ -57,8 +57,12 @@ class FilamentPasskeys
     }
 
     /**
-     * The origins of the `/.well-known/webauthn` file: the RP ID's own origin
-     * first, then the related origins. Empty when there are no related origins.
+     * The origins of the `/.well-known/webauthn` file: the related origins,
+     * then the RP ID's own origin. Empty when there are no related origins.
+     *
+     * The RP origin comes last because browsers stop at a limited number of
+     * registrable domain labels while reading the list, and a same-site caller
+     * never needs it. Listed first, its label would use up a slot.
      *
      * @return list<string>
      *
@@ -85,7 +89,7 @@ class FilamentPasskeys
             return [];
         }
 
-        return [$relyingPartyOrigin, ...$relatedOrigins];
+        return [...$relatedOrigins, $relyingPartyOrigin];
     }
 
     /**

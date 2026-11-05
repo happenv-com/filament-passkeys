@@ -62,8 +62,8 @@ return [
     | is verified, whether or not the route below is enabled.
     |
     | - enabled registers GET /.well-known/webauthn (route name
-    |   `filament-passkeys.related-origins`), listing the RP ID's own origin
-    |   and the related ones. It answers 404 when there are none.
+    |   `filament-passkeys.related-origins`), listing the related origins,
+    |   then the RP ID's own origin. It answers 404 when there are none.
     | - middleware is the route's whole middleware stack. It never runs in
     |   the `web` group, so it sets no cookies; add e.g. 'throttle:60,1'.
     | - cache_max_age is the Cache-Control max-age, in seconds.

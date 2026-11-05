@@ -64,7 +64,7 @@ describe('the /.well-known/webauthn route', function (): void {
         get('/.well-known/webauthn')->assertNotFound();
     });
 
-    it('lists the RP ID origin first, then the normalised related origins', function (): void {
+    it('lists the normalised related origins, then the RP ID origin', function (): void {
         config()->set('passkeys.relying_party_id', 'acme.example.test');
         enableRelatedOriginsRoute();
 
@@ -88,9 +88,9 @@ describe('the /.well-known/webauthn route', function (): void {
 
         expect($response->json())->toBe([
             'origins' => [
-                'https://acme.example.test',
                 'https://shop.customer.test',
                 'https://other.customer.test:8443',
+                'https://acme.example.test',
             ],
         ])
             ->and($response->headers->getCookies())->toBeEmpty()
@@ -131,7 +131,7 @@ describe('the /.well-known/webauthn route', function (): void {
         });
 
         expect(get('https://acme.example.test/.well-known/webauthn')->assertOk()->json('origins'))
-            ->toBe(['https://acme.example.test', 'https://shop.acme.test']);
+            ->toBe(['https://shop.acme.test', 'https://acme.example.test']);
 
         get('https://example.test/.well-known/webauthn')->assertNotFound();
     });
@@ -142,7 +142,7 @@ describe('the /.well-known/webauthn route', function (): void {
         enableRelatedOriginsRoute();
 
         expect(get('/.well-known/webauthn')->assertOk()->json('origins'))
-            ->toBe(['https://acme.example.test', 'https://shop.customer.test']);
+            ->toBe(['https://shop.customer.test', 'https://acme.example.test']);
     });
 });
 
@@ -286,7 +286,9 @@ describe('the related origins limit', function (): void {
         enableRelatedOriginsRoute();
         FilamentPasskeys::relatedOriginsUsing(fn (): array => originsOnDistinctHosts(5));
 
-        expect(get('https://acme.example.test/.well-known/webauthn')->assertOk()->json('origins'))->toHaveCount(6);
+        // Every slot holds a related origin; the RP origin trails them.
+        expect(get('https://acme.example.test/.well-known/webauthn')->assertOk()->json('origins'))
+            ->toBe([...originsOnDistinctHosts(5), 'https://acme.example.test']);
     });
 
     it('refuses to serve one host more than the limit', function (): void {
