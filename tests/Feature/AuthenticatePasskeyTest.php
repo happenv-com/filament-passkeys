@@ -168,3 +168,19 @@ it('does not remember the user by default or when the box was not ticked', funct
     expect($user->fresh()->getRememberToken())->toBeEmpty()
         ->and(Cookie::hasQueued(Auth::guard()->getRecallerName()))->toBeFalse();
 })->with([[[]], [[false]]]);
+
+it('limits how often a guest can ask for login options', function (): void {
+    $component = passkeyLoginButton();
+
+    foreach (range(1, 20) as $attempt) {
+        $component->call('getOptions')->assertDispatched('passkey-authentication-options-ready');
+    }
+
+    session()->forget(AuthenticatePasskey::OPTIONS_SESSION_KEY);
+
+    passkeyLoginButton()
+        ->call('getOptions')
+        ->assertNotDispatched('passkey-authentication-options-ready');
+
+    expect(session()->has(AuthenticatePasskey::OPTIONS_SESSION_KEY))->toBeFalse();
+});

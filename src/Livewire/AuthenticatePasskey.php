@@ -47,6 +47,14 @@ class AuthenticatePasskey extends Component
 
     public function getOptions(): void
     {
+        try {
+            $this->rateLimit(20);
+        } catch (TooManyRequestsException) {
+            $this->fail();
+
+            return;
+        }
+
         $options = app(GenerateVerificationOptions::class)();
 
         session()->put(self::OPTIONS_SESSION_KEY, WebAuthn::toJson($options));
