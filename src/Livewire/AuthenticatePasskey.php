@@ -9,6 +9,7 @@ use Filament\Models\Contracts\FilamentUser;
 use Happenv\FilamentPasskeys\FilamentPasskeys;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
 use Laravel\Passkeys\Actions\GenerateVerificationOptions;
 use Laravel\Passkeys\Actions\VerifyPasskey;
@@ -71,7 +72,8 @@ class AuthenticatePasskey extends Component
     {
         // Cheap checks first, so a throttled guest or one without pending options
         // never triggers the (possibly database-backed) origins resolver.
-        if ($this->isRateLimited(5)) {
+        // isRateLimited() only exists in newer livewire-rate-limiting releases; this matches its key.
+        if (RateLimiter::tooManyAttempts($this->getRateLimitKey('authenticate'), 5)) {
             $this->fail();
 
             return;
