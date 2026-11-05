@@ -35,6 +35,7 @@ $panel
 - **A streamlined passkey-only challenge.** When a passkey is a user's only method, the prompt opens as soon as the challenge appears and Filament's redundant "Confirm sign in" button is hidden. Both are on by default and can be turned off.
 - **Secure by default.** Challenges are single use and bound to the user who passed the password step, so a replayed assertion or someone else's passkey is rejected. Passwordless sign-in honours `laravel/passkeys` login authorization and `FilamentUser::canAccessPanel()`.
 - **Built on `laravel/passkeys`.** Its actions handle challenge generation, verification and storage, and every ceremony runs through Livewire, so no extra routes are exposed.
+- **Related origins.** Panels on other domains (e.g. customer domains) can share one RP ID: the package serves the `/.well-known/webauthn` file from the list of origins your app supplies, accepts the same origins on the server, and falls back gracefully in browsers without support.
 - **Testing helpers.** Livewire assertions check whether signing in stops at the multi-factor challenge and whether that challenge offers a passkey.
 - **Upgrade path from `spatie/laravel-passkeys`.** A migration converts existing passkeys to the `laravel/passkeys` schema.
 - **Translated** into [every language Filament supports](#supported-languages) (64 locales).
@@ -98,6 +99,10 @@ php artisan vendor:publish --tag="filament-passkeys-config"
 | `register_passkeys_routes`      | `false` | Keeps the `laravel/passkeys` HTTP routes — see [`laravel/passkeys` routes](#6-laravelpasskeys-routes).   |
 | `hide_challenge_confirm_button` | `true`  | Hides Filament's "Confirm sign in" button on a passkey-only challenge — see [Passkey-only challenge](#5-passkey-only-challenge). |
 | `auto_start_challenge`          | `true`  | Opens the passkey prompt as soon as a passkey-only challenge appears — see [Passkey-only challenge](#5-passkey-only-challenge). |
+| `related_origins.enabled`       | `false` | Serves `/.well-known/webauthn` — see [Related origins](#7-related-origins).                               |
+| `related_origins.origins`       | `[]`    | Related origins used when no `FilamentPasskeys::relatedOriginsUsing()` resolver is set — see [Related origins](#7-related-origins). |
+| `related_origins.middleware`    | `[]`    | Middleware of the `/.well-known/webauthn` route, e.g. `['throttle:60,1']`.                              |
+| `related_origins.cache_max_age` | `300`   | `Cache-Control` max-age of `/.well-known/webauthn`, in seconds.                                         |
 
 Optionally, publish the views and translations:
 
@@ -217,11 +222,64 @@ Every ceremony runs through Livewire, so this package does not need the HTTP rou
 
 ### 7. Related origins
 
-Passkeys are bound to an RP ID, and a panel normally runs on that RP ID or one of its subdomains. To serve panels on other domains, e.g. customer domains, while keeping one set of passkeys, use WebAuthn [Related Origin Requests](https://web.dev/articles/webauthn-related-origin-requests):
+Passkeys are bound to an RP ID, and a panel normally runs on that RP ID or one of its subdomains. To serve panels on other domains, e.g. customer domains, while keeping one set of passkeys, use WebAuthn [Related Origin Requests](https://web.dev/articles/webauthn-related-origin-requests). Your app only supplies the list of origins; the package serves the `/.well-known/webauthn` file browsers fetch and makes the server accept the same origins.
 
-1. **Server config** (`laravel/passkeys`): keep `passkeys.relying_party_id` on the shared RP ID and list every origin that may use it in `passkeys.allowed_origins`, e.g. `['https://acme.example.com', 'https://shop.customer.com']`.
-2. **`/.well-known/webauthn`** is your application's job, not this package's: serve it on the RP ID's host as JSON listing the same origins, e.g. `{"origins": ["https://shop.customer.com"]}`. Browsers fetch it to decide whether a page may use the RP ID.
-3. **Nothing else to configure.** The package reads the RP ID from `laravel/passkeys` and, in the browser, treats the page as a related origin when its host is neither the RP ID nor one of its subdomains.
+1. **Keep one RP ID.** Leave `passkeys.relying_party_id` (`laravel/passkeys`) on the shared RP ID, e.g. `example.com`.
+2. **List the related origins**, either statically in `config/filament-passkeys.php`:
+
+   ```php
+   'related_origins' => [
+       'enabled' => true,
+       'origins' => ['https://shop.customer.com'],
+   ],
+   ```
+
+   or with a resolver, set once in a service provider's `boot()`. It receives the current request and replaces the `origins` option:
+
+   ```php
+   use Happenv\FilamentPasskeys\FilamentPasskeys;
+   use Illuminate\Http\Request;
+
+   FilamentPasskeys::relatedOriginsUsing(fn (Request $request): array => [
+       'https://shop.customer.com',
+   ]);
+   ```
+
+3. **Turn on the route** with `related_origins.enabled`. It serves `GET /.well-known/webauthn` (route name `filament-passkeys.related-origins`) on every host the app answers, as `application/json`, with the RP ID's own origin first:
+
+   ```json
+   {"origins": ["https://example.com", "https://shop.customer.com"]}
+   ```
+
+   With no related origins it answers `404`. Browsers fetch the file from `https://{rpId}/.well-known/webauthn`, so the app must answer on the RP ID's host. Leave `enabled` off if you serve the file yourself; the server-side check below still applies.
+
+Origins are normalised (lowercase scheme and host, no default port, no trailing slash) and de-duplicated. Entries that are not an `https://` origin are dropped, e.g. a bare host, a path or a query; `http://` is kept only for `localhost` and `*.localhost`, for local development. Internationalised domains must be given in their punycode form.
+
+**One list for the browser and the server.** While a passkey is registered or verified (set-up, MFA challenge, "Sign in with a passkey"), the package adds the RP ID's origin and the related origins to `passkeys.allowed_origins` and restores the configured value right after the ceremony. The server therefore accepts what the file lists, plus whatever you already allow, and nothing leaks into the next request under Octane. The resolver runs only for the file and for ceremonies, not on every request. **Backward compatible:** without a resolver and with `origins` empty (the default), the package behaves exactly like 1.4.x: no route is registered and `passkeys.allowed_origins` is neither changed nor extended, so the `laravel/passkeys` defaults (`APP_URL`) apply as before. A resolver that returns nothing behaves the same way. The `laravel/passkeys` HTTP routes (`register_passkeys_routes`) are not covered; to cover them, add a middleware to `passkeys.middleware` that returns `FilamentPasskeys::withRelatedOrigins(fn () => $next($request), $request)`.
+
+**Multi-tenant apps.** When each tenant has its own RP ID (e.g. `acme.example.com`, set per request) and its own custom domains, return the current tenant's domains, and nothing on any other host:
+
+```php
+FilamentPasskeys::relatedOriginsUsing(function (Request $request): array {
+    // Resolved from the host by your tenancy package: `acme.example.com` on the
+    // RP ID's host, `shop.customer.com` on the custom domain itself.
+    $tenant = Tenant::current();
+
+    if ($tenant === null) {
+        return [];
+    }
+
+    return $tenant->domains->map(fn ($domain): string => "https://{$domain->name}")->all();
+});
+```
+
+The file request lands on the tenant's RP ID host, a ceremony on the custom domain; both resolve the same tenant, so the file and the server agree.
+
+**Route options.** The route runs outside the `web` middleware group: no session, no cookies, no CSRF. `related_origins.middleware` is its whole middleware stack (default `[]`), e.g. `['throttle:60,1']` to rate-limit it. `related_origins.cache_max_age` sets `Cache-Control: public, max-age=N` (default `300` seconds), so a new domain is picked up within that time.
+
+**CDNs and proxies.** Browsers fetch the file without cookies and cannot get past a redirect or a challenge page, so the ceremony fails. Make sure Cloudflare or any other CDN or WAF does not redirect `/.well-known/webauthn` (e.g. to `www.` or a login page), does not put a bot challenge or "Under Attack" interstitial in front of it, and does not cache it longer than you want. The response must be a plain `200` JSON from `https://{rpId}`.
+
+**In the browser,** nothing else needs configuring: the package reads the RP ID from `laravel/passkeys` and treats the page as a related origin when its host is neither the RP ID nor one of its subdomains.
 
 Not every browser or password manager supports Related Origin Requests. On a related origin, the package asks the browser (`PublicKeyCredential.getClientCapabilities()`, `relatedOrigins`) before starting a ceremony, and when it is unsupported, or a ceremony is still refused with a `SecurityError`:
 

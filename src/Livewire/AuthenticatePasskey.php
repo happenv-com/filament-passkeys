@@ -6,11 +6,13 @@ use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
 use DanHarrin\LivewireRateLimiting\WithRateLimiting;
 use Filament\Facades\Filament;
 use Filament\Models\Contracts\FilamentUser;
+use Happenv\FilamentPasskeys\FilamentPasskeys;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Laravel\Passkeys\Actions\GenerateVerificationOptions;
 use Laravel\Passkeys\Actions\VerifyPasskey;
+use Laravel\Passkeys\Passkey;
 use Laravel\Passkeys\Passkeys;
 use Laravel\Passkeys\Support\WebAuthn;
 use Livewire\Attributes\Locked;
@@ -84,10 +86,10 @@ class AuthenticatePasskey extends Component
         }
 
         try {
-            $passkey = app(VerifyPasskey::class)(
+            $passkey = FilamentPasskeys::withRelatedOrigins(fn (): Passkey => app(VerifyPasskey::class)(
                 WebAuthn::fromJson($assertion, PublicKeyCredential::class),
                 WebAuthn::fromJson($serializedOptions, PublicKeyCredentialRequestOptions::class),
-            );
+            ));
         } catch (Throwable) {
             $this->fail();
 

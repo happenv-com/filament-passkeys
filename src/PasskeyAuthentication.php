@@ -222,12 +222,12 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
 
         $publicKeyCredential = WebAuthn::fromJson($credential, PublicKeyCredential::class);
 
-        return app(StorePasskey::class)(
+        return FilamentPasskeys::withRelatedOrigins(fn (): Passkey => app(StorePasskey::class)(
             $user,
             filled($name) ? $name : $this->getDefaultPasskeyName($publicKeyCredential),
             $publicKeyCredential,
             WebAuthn::fromJson($serializedOptions, PublicKeyCredentialCreationOptions::class),
-        );
+        ));
     }
 
     /**
@@ -274,11 +274,11 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
         }
 
         try {
-            app(VerifyPasskey::class)(
+            FilamentPasskeys::withRelatedOrigins(fn (): Passkey => app(VerifyPasskey::class)(
                 WebAuthn::fromJson($assertion, PublicKeyCredential::class),
                 WebAuthn::fromJson($serializedOptions, PublicKeyCredentialRequestOptions::class),
                 $user,
-            );
+            ));
         } catch (Throwable) {
             return false;
         }
