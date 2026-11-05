@@ -215,6 +215,22 @@ Users with more than one method enabled always get Filament's usual challenge. S
 
 Every ceremony runs through Livewire, so this package does not need the HTTP routes `laravel/passkeys` registers and turns them off. To keep them, e.g. for the `@laravel/passkeys` JavaScript client elsewhere in your app, set `register_passkeys_routes` to `true` in `config/filament-passkeys.php`.
 
+### 7. Related origins
+
+Passkeys are bound to an RP ID, and a panel normally runs on that RP ID or one of its subdomains. To serve panels on other domains, e.g. customer domains, while keeping one set of passkeys, use WebAuthn [Related Origin Requests](https://web.dev/articles/webauthn-related-origin-requests):
+
+1. **Server config** (`laravel/passkeys`): keep `passkeys.relying_party_id` on the shared RP ID and list every origin that may use it in `passkeys.allowed_origins`, e.g. `['https://acme.example.com', 'https://shop.customer.com']`.
+2. **`/.well-known/webauthn`** is your application's job, not this package's: serve it on the RP ID's host as JSON listing the same origins, e.g. `{"origins": ["https://shop.customer.com"]}`. Browsers fetch it to decide whether a page may use the RP ID.
+3. **Nothing else to configure.** The package reads the RP ID from `laravel/passkeys` and, in the browser, treats the page as a related origin when its host is neither the RP ID nor one of its subdomains.
+
+Not every browser or password manager supports Related Origin Requests. On a related origin, the package asks the browser (`PublicKeyCredential.getClientCapabilities()`, `relatedOrigins`) before starting a ceremony, and when it is unsupported, or a ceremony is still refused with a `SecurityError`:
+
+- the **Sign in with a passkey** button is hidden (after a refusal, replaced by a short message);
+- the **MFA challenge** does not start on its own and says the browser cannot use the passkey on this address. With other methods enabled, it tells the user to pick one. When the passkey is the user's only method, it links to `https://{rpId}` to sign in there instead;
+- **Set up** / **Add passkey** shows that message instead of starting.
+
+Pages on the RP ID or its subdomains behave exactly as before. The messages are in `resources/lang/*/related_origin.php`.
+
 ## How it works
 
 This package is a Filament adapter on top of `laravel/passkeys`. Challenge generation, attestation and assertion verification and persistence are handled by its actions; the browser side uses `@simplewebauthn/browser`.

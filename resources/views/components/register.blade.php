@@ -4,9 +4,26 @@
 >
     <div
         x-data="{
+            notifyUnsupported() {
+                new FilamentNotification()
+                    .title(@js(__('filament-passkeys::related_origin.unsupported')))
+                    .body(@js(__('filament-passkeys::related_origin.set_up_at', ['address' => 'https://' . $rpId])))
+                    .warning()
+                    .send()
+            },
             async register(options) {
                 if (! window.FilamentPasskeys) {
                     console.error('filament-passkeys assets not loaded')
+
+                    return
+                }
+
+                const rpId = options?.rp?.id ?? @js($rpId)
+
+                // A related origin without Related Origin Requests support cannot create a
+                // passkey for this RP ID. Say so instead of letting the browser refuse.
+                if (await window.FilamentPasskeys.isCeremonyBlocked(rpId)) {
+                    this.notifyUnsupported()
 
                     return
                 }
@@ -34,6 +51,14 @@
                             .body(@js(__('filament-passkeys::actions/set-up.notifications.already_registered.body')))
                             .warning()
                             .send()
+
+                        return
+                    }
+
+                    // A client without Related Origin Requests support refuses the ceremony
+                    // on a related origin with a SecurityError.
+                    if (window.FilamentPasskeys.isRelatedOriginFailure(err, rpId)) {
+                        this.notifyUnsupported()
 
                         return
                     }

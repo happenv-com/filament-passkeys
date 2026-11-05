@@ -13,6 +13,7 @@ use Filament\Support\Icons\Heroicon;
 use Happenv\FilamentPasskeys\Contracts\HasPasskeysAuthentication;
 use Happenv\FilamentPasskeys\PasskeyAuthentication;
 use Illuminate\Validation\ValidationException;
+use Laravel\Passkeys\Passkeys;
 use Livewire\Component;
 use Throwable;
 
@@ -49,6 +50,7 @@ class SetUpPasskeyAuthenticationAction
                 // the grid like a Hidden field, so it adds no gap under the name input.
                 ViewField::make('credential')
                     ->view($credentialView)
+                    ->viewData(['rpId' => Passkeys::relyingPartyId()])
                     ->hiddenLabel()
                     ->columnSpan(['default' => 'hidden']),
             ])

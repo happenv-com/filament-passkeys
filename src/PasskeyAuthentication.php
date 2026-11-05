@@ -27,6 +27,7 @@ use Laravel\Passkeys\Actions\GenerateVerificationOptions;
 use Laravel\Passkeys\Actions\StorePasskey;
 use Laravel\Passkeys\Actions\VerifyPasskey;
 use Laravel\Passkeys\Passkey;
+use Laravel\Passkeys\Passkeys;
 use Laravel\Passkeys\Support\Aaguids;
 use Laravel\Passkeys\Support\WebAuthn;
 use Livewire\Component;
@@ -165,6 +166,8 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
             ViewField::make('credential')
                 ->view($challengeView)
                 ->viewData([
+                    'rpId' => Passkeys::relyingPartyId(),
+                    'onlyMethod' => $this->isOnlyEnabledProvider($user),
                     'autoStart' => config('filament-passkeys.auto_start_challenge', true)
                         && $this->isOnlyEnabledProvider($user),
                 ])

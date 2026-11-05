@@ -126,3 +126,11 @@ it('does not send a notification after signing in', function (): void {
         ->assertRedirect('/admin')
         ->assertNotNotified();
 });
+
+it('hands the RP ID to the login button so the browser can detect a related origin', function (): void {
+    config()->set('passkeys.relying_party_id', 'acme.example.test');
+
+    passkeyLoginButton()
+        ->assertSeeHtml("isCeremonyBlocked('acme.example.test')")
+        ->assertSee(__('filament-passkeys::related_origin.unsupported'));
+});

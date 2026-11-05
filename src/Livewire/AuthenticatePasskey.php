@@ -42,7 +42,7 @@ class AuthenticatePasskey extends Component
         /** @var view-string $view */
         $view = 'filament-passkeys::livewire.authenticate-passkey';
 
-        return view($view);
+        return view($view, ['rpId' => Passkeys::relyingPartyId()]);
     }
 
     public function getOptions(): void
