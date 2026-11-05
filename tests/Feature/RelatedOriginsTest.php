@@ -4,6 +4,7 @@ use Filament\Actions\Testing\TestAction;
 use Filament\Auth\Pages\EditProfile;
 use Filament\Auth\Pages\Login;
 use Filament\Facades\Filament;
+use Happenv\FilamentPasskeys\Exceptions\TooManyRelatedOrigins;
 use Happenv\FilamentPasskeys\FilamentPasskeys;
 use Happenv\FilamentPasskeys\Livewire\AuthenticatePasskey;
 use Happenv\FilamentPasskeys\PasskeyAuthentication;
@@ -229,6 +230,7 @@ describe('without related origins (the default)', function (): void {
             'origins' => [],
             'middleware' => [],
             'cache_max_age' => 300,
+            'max_origins' => 5,
         ])
             ->and(Route::has('filament-passkeys.related-origins'))->toBeFalse()
             ->and(collect(Route::getRoutes()->getRoutes())->contains(fn ($route): bool => $route->uri() === '.well-known/webauthn'))->toBeFalse();
@@ -258,4 +260,78 @@ describe('without related origins (the default)', function (): void {
 
         assertAuthenticatedAs(signInWithPasskeyFrom(config('app.url')));
     });
+});
+
+/**
+ * The given number of origins, each on its own host.
+ *
+ * @return list<string>
+ */
+function originsOnDistinctHosts(int $count): array
+{
+    return array_map(fn (int $index): string => "https://shop.customer{$index}.test", range(1, $count));
+}
+
+describe('the related origins limit', function (): void {
+    it('defaults to 5 and follows the config', function (): void {
+        expect(FilamentPasskeys::maxRelatedOrigins())->toBe(5);
+
+        config()->set('filament-passkeys.related_origins.max_origins', 2);
+
+        expect(FilamentPasskeys::maxRelatedOrigins())->toBe(2);
+    });
+
+    it('serves exactly as many hosts as the limit allows', function (): void {
+        config()->set('passkeys.relying_party_id', 'acme.example.test');
+        enableRelatedOriginsRoute();
+        FilamentPasskeys::relatedOriginsUsing(fn (): array => originsOnDistinctHosts(5));
+
+        expect(get('https://acme.example.test/.well-known/webauthn')->assertOk()->json('origins'))->toHaveCount(6);
+    });
+
+    it('refuses to serve one host more than the limit', function (): void {
+        enableRelatedOriginsRoute();
+        FilamentPasskeys::relatedOriginsUsing(fn (): array => originsOnDistinctHosts(6));
+
+        $this->withoutExceptionHandling();
+
+        get('/.well-known/webauthn');
+    })->throws(TooManyRelatedOrigins::class, 'The related origins span 6 distinct hosts, more than the limit of 5 set by [filament-passkeys.related_origins.max_origins].');
+
+    it('refuses a ceremony over the limit instead of failing it quietly', function (): void {
+        FilamentPasskeys::relatedOriginsUsing(fn (): array => originsOnDistinctHosts(6));
+
+        signInWithPasskeyFrom('https://shop.customer1.test');
+    })->throws(TooManyRelatedOrigins::class);
+
+    it('counts each host once, and not the RP ID host', function (): void {
+        config()->set('passkeys.relying_party_id', 'acme.example.test');
+        config()->set('filament-passkeys.related_origins.max_origins', 2);
+
+        FilamentPasskeys::assertWithinRelatedOriginsLimit([
+            'https://shop.customer1.test',
+            'HTTPS://SHOP.customer1.test:443/',
+            'https://shop.customer1.test:8443',
+            'https://shop.customer2.test',
+            'https://acme.example.test',
+            'https://acme.example.test:8443',
+            'http://insecure.customer3.test',
+            'not an origin',
+        ]);
+
+        expect(fn () => FilamentPasskeys::assertWithinRelatedOriginsLimit(originsOnDistinctHosts(3)))
+            ->toThrow(function (TooManyRelatedOrigins $exception): void {
+                expect([$exception->count, $exception->limit])->toBe([3, 2]);
+            });
+    });
+
+    it('applies a lower configured limit to the file', function (): void {
+        config()->set('filament-passkeys.related_origins.max_origins', 1);
+        enableRelatedOriginsRoute();
+        FilamentPasskeys::relatedOriginsUsing(fn (): array => originsOnDistinctHosts(2));
+
+        $this->withoutExceptionHandling();
+
+        get('/.well-known/webauthn');
+    })->throws(TooManyRelatedOrigins::class, 'limit of 1');
 });

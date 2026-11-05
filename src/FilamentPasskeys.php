@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Happenv\FilamentPasskeys;
 
 use Closure;
+use Happenv\FilamentPasskeys\Exceptions\TooManyRelatedOrigins;
 use Illuminate\Http\Request;
 use Laravel\Passkeys\Passkeys;
 
@@ -60,6 +61,8 @@ class FilamentPasskeys
      * first, then the related origins. Empty when there are no related origins.
      *
      * @return list<string>
+     *
+     * @throws TooManyRelatedOrigins
      */
     public static function webauthnOrigins(Request $request): array
     {
@@ -68,6 +71,8 @@ class FilamentPasskeys
         if ($relatedOrigins === []) {
             return [];
         }
+
+        static::assertWithinRelatedOriginsLimit($relatedOrigins);
 
         $relyingPartyOrigin = static::relyingPartyOrigin();
 
@@ -81,6 +86,49 @@ class FilamentPasskeys
         }
 
         return [$relyingPartyOrigin, ...$relatedOrigins];
+    }
+
+    /**
+     * How many distinct hosts the related origins may span, from
+     * `filament-passkeys.related_origins.max_origins` (at least 1).
+     */
+    public static function maxRelatedOrigins(): int
+    {
+        return max(1, (int) config('filament-passkeys.related_origins.max_origins', 5));
+    }
+
+    /**
+     * Throw when the origins span more distinct hosts than the limit, e.g. to
+     * validate a domain before saving it. Origins are normalised first; invalid
+     * ones and those on the RP ID's own host are not counted.
+     *
+     * Browsers honour origins from a limited number of registrable domain labels
+     * (WebAuthn L3 "maxLabels", at least 5) and ignore the rest. Without a Public
+     * Suffix List, counting hosts is conservative: there are never fewer hosts
+     * than labels.
+     *
+     * @param  iterable<mixed>  $origins
+     *
+     * @throws TooManyRelatedOrigins
+     */
+    public static function assertWithinRelatedOriginsLimit(iterable $origins): void
+    {
+        $relyingPartyHost = strtolower(Passkeys::relyingPartyId());
+        $hosts = [];
+
+        foreach ($origins as $origin) {
+            $host = parse_url(static::normalizeOrigin($origin) ?? '', PHP_URL_HOST);
+
+            if (is_string($host) && ($host !== $relyingPartyHost)) {
+                $hosts[$host] = true;
+            }
+        }
+
+        $limit = static::maxRelatedOrigins();
+
+        if (count($hosts) > $limit) {
+            throw new TooManyRelatedOrigins(count($hosts), $limit);
+        }
     }
 
     /**
@@ -101,6 +149,8 @@ class FilamentPasskeys
      *
      * @param  Closure(): TResult  $ceremony
      * @return TResult
+     *
+     * @throws TooManyRelatedOrigins
      */
     public static function withRelatedOrigins(Closure $ceremony, ?Request $request = null): mixed
     {

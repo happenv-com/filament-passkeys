@@ -67,6 +67,10 @@ return [
     | - middleware is the route's whole middleware stack. It never runs in
     |   the `web` group, so it sets no cookies; add e.g. 'throttle:60,1'.
     | - cache_max_age is the Cache-Control max-age, in seconds.
+    | - max_origins caps how many distinct hosts the related origins may span
+    |   (the RP ID's own host not counted). Browsers may honour as few as 5
+    |   registrable domain labels and silently ignore the rest, so a longer
+    |   list throws TooManyRelatedOrigins instead of being truncated.
     |
     */
 
@@ -78,5 +82,7 @@ return [
         'middleware' => [],
 
         'cache_max_age' => 300,
+
+        'max_origins' => 5,
     ],
 ];

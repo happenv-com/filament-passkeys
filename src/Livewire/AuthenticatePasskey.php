@@ -6,6 +6,7 @@ use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
 use DanHarrin\LivewireRateLimiting\WithRateLimiting;
 use Filament\Facades\Filament;
 use Filament\Models\Contracts\FilamentUser;
+use Happenv\FilamentPasskeys\Exceptions\TooManyRelatedOrigins;
 use Happenv\FilamentPasskeys\FilamentPasskeys;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
@@ -90,6 +91,9 @@ class AuthenticatePasskey extends Component
                 WebAuthn::fromJson($assertion, PublicKeyCredential::class),
                 WebAuthn::fromJson($serializedOptions, PublicKeyCredentialRequestOptions::class),
             ));
+        } catch (TooManyRelatedOrigins $exception) {
+            // A misconfiguration, not a bad passkey: let it surface.
+            throw $exception;
         } catch (Throwable) {
             $this->fail();
 

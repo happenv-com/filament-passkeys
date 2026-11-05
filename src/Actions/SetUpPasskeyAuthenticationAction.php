@@ -11,6 +11,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
 use Happenv\FilamentPasskeys\Contracts\HasPasskeysAuthentication;
+use Happenv\FilamentPasskeys\Exceptions\TooManyRelatedOrigins;
 use Happenv\FilamentPasskeys\PasskeyAuthentication;
 use Illuminate\Validation\ValidationException;
 use Laravel\Passkeys\Passkeys;
@@ -69,6 +70,9 @@ class SetUpPasskeyAuthenticationAction
 
                 try {
                     $passkeyAuthentication->storeRegistration($user, $data['name'] ?? null, $data['credential']);
+                } catch (TooManyRelatedOrigins $exception) {
+                    // A misconfiguration, not a bad passkey: let it surface.
+                    throw $exception;
                 } catch (Throwable) {
                     $fields = $schema->getFlatFields();
 

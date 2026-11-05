@@ -20,6 +20,7 @@ use Happenv\FilamentPasskeys\Actions\DisablePasskeyAuthenticationAction;
 use Happenv\FilamentPasskeys\Actions\RemovePasskeyAction;
 use Happenv\FilamentPasskeys\Actions\SetUpPasskeyAuthenticationAction;
 use Happenv\FilamentPasskeys\Contracts\HasPasskeysAuthentication;
+use Happenv\FilamentPasskeys\Exceptions\TooManyRelatedOrigins;
 use Illuminate\Auth\SessionGuard;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Laravel\Passkeys\Actions\GenerateRegistrationOptions;
@@ -279,6 +280,9 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
                 WebAuthn::fromJson($serializedOptions, PublicKeyCredentialRequestOptions::class),
                 $user,
             ));
+        } catch (TooManyRelatedOrigins $exception) {
+            // A misconfiguration, not a bad passkey: let it surface.
+            throw $exception;
         } catch (Throwable) {
             return false;
         }
