@@ -255,3 +255,36 @@ it('keeps the passkey button gray when the user has another method', function ()
     startLoginChallenge($user)
         ->assertActionHasColor(verifyWithPasskeyAction(), 'gray');
 });
+
+it('hands the RP ID to the challenge so the browser can detect a related origin', function (): void {
+    $user = createUser();
+    registerPasskey($user, new VirtualAuthenticator);
+
+    config()->set('passkeys.relying_party_id', 'acme.example.test');
+
+    startLoginChallenge($user)
+        ->assertSeeHtml("isCeremonyBlocked('acme.example.test')")
+        ->assertSee(__('filament-passkeys::related_origin.unsupported'));
+});
+
+it('points a passkey-only user to the RP ID address on a browser without related origins', function (): void {
+    $user = createUser();
+    registerPasskey($user, new VirtualAuthenticator);
+
+    config()->set('passkeys.relying_party_id', 'acme.example.test');
+
+    startLoginChallenge($user)
+        ->assertSeeHtml('href="https://acme.example.test"')
+        ->assertDontSee(__('filament-passkeys::related_origin.choose_another'));
+});
+
+it('tells a user with another method to pick it on a browser without related origins', function (): void {
+    FakeCodeAuthentication::$enabled = true;
+
+    $user = createUser();
+    registerPasskey($user, new VirtualAuthenticator);
+
+    startLoginChallenge($user)
+        ->assertSee(__('filament-passkeys::related_origin.choose_another'))
+        ->assertDontSeeHtml('href="https://');
+});

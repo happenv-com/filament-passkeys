@@ -27,6 +27,7 @@ use Laravel\Passkeys\Actions\GenerateVerificationOptions;
 use Laravel\Passkeys\Actions\StorePasskey;
 use Laravel\Passkeys\Actions\VerifyPasskey;
 use Laravel\Passkeys\Passkey;
+use Laravel\Passkeys\Passkeys;
 use Laravel\Passkeys\Support\Aaguids;
 use Laravel\Passkeys\Support\WebAuthn;
 use Livewire\Component;
@@ -165,6 +166,8 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
             ViewField::make('credential')
                 ->view($challengeView)
                 ->viewData([
+                    'rpId' => Passkeys::relyingPartyId(),
+                    'onlyMethod' => $this->isOnlyEnabledProvider($user),
                     'autoStart' => config('filament-passkeys.auto_start_challenge', true)
                         && $this->isOnlyEnabledProvider($user),
                 ])
@@ -211,6 +214,8 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
      */
     public function storeRegistration(HasPasskeysAuthentication $user, ?string $name, #[SensitiveParameter] string $credential): Passkey
     {
+        $webauthnOrigins = FilamentPasskeys::webauthnOrigins(request());
+
         $serializedOptions = session()->pull(static::REGISTRATION_OPTIONS_SESSION_KEY);
 
         if (blank($serializedOptions)) {
@@ -219,12 +224,12 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
 
         $publicKeyCredential = WebAuthn::fromJson($credential, PublicKeyCredential::class);
 
-        return app(StorePasskey::class)(
+        return FilamentPasskeys::withWebauthnOrigins($webauthnOrigins, fn (): Passkey => app(StorePasskey::class)(
             $user,
             filled($name) ? $name : $this->getDefaultPasskeyName($publicKeyCredential),
             $publicKeyCredential,
             WebAuthn::fromJson($serializedOptions, PublicKeyCredentialCreationOptions::class),
-        );
+        ));
     }
 
     /**
@@ -264,6 +269,9 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
      */
     public function verifyChallenge(#[SensitiveParameter] string $assertion, HasPasskeysAuthentication $user): bool
     {
+        // Outside the try: a failing resolver is the app's error, not a wrong passkey.
+        $webauthnOrigins = FilamentPasskeys::webauthnOrigins(request());
+
         $serializedOptions = session()->pull(static::CHALLENGE_OPTIONS_SESSION_KEY);
 
         if (blank($serializedOptions)) {
@@ -271,11 +279,11 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
         }
 
         try {
-            app(VerifyPasskey::class)(
+            FilamentPasskeys::withWebauthnOrigins($webauthnOrigins, fn (): Passkey => app(VerifyPasskey::class)(
                 WebAuthn::fromJson($assertion, PublicKeyCredential::class),
                 WebAuthn::fromJson($serializedOptions, PublicKeyCredentialRequestOptions::class),
                 $user,
-            );
+            ));
         } catch (Throwable) {
             return false;
         }

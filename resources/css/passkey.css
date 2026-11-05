@@ -66,3 +66,16 @@
 .filament-passkeys-challenge .fi-btn {
     width: 100%;
 }
+
+.filament-passkeys-unsupported {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: rgb(75 85 99);
+}
+
+:where(.dark) .filament-passkeys-unsupported {
+    color: rgb(209 213 219);
+}

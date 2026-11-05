@@ -6,11 +6,13 @@ use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
 use DanHarrin\LivewireRateLimiting\WithRateLimiting;
 use Filament\Facades\Filament;
 use Filament\Models\Contracts\FilamentUser;
+use Happenv\FilamentPasskeys\FilamentPasskeys;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Laravel\Passkeys\Actions\GenerateVerificationOptions;
 use Laravel\Passkeys\Actions\VerifyPasskey;
+use Laravel\Passkeys\Passkey;
 use Laravel\Passkeys\Passkeys;
 use Laravel\Passkeys\Support\WebAuthn;
 use Livewire\Attributes\Locked;
@@ -42,11 +44,19 @@ class AuthenticatePasskey extends Component
         /** @var view-string $view */
         $view = 'filament-passkeys::livewire.authenticate-passkey';
 
-        return view($view);
+        return view($view, ['rpId' => Passkeys::relyingPartyId()]);
     }
 
     public function getOptions(): void
     {
+        try {
+            $this->rateLimit(20);
+        } catch (TooManyRequestsException) {
+            $this->fail();
+
+            return;
+        }
+
         $options = app(GenerateVerificationOptions::class)();
 
         session()->put(self::OPTIONS_SESSION_KEY, WebAuthn::toJson($options));
@@ -54,8 +64,15 @@ class AuthenticatePasskey extends Component
         $this->dispatch('passkey-authentication-options-ready', options: WebAuthn::toBrowserArray($options));
     }
 
-    public function authenticate(string $assertion): void
+    /**
+     * @param  bool  $remember  Whether the login form's "Remember me" box was ticked.
+     */
+    public function authenticate(string $assertion, bool $remember = false): void
     {
+        // Resolved before the rate limit and the try: a failing resolver is the
+        // app's error, not a wrong passkey, and must neither count nor be hidden.
+        $webauthnOrigins = FilamentPasskeys::webauthnOrigins(request());
+
         try {
             $this->rateLimit(5);
         } catch (TooManyRequestsException) {
@@ -73,10 +90,10 @@ class AuthenticatePasskey extends Component
         }
 
         try {
-            $passkey = app(VerifyPasskey::class)(
+            $passkey = FilamentPasskeys::withWebauthnOrigins($webauthnOrigins, fn (): Passkey => app(VerifyPasskey::class)(
                 WebAuthn::fromJson($assertion, PublicKeyCredential::class),
                 WebAuthn::fromJson($serializedOptions, PublicKeyCredentialRequestOptions::class),
-            );
+            ));
         } catch (Throwable) {
             $this->fail();
 
@@ -105,7 +122,7 @@ class AuthenticatePasskey extends Component
             return;
         }
 
-        Auth::guard($panel->getAuthGuard())->login($user);
+        Auth::guard($panel->getAuthGuard())->login($user, $remember);
         session()->regenerate();
 
         $this->redirect($this->redirectUrl ?: url('/'), navigate: false);

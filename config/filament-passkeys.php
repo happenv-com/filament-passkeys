@@ -48,4 +48,41 @@ return [
     'hide_challenge_confirm_button' => true,
 
     'auto_start_challenge' => true,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Related Origins
+    |--------------------------------------------------------------------------
+    |
+    | WebAuthn Related Origin Requests let pages on other domains (e.g.
+    | customer domains) use the relying party ID. The related origins come
+    | from FilamentPasskeys::relatedOriginsUsing() or, without a resolver,
+    | from `origins` below (e.g. ['https://shop.customer.com']). The same
+    | list is added to the laravel/passkeys allowed origins while a ceremony
+    | is verified, whether or not the route below is enabled.
+    |
+    | - enabled registers GET /.well-known/webauthn (route name
+    |   `filament-passkeys.related-origins`), listing the related origins,
+    |   then the RP ID's own origin. It answers 404 when there are none.
+    | - middleware is the route's whole middleware stack. It never runs in
+    |   the `web` group, so it sets no cookies; add e.g. 'throttle:60,1'.
+    | - cache_max_age is the Cache-Control max-age, in seconds.
+    | - max_origins caps how many distinct hosts the related origins may span
+    |   (the RP ID's own host not counted). Browsers may honour as few as 5
+    |   registrable domain labels and silently ignore the rest, so a longer
+    |   list throws TooManyRelatedOrigins instead of being truncated.
+    |
+    */
+
+    'related_origins' => [
+        'enabled' => false,
+
+        'origins' => [],
+
+        'middleware' => [],
+
+        'cache_max_age' => 300,
+
+        'max_origins' => 5,
+    ],
 ];
