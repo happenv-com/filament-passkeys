@@ -143,7 +143,10 @@ class AuthenticatePasskey extends Component
         Auth::guard($panel->getAuthGuard())->login($user, $remember);
         session()->regenerate();
 
-        $this->redirect($this->redirectUrl ?: url('/'), navigate: false);
+        // Back to the page that sent the visitor to the login screen, like Filament's own
+        // LoginResponse does: the panel's Authenticate middleware stored it as `url.intended`.
+        // The panel URL is only the fallback for a visitor who opened the login page directly.
+        $this->redirect(redirect()->intended($this->redirectUrl ?: url('/'))->getTargetUrl(), navigate: false);
     }
 
     protected function fail(?string $message = null): void
