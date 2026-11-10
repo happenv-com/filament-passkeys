@@ -143,7 +143,12 @@ class AuthenticatePasskey extends Component
         Auth::guard($panel->getAuthGuard())->login($user, $remember);
         session()->regenerate();
 
-        $this->redirect($this->redirectUrl ?: url('/'), navigate: false);
+        // Back to the page that sent the visitor to the login screen, like Filament's own
+        // LoginResponse does: the panel's Authenticate middleware stored it as `url.intended`.
+        // The panel URL is only the fallback for a visitor who opened the login page directly.
+        // Read from the session rather than through `redirect()->intended()`: inside a Livewire
+        // request on Livewire 3 `redirect()` is Livewire's own Redirector, which has no target URL.
+        $this->redirect((string) session()->pull('url.intended', $this->redirectUrl ?: url('/')), navigate: false);
     }
 
     protected function fail(?string $message = null): void

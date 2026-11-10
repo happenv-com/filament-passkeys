@@ -48,6 +48,22 @@ it('signs in with a discoverable passkey', function (): void {
     assertAuthenticatedAs($user);
 });
 
+it('returns to the page the visitor wanted before signing in', function (): void {
+    $user = createUser();
+    registerPasskey($user, $authenticator = new VirtualAuthenticator);
+    session()->put('url.intended', url('/admin/orders/42'));
+
+    $component = passkeyLoginButton();
+    $options = requestLoginOptions($component);
+
+    $component
+        ->call('authenticate', $authenticator->authenticate($options, $user->getPasskeyUserHandle()))
+        ->assertRedirect(url('/admin/orders/42'));
+
+    assertAuthenticatedAs($user);
+    expect(session()->has('url.intended'))->toBeFalse();
+});
+
 it('rejects an invalid assertion', function (): void {
     $user = createUser();
     registerPasskey($user, new VirtualAuthenticator);
