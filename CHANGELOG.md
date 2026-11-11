@@ -2,6 +2,18 @@
 
 All notable changes to `filament-passkeys` are documented in this file. Each section is written automatically from the GitHub release notes when a release is published — do not edit it by hand.
 
+## v1.6.1 - 2026-11-11
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.x -->
+### What's Changed
+
+#### Other
+
+* test: boot Livewire after Filament so the first test gets the partials hook by @webard in https://github.com/happenv-com/filament-passkeys/pull/23
+* chore: keep dev-only files out of the Composer dist archive by @webard in https://github.com/happenv-com/filament-passkeys/pull/24
+
+**Full Changelog**: https://github.com/happenv-com/filament-passkeys/compare/v1.6.0...v1.6.1
+
 ## v1.6.0 - 2026-11-11
 
 ### Highlights
