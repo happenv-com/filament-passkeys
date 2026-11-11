@@ -48,7 +48,7 @@ $panel
 | PHP                | ^8.2 (CI runs 8.3 – 8.5)                  |
 | Laravel            | 12, 13                                    |
 | Filament           | 4 (`^4.13.3`), 5 (`^5.8`)                 |
-| `laravel/passkeys` | `^0.2.1`                                  |
+| `laravel/passkeys` | `^0.3`                                    |
 
 ## Installation
 
