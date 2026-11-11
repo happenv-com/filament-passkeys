@@ -393,6 +393,10 @@ The package ships translations for every locale Filament supports. Publish them 
 
 `tests/Unit/TranslationsTest.php` checks that every locale has exactly the keys English has.
 
+## AI assistants (Laravel Boost)
+
+The package ships a [Laravel Boost](https://laravel.com/docs/boost) skill, `filament-passkeys-development`, in `resources/boost/skills/`. `php artisan boost:install` (or `boost:update`) offers it to your coding agent: how to prepare the user model and the panel, block passkey sign-in, set up related origins safely, migrate from `spatie/laravel-passkeys` and test the login with the assertions above.
+
 ## Development
 
 ```bash
