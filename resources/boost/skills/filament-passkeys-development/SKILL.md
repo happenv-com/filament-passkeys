@@ -44,11 +44,17 @@ Supports Filament `^4.13.3 || ^5.8`, Laravel 12 and 13, PHP 8.2+.
 use Filament\Models\Contracts\FilamentUser;
 use Happenv\FilamentPasskeys\Concerns\InteractsWithPasskeysAuthentication;
 use Happenv\FilamentPasskeys\Contracts\HasPasskeysAuthentication;
+use Filament\Panel;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable implements FilamentUser, HasPasskeysAuthentication
 {
     use InteractsWithPasskeysAuthentication;
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return true; // keep the app's existing access rule; FilamentUser requires this method
+    }
 }
 ```
 
@@ -139,12 +145,16 @@ or, dynamically, once in a service provider's `boot()` (replaces `origins`):
 use Happenv\FilamentPasskeys\FilamentPasskeys;
 use Illuminate\Http\Request;
 
+// Per-tenant RP ID (e.g. acme.example.com, set per request): the tenant must resolve on its
+// RP ID host too, because browsers fetch https://{rpId}/.well-known/webauthn from there.
 FilamentPasskeys::relatedOriginsUsing(function (Request $request): array {
-    $tenant = Tenant::current();   // resolved from the validated host
+    $tenant = Tenant::current();   // from the validated host: the RP ID host or a custom domain
 
     return $tenant?->domains->map(fn ($d): string => "https://{$d->name}")->all() ?? [];
 });
 ```
+
+If the resolver returns `[]` on the RP ID host, the file answers `404` and every related-origin ceremony fails. With one shared RP ID (e.g. `example.com`, no tenant on that host), return the same full list on every host instead of a per-tenant one.
 
 What the package does with the list:
 
