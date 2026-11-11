@@ -57,23 +57,31 @@ abstract class TestCase extends Orchestra
         parent::tearDown();
     }
 
+    /**
+     * Boot order matters: Filament's SupportServiceProvider registers its
+     * Livewire partials hook while booting, and Livewire hands its hooks to
+     * components when LivewireServiceProvider boots. Livewire therefore has to
+     * boot after Filament (as with package discovery in an application), or the
+     * first test of the process renders without the hook and sees no action
+     * modal partials.
+     */
     protected function getPackageProviders($app): array
     {
         return [
-            ActionsServiceProvider::class,
-            BladeCaptureDirectiveServiceProvider::class,
             BladeHeroiconsServiceProvider::class,
             BladeIconsServiceProvider::class,
+            ActionsServiceProvider::class,
             FilamentServiceProvider::class,
             FormsServiceProvider::class,
             InfolistsServiceProvider::class,
-            LivewireServiceProvider::class,
             NotificationsServiceProvider::class,
             SchemasServiceProvider::class,
             SupportServiceProvider::class,
             TablesServiceProvider::class,
             WidgetsServiceProvider::class,
             PasskeysServiceProvider::class,
+            LivewireServiceProvider::class,
+            BladeCaptureDirectiveServiceProvider::class,
             TestPanelProvider::class,
             FilamentPasskeysServiceProvider::class,
         ];
