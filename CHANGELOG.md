@@ -2,6 +2,17 @@
 
 All notable changes to `filament-passkeys` are documented in this file. Each section is written automatically from the GitHub release notes when a release is published — do not edit it by hand.
 
+## v1.5.3 - 2026-11-11
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.x -->
+### What's Changed
+
+#### Other
+
+* docs: ship a Laravel Boost skill by @webard in https://github.com/happenv-com/filament-passkeys/pull/21
+
+**Full Changelog**: https://github.com/happenv-com/filament-passkeys/compare/v1.5.2...v1.5.3
+
 ## v1.5.2 - 2026-11-10
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.x -->
