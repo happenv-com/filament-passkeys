@@ -2,6 +2,26 @@
 
 All notable changes to `filament-passkeys` are documented in this file. Each section is written automatically from the GitHub release notes when a release is published — do not edit it by hand.
 
+## v1.6.2 - 2026-11-21
+
+#### Highlights
+
+- **Passkey ceremonies survive overlapping requests.** The options of the set-up, the multi-factor challenge and the "Sign in with a passkey" button are now kept in the cache, keyed by the session ID, instead of the session. A polling widget or a second tab could write the session back mid-ceremony and make it fail with "We could not register your passkey". The cache must be shared by every server, as Filament's own multi-factor providers already require.
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.x -->
+### What's Changed
+
+#### Dependencies
+
+* chore(deps): Bump the github-actions group with 2 updates by @dependabot[bot] in https://github.com/happenv-com/filament-passkeys/pull/25
+* chore(deps-dev): Bump prettier from 3.9.10 to 3.10.1 in the npm group by @dependabot[bot] in https://github.com/happenv-com/filament-passkeys/pull/26
+
+#### Other
+
+* fix: keep ceremony options in the cache so overlapping requests cannot drop them by @webard in https://github.com/happenv-com/filament-passkeys/pull/27
+
+**Full Changelog**: https://github.com/happenv-com/filament-passkeys/compare/v1.6.1...v1.6.2
+
 ## v1.6.1 - 2026-11-11
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.x -->
