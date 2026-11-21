@@ -1,6 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 use Happenv\FilamentPasskeys\Support\PendingCeremony;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Sleep;
 
 beforeEach(function (): void {
@@ -19,8 +22,8 @@ it('gives an overlapping answer nothing while another one is consuming the optio
     PendingCeremony::put('ceremony', '{"challenge":"abc"}');
 
     // The first answer holds the ceremony while it takes the options.
-    $firstAnswer = PendingCeremony::lock('ceremony');
-    expect($firstAnswer?->get())->toBeTrue();
+    $firstAnswer = Cache::lock(PendingCeremony::lockName('ceremony'), 10);
+    expect($firstAnswer->get())->toBeTrue();
 
     expect(PendingCeremony::pull('ceremony'))->toBeNull();
 

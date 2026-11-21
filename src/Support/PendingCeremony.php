@@ -3,7 +3,6 @@
 namespace Happenv\FilamentPasskeys\Support;
 
 use Closure;
-use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Contracts\Cache\LockProvider;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Facades\Cache;
@@ -20,7 +19,8 @@ use Illuminate\Support\Facades\Cache;
  * last. The session ID stays the same for the whole ceremony, whatever is written to the
  * session meanwhile.
  *
- * Storing and consuming go through one cache lock per ceremony, so two overlapping answers
+ * Storing and consuming run one at a time per ceremony (`Cache::withoutOverlapping()`, an
+ * atomic cache lock), so two overlapping answers
  * cannot both take the same options and an older answer cannot delete options stored after it
  * read them (`Cache::pull()` alone is a separate get and forget). Without a lock-capable store
  * they run unguarded, as Filament's own providers do.
@@ -94,26 +94,19 @@ final class PendingCeremony
      */
     private static function exclusively(string $key, Closure $callback): mixed
     {
-        $lock = self::lock($key);
-
-        if (! $lock instanceof Lock) {
+        if (! Cache::getStore() instanceof LockProvider) {
             return $callback();
         }
 
-        return $lock->block(self::LOCK_WAIT_SECONDS, $callback);
+        return Cache::withoutOverlapping(self::lockName($key), $callback, lockFor: self::LOCK_SECONDS, waitFor: self::LOCK_WAIT_SECONDS);
     }
 
     /**
-     * The lock that serializes storing and consuming this ceremony's options, or null when the
-     * cache store cannot lock.
+     * The name of the cache lock that serializes storing and consuming this ceremony's options.
      */
-    public static function lock(string $key): ?Lock
+    public static function lockName(string $key): string
     {
-        $store = Cache::getStore();
-
-        return $store instanceof LockProvider
-            ? $store->lock(self::cacheKey($key) . ':lock', self::LOCK_SECONDS)
-            : null;
+        return self::cacheKey($key) . ':lock';
     }
 
     private static function cacheKey(string $key): string
