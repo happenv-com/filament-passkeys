@@ -2,6 +2,23 @@
 
 All notable changes to `filament-passkeys` are documented in this file. Each section is written automatically from the GitHub release notes when a release is published — do not edit it by hand.
 
+## v1.6.3 - 2026-11-21
+
+#### Highlights
+
+- **Ceremony options are consumed atomically.** Storing and reading them back run under one cache lock per ceremony (`Cache::withoutOverlapping()`), so two overlapping answers can no longer both use the same options. **Requires Laravel 12.47 or newer** (`illuminate/cache ^12.47 || ^13.0`).
+- **The passkeys table on the profile loads once per render** instead of once per evaluation (17 queries → 1 for two passkeys), independent of any `passkeys` relation the app preloaded.
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.x -->
+### What's Changed
+
+#### Other
+
+* fix: consume ceremony options atomically by @webard in https://github.com/happenv-com/filament-passkeys/pull/28
+* fix: load the passkeys table once per render by @webard in https://github.com/happenv-com/filament-passkeys/pull/29
+
+**Full Changelog**: https://github.com/happenv-com/filament-passkeys/compare/v1.6.2...v1.6.3
+
 ## v1.6.2 - 2026-11-21
 
 #### Highlights
