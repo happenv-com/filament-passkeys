@@ -23,6 +23,7 @@ use Happenv\FilamentPasskeys\Contracts\HasPasskeysAuthentication;
 use Happenv\FilamentPasskeys\Support\PendingCeremony;
 use Illuminate\Auth\SessionGuard;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Collection;
 use Laravel\Passkeys\Actions\GenerateRegistrationOptions;
 use Laravel\Passkeys\Actions\GenerateVerificationOptions;
 use Laravel\Passkeys\Actions\StorePasskey;
@@ -36,6 +37,7 @@ use LogicException;
 use RuntimeException;
 use SensitiveParameter;
 use Throwable;
+use WeakMap;
 use Webauthn\AuthenticatorAttestationResponse;
 use Webauthn\PublicKeyCredential;
 use Webauthn\PublicKeyCredentialCreationOptions;
@@ -116,7 +118,7 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
         return RepeatableEntry::make('passkeys')
             ->hiddenLabel()
             // Keyed by ID, so each row keeps its schema key when another one is removed.
-            ->state(fn (): array => $this->ensurePasskeyUser($user)->passkeys()->latest()->get()->keyBy('id')->all())
+            ->state(fn (): array => $this->getPasskeys($this->ensurePasskeyUser($user))->keyBy('id')->all())
             ->visible(fn (): bool => $this->isEnabled($user))
             ->table([
                 TableColumn::make(__('filament-passkeys::provider.management_schema.passkeys.columns.name')),
@@ -140,6 +142,42 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
                     ->key('actions')
                     ->alignEnd(),
             ]);
+    }
+
+    /**
+     * Passkeys loaded by {@see self::getPasskeys()}, per user object. Weak, so an entry goes
+     * with the user it belongs to: under Octane nothing outlives the request.
+     *
+     * @var WeakMap<HasPasskeysAuthentication, Collection<int, Passkey>>|null
+     */
+    private static ?WeakMap $loadedPasskeys = null;
+
+    /**
+     * The user's passkeys, newest first. Filament evaluates the table's state many times while
+     * rendering, so they are queried once per user object and kept here — not in the model's
+     * `passkeys` relation, which the application may have loaded constrained or in another
+     * order. {@see self::forgetPasskeys()} drops them after a passkey is added or removed.
+     *
+     * @return Collection<int, Passkey>
+     */
+    public function getPasskeys(HasPasskeysAuthentication $user): Collection
+    {
+        self::$loadedPasskeys ??= new WeakMap;
+
+        /** @var Collection<int, Passkey> $passkeys */
+        $passkeys = self::$loadedPasskeys[$user] ??= $user->passkeys()->latest()->get();
+
+        return $passkeys;
+    }
+
+    /**
+     * Forget the passkeys {@see self::getPasskeys()} loaded, after the user's passkeys changed.
+     */
+    public static function forgetPasskeys(HasPasskeysAuthentication $user): void
+    {
+        if (self::$loadedPasskeys instanceof WeakMap) {
+            unset(self::$loadedPasskeys[$user]);
+        }
     }
 
     /**
@@ -226,12 +264,16 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
 
         $publicKeyCredential = WebAuthn::fromJson($credential, PublicKeyCredential::class);
 
-        return FilamentPasskeys::withWebauthnOrigins($webauthnOrigins, fn (): Passkey => app(StorePasskey::class)(
+        $passkey = FilamentPasskeys::withWebauthnOrigins($webauthnOrigins, fn (): Passkey => app(StorePasskey::class)(
             $user,
             filled($name) ? $name : $this->getDefaultPasskeyName($publicKeyCredential),
             $publicKeyCredential,
             WebAuthn::fromJson($serializedOptions, PublicKeyCredentialCreationOptions::class),
         ));
+
+        static::forgetPasskeys($user);
+
+        return $passkey;
     }
 
     /**

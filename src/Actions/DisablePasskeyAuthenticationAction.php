@@ -41,6 +41,8 @@ class DisablePasskeyAuthenticationAction
                     }
                 });
 
+                PasskeyAuthentication::forgetPasskeys($user);
+
                 Notification::make()
                     ->title(__('filament-passkeys::actions/disable.notifications.disabled.title'))
                     ->success()
