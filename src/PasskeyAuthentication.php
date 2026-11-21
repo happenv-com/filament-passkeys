@@ -20,6 +20,7 @@ use Happenv\FilamentPasskeys\Actions\DisablePasskeyAuthenticationAction;
 use Happenv\FilamentPasskeys\Actions\RemovePasskeyAction;
 use Happenv\FilamentPasskeys\Actions\SetUpPasskeyAuthenticationAction;
 use Happenv\FilamentPasskeys\Contracts\HasPasskeysAuthentication;
+use Happenv\FilamentPasskeys\Support\PendingCeremony;
 use Illuminate\Auth\SessionGuard;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Laravel\Passkeys\Actions\GenerateRegistrationOptions;
@@ -194,13 +195,14 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
 
     /**
      * Generate creation options for the user and hand them to the browser. The
-     * serialized options stay in the session until the credential comes back.
+     * serialized options are kept as a pending ceremony ({@see PendingCeremony}) until the
+     * credential comes back.
      */
     public function startRegistration(HasPasskeysAuthentication $user, Component $livewire): void
     {
         $options = app(GenerateRegistrationOptions::class)($user);
 
-        session()->put(static::REGISTRATION_OPTIONS_SESSION_KEY, WebAuthn::toJson($options));
+        PendingCeremony::put(static::REGISTRATION_OPTIONS_SESSION_KEY, WebAuthn::toJson($options));
 
         $livewire->dispatch('filament-passkeys-registration-options-ready', options: WebAuthn::toBrowserArray($options));
     }
@@ -216,7 +218,7 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
     {
         $webauthnOrigins = FilamentPasskeys::webauthnOrigins(request());
 
-        $serializedOptions = session()->pull(static::REGISTRATION_OPTIONS_SESSION_KEY);
+        $serializedOptions = PendingCeremony::pull(static::REGISTRATION_OPTIONS_SESSION_KEY);
 
         if (blank($serializedOptions)) {
             throw new RuntimeException('Passkey registration options are missing or expired.');
@@ -251,14 +253,15 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
 
     /**
      * Generate assertion options scoped to the user undertaking the challenge and
-     * hand them to the browser. The serialized options stay in the session so the
-     * validation rule can check the assertion against the same challenge.
+     * hand them to the browser. The serialized options are kept as a pending ceremony
+     * ({@see PendingCeremony}) so the validation rule can check the assertion against the
+     * same challenge.
      */
     public function startChallenge(HasPasskeysAuthentication $user, Component $livewire): void
     {
         $options = app(GenerateVerificationOptions::class)($user);
 
-        session()->put(static::CHALLENGE_OPTIONS_SESSION_KEY, WebAuthn::toJson($options));
+        PendingCeremony::put(static::CHALLENGE_OPTIONS_SESSION_KEY, WebAuthn::toJson($options));
 
         $livewire->dispatch('filament-passkeys-challenge-options-ready', options: WebAuthn::toBrowserArray($options));
     }
@@ -272,7 +275,7 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
         // Outside the try: a failing resolver is the app's error, not a wrong passkey.
         $webauthnOrigins = FilamentPasskeys::webauthnOrigins(request());
 
-        $serializedOptions = session()->pull(static::CHALLENGE_OPTIONS_SESSION_KEY);
+        $serializedOptions = PendingCeremony::pull(static::CHALLENGE_OPTIONS_SESSION_KEY);
 
         if (blank($serializedOptions)) {
             return false;

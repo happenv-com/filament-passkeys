@@ -1,6 +1,7 @@
 <?php
 
 use Happenv\FilamentPasskeys\Livewire\AuthenticatePasskey;
+use Happenv\FilamentPasskeys\Support\PendingCeremony;
 use Happenv\FilamentPasskeys\Tests\Fixtures\User;
 use Happenv\FilamentPasskeys\Tests\Support\VirtualAuthenticator;
 use Illuminate\Support\Facades\Auth;
@@ -48,6 +49,23 @@ it('signs in with a discoverable passkey', function (): void {
     assertAuthenticatedAs($user);
 });
 
+it('signs in even when an overlapping request wrote the session back meanwhile', function (): void {
+    $user = createUser();
+    registerPasskey($user, $authenticator = new VirtualAuthenticator);
+    $readBeforeTheCeremony = session()->all();
+
+    $component = passkeyLoginButton();
+    $options = requestLoginOptions($component);
+
+    writeSessionBackFromAnOverlappingRequest($readBeforeTheCeremony);
+
+    $component
+        ->call('authenticate', $authenticator->authenticate($options, $user->getPasskeyUserHandle()))
+        ->assertRedirect('/admin');
+
+    assertAuthenticatedAs($user);
+});
+
 it('returns to the page the visitor wanted before signing in', function (): void {
     $user = createUser();
     registerPasskey($user, $authenticator = new VirtualAuthenticator);
@@ -85,7 +103,7 @@ it('rejects an assertion without pending options', function (): void {
 
     $component = passkeyLoginButton();
     $options = requestLoginOptions($component);
-    session()->forget(AuthenticatePasskey::OPTIONS_SESSION_KEY);
+    PendingCeremony::forget(AuthenticatePasskey::OPTIONS_SESSION_KEY);
 
     $component
         ->call('authenticate', $authenticator->authenticate($options, $user->getPasskeyUserHandle()))
@@ -192,11 +210,11 @@ it('limits how often a guest can ask for login options', function (): void {
         $component->call('getOptions')->assertDispatched('passkey-authentication-options-ready');
     }
 
-    session()->forget(AuthenticatePasskey::OPTIONS_SESSION_KEY);
+    PendingCeremony::forget(AuthenticatePasskey::OPTIONS_SESSION_KEY);
 
     passkeyLoginButton()
         ->call('getOptions')
         ->assertNotDispatched('passkey-authentication-options-ready');
 
-    expect(session()->has(AuthenticatePasskey::OPTIONS_SESSION_KEY))->toBeFalse();
+    expect(PendingCeremony::has(AuthenticatePasskey::OPTIONS_SESSION_KEY))->toBeFalse();
 });

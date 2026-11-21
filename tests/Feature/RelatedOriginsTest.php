@@ -10,6 +10,7 @@ use Happenv\FilamentPasskeys\FilamentPasskeys;
 use Happenv\FilamentPasskeys\FilamentPasskeysServiceProvider;
 use Happenv\FilamentPasskeys\Livewire\AuthenticatePasskey;
 use Happenv\FilamentPasskeys\PasskeyAuthentication;
+use Happenv\FilamentPasskeys\Support\PendingCeremony;
 use Happenv\FilamentPasskeys\Tests\Fixtures\User;
 use Happenv\FilamentPasskeys\Tests\Support\VirtualAuthenticator;
 use Illuminate\Http\Request;
@@ -470,13 +471,13 @@ describe('a failing resolver', function (): void {
         $component = Livewire::test(AuthenticatePasskey::class, ['panel' => 'admin', 'redirectUrl' => '/admin']);
 
         foreach (range(1, 5) as $attempt) {
-            session()->put(AuthenticatePasskey::OPTIONS_SESSION_KEY, '{}');
+            PendingCeremony::put(AuthenticatePasskey::OPTIONS_SESSION_KEY, '{}');
             $component->call('authenticate', 'not even an assertion');
         }
 
         expect($calls)->toBe(5);
 
-        session()->put(AuthenticatePasskey::OPTIONS_SESSION_KEY, '{}');
+        PendingCeremony::put(AuthenticatePasskey::OPTIONS_SESSION_KEY, '{}');
 
         $component->call('authenticate', 'not even an assertion');
 

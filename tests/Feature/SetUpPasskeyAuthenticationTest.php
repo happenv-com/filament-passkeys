@@ -6,6 +6,7 @@ use Filament\Facades\Filament;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\ViewField;
 use Happenv\FilamentPasskeys\PasskeyAuthentication;
+use Happenv\FilamentPasskeys\Support\PendingCeremony;
 use Happenv\FilamentPasskeys\Tests\Support\VirtualAuthenticator;
 use Laravel\Passkeys\Events\PasskeyRegistered;
 use Livewire\Features\SupportTesting\Testable;
@@ -64,9 +65,27 @@ it('registers a passkey through a real WebAuthn ceremony', function (): void {
     expect($user->passkeys()->sole())
         ->name->toBe('MacBook Touch ID')
         ->and($user->hasPasskeysEnabled())->toBeTrue()
-        ->and(session()->has(PasskeyAuthentication::REGISTRATION_OPTIONS_SESSION_KEY))->toBeFalse();
+        ->and(PendingCeremony::has(PasskeyAuthentication::REGISTRATION_OPTIONS_SESSION_KEY))->toBeFalse();
 
     Event::assertDispatched(PasskeyRegistered::class);
+});
+
+it('registers the passkey even when an overlapping request wrote the session back meanwhile', function (): void {
+    $user = createUser();
+    actingAs($user);
+    $readBeforeTheCeremony = session()->all();
+
+    [$page, $options] = startPasskeySetUp();
+
+    writeSessionBackFromAnOverlappingRequest($readBeforeTheCeremony);
+
+    $page
+        ->setActionData(['credential' => (new VirtualAuthenticator)->register($options)])
+        ->callMountedAction()
+        ->assertHasNoActionErrors()
+        ->assertNotified(__('filament-passkeys::actions/set-up.notifications.enabled.title'));
+
+    expect($user->passkeys()->exists())->toBeTrue();
 });
 
 it('redirects after set-up when a redirect url is configured', function (): void {

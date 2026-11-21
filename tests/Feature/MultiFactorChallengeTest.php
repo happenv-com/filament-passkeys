@@ -66,6 +66,24 @@ it('signs the user in after a valid passkey assertion', function (): void {
     expect($user->passkeys()->sole()->last_used_at)->not->toBeNull();
 });
 
+it('signs the user in even when an overlapping request wrote the session back meanwhile', function (): void {
+    $user = createUser();
+    registerPasskey($user, $authenticator = new VirtualAuthenticator);
+
+    $login = startLoginChallenge($user);
+    $readBeforeTheCeremony = session()->all();
+    $options = requestChallengeOptions($login);
+
+    writeSessionBackFromAnOverlappingRequest($readBeforeTheCeremony);
+
+    $login
+        ->set('data.multiFactor.passkey.credential', $authenticator->authenticate($options, $user->getPasskeyUserHandle()))
+        ->call('authenticate')
+        ->assertHasNoFormErrors();
+
+    assertAuthenticatedAs($user);
+});
+
 it('renders the passkey button on the challenge', function (): void {
     $user = createUser();
     registerPasskey($user, new VirtualAuthenticator);

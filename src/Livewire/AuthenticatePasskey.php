@@ -7,6 +7,7 @@ use DanHarrin\LivewireRateLimiting\WithRateLimiting;
 use Filament\Facades\Filament;
 use Filament\Models\Contracts\FilamentUser;
 use Happenv\FilamentPasskeys\FilamentPasskeys;
+use Happenv\FilamentPasskeys\Support\PendingCeremony;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
@@ -60,7 +61,7 @@ class AuthenticatePasskey extends Component
 
         $options = app(GenerateVerificationOptions::class)();
 
-        session()->put(self::OPTIONS_SESSION_KEY, WebAuthn::toJson($options));
+        PendingCeremony::put(self::OPTIONS_SESSION_KEY, WebAuthn::toJson($options));
 
         $this->dispatch('passkey-authentication-options-ready', options: WebAuthn::toBrowserArray($options));
     }
@@ -79,7 +80,7 @@ class AuthenticatePasskey extends Component
             return;
         }
 
-        if (blank(session()->get(self::OPTIONS_SESSION_KEY))) {
+        if (! PendingCeremony::has(self::OPTIONS_SESSION_KEY)) {
             $this->hitRateLimiter();
             $this->fail();
 
@@ -99,7 +100,7 @@ class AuthenticatePasskey extends Component
             return;
         }
 
-        $serializedOptions = session()->pull(self::OPTIONS_SESSION_KEY);
+        $serializedOptions = PendingCeremony::pull(self::OPTIONS_SESSION_KEY);
 
         if (blank($serializedOptions)) {
             $this->fail();
