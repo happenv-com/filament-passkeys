@@ -5,6 +5,8 @@ use Filament\Actions\Exceptions\ActionNotResolvableException;
 use Filament\Actions\Testing\TestAction;
 use Filament\Auth\Pages\EditProfile;
 use Filament\Facades\Filament;
+use Happenv\FilamentPasskeys\PasskeyAuthentication;
+use Happenv\FilamentPasskeys\Tests\Fixtures\User;
 use Happenv\FilamentPasskeys\Tests\Support\VirtualAuthenticator;
 use Illuminate\Support\Facades\DB;
 use Laravel\Passkeys\Events\PasskeyDeleted;
@@ -54,6 +56,20 @@ it('loads the passkeys of the user once per render', function (): void {
 
     expect($passkeyListQueries)->toHaveCount(1);
 });
+
+it('lists every passkey newest first even when the app preloaded the relation otherwise', function (Closure $preload): void {
+    $user = createUser();
+    $older = registerPasskey($user, new VirtualAuthenticator, 'Older key');
+    $older->forceFill(['created_at' => now()->subDay()])->save();
+    registerPasskey($user, new VirtualAuthenticator, 'Newer key');
+
+    $preload($user);
+
+    expect(PasskeyAuthentication::make()->getPasskeys($user)->pluck('name')->all())->toBe(['Newer key', 'Older key']);
+})->with([
+    'constrained' => [fn (User $user) => $user->load(['passkeys' => fn ($query) => $query->where('name', 'Older key')])],
+    'oldest first' => [fn (User $user) => $user->load(['passkeys' => fn ($query) => $query->oldest()])],
+]);
 
 it('shows which authenticator holds a passkey', function (): void {
     $user = createUser();
