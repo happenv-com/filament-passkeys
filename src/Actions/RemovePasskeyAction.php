@@ -28,7 +28,7 @@ class RemovePasskeyAction
             ->modalIcon(Heroicon::OutlinedTrash)
             ->modalHeading(fn (Passkey $record): string => __('filament-passkeys::actions/remove.modal.heading', ['name' => $record->name]))
             // Removing the last passkey turns passkey verification off, so say so.
-            ->modalDescription(fn (): string => static::currentUser()->passkeys()->count() > 1
+            ->modalDescription(fn (): string => $passkeyAuthentication->getPasskeys(static::currentUser())->count() > 1
                 ? __('filament-passkeys::actions/remove.modal.description')
                 : __('filament-passkeys::actions/remove.modal.description_last'))
             ->modalSubmitActionLabel(__('filament-passkeys::actions/remove.modal.actions.submit.label'))
@@ -40,6 +40,8 @@ class RemovePasskeyAction
                 $passkey = $user->passkeys()->whereKey($record->getKey())->firstOrFail();
 
                 app(DeletePasskey::class)($user, $passkey);
+
+                PasskeyAuthentication::forgetPasskeys($user);
 
                 Notification::make()
                     ->title(__('filament-passkeys::actions/remove.notifications.removed.title'))

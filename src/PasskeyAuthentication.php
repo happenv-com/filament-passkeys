@@ -23,6 +23,8 @@ use Happenv\FilamentPasskeys\Contracts\HasPasskeysAuthentication;
 use Happenv\FilamentPasskeys\Support\PendingCeremony;
 use Illuminate\Auth\SessionGuard;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Laravel\Passkeys\Actions\GenerateRegistrationOptions;
 use Laravel\Passkeys\Actions\GenerateVerificationOptions;
 use Laravel\Passkeys\Actions\StorePasskey;
@@ -116,7 +118,7 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
         return RepeatableEntry::make('passkeys')
             ->hiddenLabel()
             // Keyed by ID, so each row keeps its schema key when another one is removed.
-            ->state(fn (): array => $this->ensurePasskeyUser($user)->passkeys()->latest()->get()->keyBy('id')->all())
+            ->state(fn (): array => $this->getPasskeys($this->ensurePasskeyUser($user))->keyBy('id')->all())
             ->visible(fn (): bool => $this->isEnabled($user))
             ->table([
                 TableColumn::make(__('filament-passkeys::provider.management_schema.passkeys.columns.name')),
@@ -140,6 +142,39 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
                     ->key('actions')
                     ->alignEnd(),
             ]);
+    }
+
+    /**
+     * The user's passkeys, newest first. Filament evaluates the table's state many times
+     * while rendering, so they are loaded once onto the user's `passkeys` relation and read
+     * from there; {@see self::forgetPasskeys()} drops them after a passkey is added or removed.
+     *
+     * @return Collection<int, Passkey>
+     */
+    public function getPasskeys(HasPasskeysAuthentication $user): Collection
+    {
+        if (! $user instanceof Model) {
+            return $user->passkeys()->latest()->get();
+        }
+
+        if (! $user->relationLoaded('passkeys')) {
+            $user->setRelation('passkeys', $user->passkeys()->latest()->get());
+        }
+
+        /** @var Collection<int, Passkey> $passkeys */
+        $passkeys = $user->getRelation('passkeys');
+
+        return $passkeys;
+    }
+
+    /**
+     * Forget the passkeys {@see self::getPasskeys()} loaded, after the user's passkeys changed.
+     */
+    public static function forgetPasskeys(HasPasskeysAuthentication $user): void
+    {
+        if ($user instanceof Model) {
+            $user->unsetRelation('passkeys');
+        }
     }
 
     /**
@@ -226,12 +261,16 @@ class PasskeyAuthentication implements MultiFactorAuthenticationProvider
 
         $publicKeyCredential = WebAuthn::fromJson($credential, PublicKeyCredential::class);
 
-        return FilamentPasskeys::withWebauthnOrigins($webauthnOrigins, fn (): Passkey => app(StorePasskey::class)(
+        $passkey = FilamentPasskeys::withWebauthnOrigins($webauthnOrigins, fn (): Passkey => app(StorePasskey::class)(
             $user,
             filled($name) ? $name : $this->getDefaultPasskeyName($publicKeyCredential),
             $publicKeyCredential,
             WebAuthn::fromJson($serializedOptions, PublicKeyCredentialCreationOptions::class),
         ));
+
+        static::forgetPasskeys($user);
+
+        return $passkey;
     }
 
     /**

@@ -6,6 +6,7 @@ use Filament\Actions\Testing\TestAction;
 use Filament\Auth\Pages\EditProfile;
 use Filament\Facades\Filament;
 use Happenv\FilamentPasskeys\Tests\Support\VirtualAuthenticator;
+use Illuminate\Support\Facades\DB;
 use Laravel\Passkeys\Events\PasskeyDeleted;
 use Laravel\Passkeys\Passkey;
 use Livewire\Livewire;
@@ -35,6 +36,23 @@ it('lists the passkeys of the user on the profile', function (): void {
         ->assertSee('MacBook')
         ->assertSee('Android phone')
         ->assertDontSee('Someone else');
+});
+
+it('loads the passkeys of the user once per render', function (): void {
+    $user = createUser();
+    registerPasskey($user, new VirtualAuthenticator, 'MacBook');
+    registerPasskey($user, new VirtualAuthenticator, 'Android phone');
+
+    actingAs($user);
+    DB::enableQueryLog();
+
+    Livewire::test(EditProfile::class)->assertSee('MacBook');
+
+    $passkeyListQueries = collect(DB::getQueryLog())
+        ->pluck('query')
+        ->filter(fn (string $query): bool => str_starts_with($query, 'select * from "passkeys"'));
+
+    expect($passkeyListQueries)->toHaveCount(1);
 });
 
 it('shows which authenticator holds a passkey', function (): void {
