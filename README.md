@@ -343,6 +343,7 @@ This package is a Filament adapter on top of `laravel/passkeys`. Challenge gener
 - **Turn off** deletes each of the user's passkeys through `DeletePasskey`, so a `PasskeyDeleted` event fires for every one.
 - **Login challenge** is a regular field of Filament's MFA challenge form. Its button generates options scoped to the user who passed the password step, and the field's validation rule checks the assertion with `VerifyPasskey` for that same user, so a passkey belonging to anyone else is rejected.
 - **Sign in with a passkey** runs a discoverable-credential ceremony and logs the owner in on the panel's guard.
+- **Between the two requests of a ceremony** its options are kept in the cache, keyed by the session ID, not in the session. Laravel writes the whole session back at the end of every request, so a request that overlaps the ceremony (a polling widget, a second tab) would otherwise drop them and the ceremony would fail. The cache must be shared by every server, as Filament's own multi-factor providers already require.
 
 ## Testing your application
 

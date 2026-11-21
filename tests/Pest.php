@@ -1,5 +1,6 @@
 <?php
 
+use Happenv\FilamentPasskeys\Support\PendingCeremony;
 use Happenv\FilamentPasskeys\Tests\Fixtures\User;
 use Happenv\FilamentPasskeys\Tests\Support\VirtualAuthenticator;
 use Happenv\FilamentPasskeys\Tests\TestCase;
@@ -37,12 +38,24 @@ function registerPasskey(User $user, VirtualAuthenticator $authenticator, string
 }
 
 /**
- * The browser-facing form of options serialized into the session under the given key.
+ * The browser-facing form of the pending ceremony options stored under the given key.
  *
  * @param  class-string  $class
  * @return array<string, mixed>
  */
 function browserOptionsFromSession(string $key, string $class): array
 {
-    return WebAuthn::toBrowserArray(WebAuthn::fromJson(session()->get($key), $class));
+    return WebAuthn::toBrowserArray(WebAuthn::fromJson((string) PendingCeremony::get($key), $class));
+}
+
+/**
+ * Stand in for a request that overlapped the ceremony: it read the session before the ceremony
+ * started and, like every request, wrote the whole session back when it finished.
+ *
+ * @param  array<string, mixed>  $readBeforeTheCeremony
+ */
+function writeSessionBackFromAnOverlappingRequest(array $readBeforeTheCeremony): void
+{
+    session()->flush();
+    session()->put($readBeforeTheCeremony);
 }
